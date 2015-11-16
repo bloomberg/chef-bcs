@@ -1,0 +1,125 @@
+#!/bin/bash
+#
+# Copyright 2015, Bloomberg Finance L.P.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+##########
+# NOTE: If you run this script and receive a VBoxManage related error then most likely the VM(s) have been removed or
+# missing from where you store VirtualBox VMs BUT VBoxManage still thinks they are there. Simply pull up the
+# VirtualBox UI application, stop and remove the 'ceph-*' VMs that should be shown and then start this script again.
+##########
+
+# Exit immediately if anything goes wrong, instead of making things worse.
+set -e
+
+clear
+
+echo "  ____ _           __       ____   ____ ____  "
+echo " / ___| |__   ___ / _|     | __ ) / ___/ ___| "
+echo "| |   | '_ \ / _ \ |_ _____|  _ \| |   \___ \ "
+echo "| |___| | | |  __/  _|_____| |_) | |___ ___) |"
+echo " \____|_| |_|\___|_|       |____/ \____|____/ "
+echo
+echo "Chef-BCS Vagrant Bootstrap 0.9.0"
+echo "--------------------------------------------"
+echo "Bootstrapping local Vagrant environment..."
+echo
+
+while getopts bsv opt; do
+    case $opt in
+        b)
+            BUILD_VMS_ONLY=1
+            ;;
+        s)
+            BOOTSTRAP_SKIP_VMS=1
+            ;;
+            # verbose
+        v)
+            set -x
+            ;;
+    esac
+done
+
+source ../base_environment.sh
+export BOOTSTRAP_CHEF_ENV=vagrant  # Override
+
+# Source the bootstrap configuration file if present.
+BOOTSTRAP_CONFIG="$REPO_ROOT/bootstrap/config/bootstrap_config.sh"
+if [[ -f $BOOTSTRAP_CONFIG ]]; then
+  source $BOOTSTRAP_CONFIG
+fi
+
+#export CEPH_ARCHITECTURE=converged
+#export CEPH_VM_DIR=${CEPH_VM_DIR:-$HOME/CEPH-VMs}
+
+# Set environment var BOOTSTRAP_OS here for vagrant
+export BOOTSTRAP_OS='vagrant-centos-7'
+
+# If set then only build the vms and clone them
+export BUILD_VMS_ONLY=${BUILD_VMS_ONLY:-0}
+
+# Bootstrap specific variables
+export BOOTSTRAP_SKIP_VMS=${BOOTSTRAP_SKIP_VMS:-0}
+
+# Perform preflight checks to validate environment sanity as much as possible.
+echo "Performing preflight environment validation..."
+source $REPO_ROOT/bootstrap/common/bootstrap_validate_env.sh
+
+# Test that Vagrant is really installed and of an appropriate version.
+if [[ $BOOTSTRAP_SKIP_VMS -ne 1 ]]; then
+  echo "Checking VirtualBox and Vagrant..."
+  source $REPO_ROOT/bootstrap/vms/vagrant/vagrant_test.sh
+fi
+
+# Configure and test any proxies configured.
+if [[ ! -z $BOOTSTRAP_HTTP_PROXY ]] || [[ ! -z $BOOTSTRAP_HTTPS_PROXY ]] ; then
+  echo "Testing configured proxies..."
+  source $REPO_ROOT/bootstrap/common/bootstrap_proxy_setup.sh
+fi
+
+# Do prerequisite work prior to starting build, downloading files and
+# creating local directories.
+echo "Downloading necessary files to local cache..."
+source $REPO_ROOT/bootstrap/common/bootstrap_prereqs.sh
+
+# Create VMs in Vagrant and start them.
+# VM only tests inside vagrant_create script
+echo "Clean up old VMs and Starting new local Vagrant cluster..."
+$REPO_ROOT/bootstrap/vms/vagrant/vagrant_create.sh
+
+# IMPORTANT: Inside vagrant_create.sh in the configure_network function the ADDING of OSD drives
+# occurs! This is important because it needes to be done while the VMs are off. Since adding network
+# adpaters also require the VM being off, putting them together saved time.
+
+# Reset shared folders and virtualbox guest addons since addons are required for shared folders.
+$REPO_ROOT/bootstrap/vms/vagrant/vagrant_create_shared_folders_in_vms.sh
+
+if [[ $BUILD_VMS_ONLY -eq 0 ]]; then
+  # Install and configure Chef on all Vagrant hosts.
+  echo "Installing and configuring Chef on all nodes using the all in one script."
+  $REPO_ROOT/bootstrap/vms/vagrant/vagrant_configure_chef_aio.sh
+else
+  echo
+  echo "--------------------------------"
+  echo "chef-bcs VMs have been created!"
+  echo "--------------------------------"
+fi
+
+source vagrant_base.sh
+
+echo "You can access the vms using the following:"
+for vm in ${CEPH_CHEF_HOSTS[@]}; do
+  echo "  vagrant ssh $vm"
+done

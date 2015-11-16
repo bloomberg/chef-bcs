@@ -1,0 +1,12 @@
+{
+  "name": "ceph-mds",
+  "json_class": "Chef::Role",
+  "description": "Ceph Metadata Server",
+  "run_list": [
+    "role[common]",
+    "recipe[chef-bcs::repo]",
+    "recipe[ceph-chef::repo]",
+    "recipe[chef-bcs::ceph-mds]",
+    "recipe[ceph-chef::mds]"
+  ]
+}

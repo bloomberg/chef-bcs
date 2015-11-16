@@ -1,0 +1,18 @@
+---
+vagrant:
+    box: bento/centos-7.1
+    lsb_name: centos
+    storage_controller: SATA Controller
+    domain: ceph.example.com
+    osd_drives: 3
+    net_mask:
+        - 255.255.255.0
+        - 24
+    front_end_adapter_ip: 10.0.101.2
+    back_end_adapter_ip: 192.168.101.2 # 172.16.101.2
+    memory: 2560
+    cpus: 2
+    vram: 16
+    drive_size: 20480
+    http_proxy:
+    https_proxy:

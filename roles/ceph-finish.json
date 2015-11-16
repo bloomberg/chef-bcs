@@ -1,0 +1,8 @@
+{
+  "name": "ceph-finish",
+  "json_class": "Chef::Role",
+  "description": "Ceph Install Finished",
+  "run_list": [
+    "recipe[ceph-finish]"
+  ]
+}

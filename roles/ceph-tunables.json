@@ -1,0 +1,8 @@
+{
+  "name": "ceph-tunables",
+  "json_class": "Chef::Role",
+  "description": "Ceph Tunables",
+  "run_list": [
+    "recipe[ceph-chef::tunables]"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "ceph-mon-keys",
+  "json_class": "Chef::Role",
+  "description": "Ceph Monitor Gather Keys",
+  "run_list": [
+    "recipe[ceph-chef::mon_keys]"
+  ]
+}

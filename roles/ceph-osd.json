@@ -1,0 +1,9 @@
+{
+  "name": "ceph-osd",
+  "json_class": "Chef::Role",
+  "description": "Ceph Object Storage Device",
+  "run_list": [
+    "role[ceph-osd-install]",
+    "role[ceph-osd-start]"
+  ]
+}

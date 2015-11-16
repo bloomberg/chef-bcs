@@ -1,0 +1,9 @@
+{
+  "name": "ceph-mon",
+  "json_class": "Chef::Role",
+  "description": "Ceph Monitor Install",
+  "run_list": [
+    "role[ceph-mon-install]",
+    "role[ceph-mon-start]"
+  ]
+}

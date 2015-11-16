@@ -1,0 +1,243 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+#
+# Copyright 2015, Bloomberg Finance L.P.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# This is a Vagrantfile to automatically provision a local ceph cluster.
+
+# NOTE: At the time this project started, the Vagrant fedora plugin seemed to have a bug in it's networking
+# where it overroad nic1 (nat) which caused ssh to fail. So, we had to create a way to update the consistent
+# naming network interfaces with the proper IPs.
+
+require 'openssl' # used to validate CA certificates
+require 'uri' # used to parse the local mirror if one is given
+require 'yaml'
+
+Vagrant.require_version ">= 1.7.4"
+
+if ENV['REPO_ROOT'].nil?
+    $path = File.dirname(__FILE__) + "/.."
+else
+    $path = "#{ENV['REPO_ROOT']}/bootstrap/vms"
+end
+environment = YAML.load_file("#{$path}/environment_config.yaml")
+servers = YAML.load_file("#{$path}/servers_config.yaml")
+
+# Vagrant/VirtualBox on the last VM will sometimes fail to start after stoping so a place holder VM MUST be the
+# last server entry in servers.yaml
+
+# The storage_controller will need to be modified for different images because this gets defined when the image is created
+# Ubuntu is "SATAController"
+
+$lsb_name = environment['vagrant']['lsb_name']
+$storage_controller = environment['vagrant']['storage_controller']
+$domain = environment['vagrant']['domain']
+$http_proxy_server = environment['vagrant']['http_proxy']
+$https_proxy_server = environment['vagrant']['https_proxy']
+
+# Some settings for each VM
+$num_of_osds = environment['vagrant']['osd_drives']
+$vm_os = environment['vagrant']['box']
+$memory = ( environment['vagrant']['memory'] or "2560" )
+$cpus = ( environment['vagrant']['cpus'] or "2" )
+$vram = ( environment['vagrant']['vram'] or "16" )
+$disk_size = ( environment['vagrant']['disk_size'] or "20480" )
+
+# if proxies are provided, configure them before configuring any local mirror override
+# RUN THIS SCRIPT WITH sudo AND privileged = false so that $HOME is set to the
+# value of the non-root user
+$proxy_configuration_script = <<-EOH
+  touch $HOME/proxy_config.sh
+EOH
+
+unless $http_proxy_server.nil? or $http_proxy_server.empty?
+    if $lsb_name == 'centos' or $lsb_name == 'rhel'
+        $proxy_configuration_script << <<-EOH
+            echo 'proxy="http://#{$http_proxy_server}";' | sudo tee -a /etc/yum.conf
+            echo 'export http_proxy=#{$http_proxy_server}' | tee -a $HOME/proxy_config.sh
+        EOH
+    end
+end
+
+unless $https_proxy_server.nil? or $https_proxy_server.empty?
+    if $lsb_name == 'centos' or $lsb_name == 'rhel'
+        $proxy_configuration_script << <<-EOH
+            echo 'proxy="https://#{$https_proxy_server}";' | sudo tee -a /etc/yum.conf
+            echo 'export https_proxy=#{$https_proxy_server}' | tee -a $HOME/proxy_config.sh
+        EOH
+    end
+end
+
+# try to yum update immediately so that the bootstrap does not wander along for a while
+# and waste everyone's time in case our repo configuration set above is broken
+# After other yum updates you may also need to re-install the kernel-devel-* so it's in the
+if $lsb_name == 'centos' or $lsb_name == 'rhel'
+    $repos_script = <<-EOH
+      sudo yum update -y
+      sudo yum install -y kernel-devel-`uname -r` gcc make perl bzip2
+      sudo yum install -y epel-release rsync
+    EOH
+else
+    $repos_script = <<-EOH
+      sudo apt update
+    EOH
+end
+
+at_exit do
+  raise $! unless $!.success?
+end
+
+# Last value in adapters_string array is net_mask
+$adapters_string = "export CEPH_CHEF_ADAPTERS=( #{environment['vagrant']['front_end_adapter_ip']} #{environment['vagrant']['back_end_adapter_ip']} #{environment['vagrant']['net_mask'][0]} )"
+$bootstrap_name = "export CEPH_CHEF_BOOTSTRAP="
+$host_file_entries = ""
+
+$hosts_string = "export CEPH_CHEF_HOSTS=( "
+# Build hosts File
+servers.each do |server|
+    $hosts_string += "#{server['name']} "
+    # Build the entries dynamically to go into hosts file for Chef
+    $host_file_entries += "#{server['front_end_ip']}\t#{server['name']}\t#{server['name']}.#{$domain}\n"
+end
+$hosts_string  += ")"
+
+Vagrant.configure("2") do |config|
+  config.vm.box = $vm_os
+  File.open("#{$path}/ceph_chef_host_file.env", "w") { |file| file.write($host_file_entries) }
+
+  servers.each_with_index do |server, i|
+      config.vm.define server['name'] do |machine|
+
+        $bootstrap_node = 0
+        if server['name'].include? 'bootstrap'
+            $bootstrap_node = i
+            $bootstrap_name += server['name']
+        end
+
+        # NOTE: May want to add two other exports to this file for external OSD drive mounts for VMs
+
+        # Set fqdn of vm
+        machine.vm.hostname = "#{server['name']}.#{$domain}"
+
+        # Fun Ceph ascii art of a squid :)
+        # If this gets in the way any tools you have created then move it to machine.vm.provider :virtualbox
+        puts "-" * (machine.vm.hostname.length + 14)
+        puts "<コ:彡 " + machine.vm.hostname + " <コ:彡"
+        puts "-" * (machine.vm.hostname.length + 14)
+
+        # Set up repositories
+        # This is done here because we skip it in chef configuration PLUS there is an issue
+        # where the package manager *may* update the kernel and when it does that the VBoxGuestAdditions
+        # must be rebuilt to reflect the updated kernel. Also, this script will install guest addition
+        # dependencies for rebuilding.
+        machine.vm.provision "configure-repositories", type: "shell" do |s|
+          s.inline = $repos_script
+        end
+
+        # The network.sh file contains network helper functions that are needed on each host to setup the
+        # network interfaces correctly for consistent interface naming.
+        machine.vm.provision "file", source: "../network.sh", destination: "network.sh"
+        # This file will be used to check and update the vbox guest addition
+        machine.vm.provision "file", source: "../vbox_check_guestaddons.sh", destination: "vbox_check_guestaddons.sh"
+        # This file will be used in the event vagrant chokes on ssh. You can then use vbox-ssh 'vmname'
+        machine.vm.provision "file", source: "../chef-bcs.pub", destination: ".ssh/chef-bcs.pub"
+        # This file will be appended to /etc/hosts later...
+        machine.vm.provision "file", source: "../ceph_chef_host_file.env", destination: "ceph_chef_host_file"
+
+        # This creates an export file that gets sourced during the network interface update phase after the VMs have
+        # been created. This is because as of this writing, the fedora plugin seemed to have a bug in the networking.
+        machine.vm.provision "configure-network", type: "shell" do |s|
+          s.privileged = false
+          s.inline = "echo 'export CEPH_ADAPTER_IPS=(#{server['front_end_ip']} #{server['back_end_ip']} #{environment['vagrant']['net_mask'][1]} #{servers[$bootstrap_node]['front_end_ip']} #{servers[$bootstrap_node]['back_end_ip']})' > /home/vagrant/network_setup.sh"
+        end
+
+        # This will add a shared folder but reboot will not recognize it unless it's in fstab
+        machine.vm.synced_folder(ENV['REPO_ROOT'], "/ceph-host") unless ENV['REPO_ROOT'].nil?
+        machine.vm.synced_folder(ENV['BOOTSTRAP_CACHE_DIR'], "/ceph-files") unless ENV['BOOTSTRAP_CACHE_DIR'].nil?
+        machine.vm.synced_folder ".", "/vagrant", disabled: true
+
+        machine.vm.provision "vboxfs-add-user", type: "shell" do |s|
+          s.privileged = true
+          s.inline = "usermod -a -G vboxsf vagrant"
+        end
+
+        machine.vm.provision "vbox-chg-permissions", type: "shell" do |s|
+          s.privileged = true
+          s.inline = "chmod +x vbox_check_guestaddons.sh"
+        end
+
+        # configure proxy servers (do not run as root)
+        machine.vm.provision "configure-proxy-servers", type: "shell" do |s|
+          s.privileged = false
+          s.inline = $proxy_configuration_script
+        end
+
+        machine.vm.provision "add-custom-key", type: "shell" do |s|
+          s.privileged = false
+          s.inline = "cat .ssh/chef-bcs.pub >> .ssh/authorized_keys"
+        end
+
+        machine.vm.provision "append-hosts", type: "shell" do |s|
+          s.privileged = true
+          s.inline = "cat ceph_chef_host_file >> /etc/hosts"
+        end
+
+        machine.vm.provider :virtualbox do |vb|
+          vb.name = "#{server['name']}"
+          vm_name = vb.name
+
+          vb.customize ["modifyvm", :id, "--memory", $memory]
+          vb.customize ["modifyvm", :id, "--vram", $vram]
+          vb.customize ["modifyvm", :id, "--cpus", $cpus]
+          vb.customize ["modifyvm", :id, "--largepages", "on"]
+          vb.customize ["modifyvm", :id, "--nestedpaging", "on"]
+          vb.customize ["modifyvm", :id, "--vtxvpid", "on"]
+          vb.customize ["modifyvm", :id, "--hwvirtex", "on"]
+          vb.customize ["modifyvm", :id, "--ioapic", "on"]
+
+          # this is an unpleasing hack to locate the VM on disk, so that additional disks can be stored with it
+          # this assumes that all VMs will be going into the default VirtualBox folder
+=begin
+          begin
+            default_vm_config_file = %x[VBoxManage list systemproperties | grep 'Default machine folder']
+            default_vm_loc = default_vm_config_file.match(/^Default machine folder:\s+(.+)$/)[1]
+            vm_dir = File.join(default_vm_loc, vm_name)
+          rescue
+            fail "Unable to locate VM #{vm_name} on disk, terminating"
+          end
+=end
+        end # machine.vm.provider
+
+        # Have to put this check in because of the way vagrant processes this Vagrantfile.
+        if i == (servers.length - 1)
+            #$hosts_string += ")"
+            # Check bootstrap name. If for some reason it's not set then set to default value
+            if $bootstrap_name == "export CEPH_CHEF_BOOTSTRAP="
+                $bootstrap_name += "ceph-bootstrap\n"
+                $bootstrap_name += "export CEPH_CHEF_BOOTSTRAP_IP=#{servers[0]['front_end_ip']}"
+            end
+
+            $bootstrap_name += "\n"
+
+            # Now create files to be sourced after this vagrant run is over...
+            File.open("#{$path}/ceph_chef_hosts.env", "w") { |file| file.write($hosts_string) }
+            File.open("#{$path}/ceph_chef_adapters.env", "w") { |file| file.write($adapters_string) }
+            File.open("#{$path}/ceph_chef_bootstrap.env", "w") { |file| file.write($bootstrap_name) }
+        end
+
+      end # config.vm.define
+  end # servers list
+end

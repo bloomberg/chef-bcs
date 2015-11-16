@@ -1,0 +1,8 @@
+{
+  "name": "ntp-server",
+  "json_class": "Chef::Role",
+  "description": "NTP Server Role",
+  "run_list": [
+    "recipe[ntp]"
+  ]
+}

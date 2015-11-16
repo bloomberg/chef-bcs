@@ -1,0 +1,12 @@
+{
+  "name": "ceph-osd-install",
+  "json_class": "Chef::Role",
+  "description": "Ceph Object Storage Device Install",
+  "run_list": [
+    "role[common]",
+    "recipe[chef-bcs::repo]",
+    "recipe[ceph-chef::repo]",
+    "recipe[chef-bcs::ceph-osd]",
+    "recipe[ceph-chef::osd]"
+  ]
+}

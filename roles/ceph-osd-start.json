@@ -1,0 +1,8 @@
+{
+  "name": "ceph-osd-start",
+  "json_class": "Chef::Role",
+  "description": "Ceph Start osd Role",
+  "run_list": [
+    "recipe[ceph-chef::osd_start_all]"
+  ]
+}
