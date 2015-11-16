@@ -8,7 +8,7 @@ Installs and configures Ceph, a distributed network storage and filesystem desig
 
 The current version is focused on installing and configuring Ceph for Ubuntu, CentOS and RHEL.
 
-For documentation on how to use this cookbook, refer to the [USAGE](#USAGE) section.
+For documentation on how to use this cookbook, refer to the [USAGE](#usage) section.
 
 Note: The documentation is a WIP along with a few other features. This repo is actively managed.  
 
