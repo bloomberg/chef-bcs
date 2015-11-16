@@ -6,7 +6,59 @@
 
 Installs and configures Ceph, a distributed network storage and filesystem designed to provide excellent performance, reliability, and scalability.
 
-The current version is focused on installing and configuring Ceph for Ubuntu, CentOS and RHEL.
+The current version is focused on installing and configuring Ceph for CentOS and RHEL.
+
+## Prerequisites
+1. Vagrant - https://www.vagrantup.com/downloads.html  (for development or just spinning up VM version of cluster - not needed for bare metal cluster)
+2. VirtualBox - https://www.virtualbox.org/wiki/Downloads  
+3. Git
+
+## Instructions
+1. Fork/clone repo
+2. Navigate to <whatever path>/ceph-bcs/bootstrap/vms/vagrant directory
+3. Launch Vagrant version to see how it works and to do development and testing by issuing ./VAGRANT_UP command (in /bootstrap/vms/vagrant directory)
+
+## Process (Vagrant)
+After launching ./VAGRANT_UP the process will do the following:
+1. Download CentOS 7.1 box version from Chef Bento upstream
+2. Download required cookbooks including ceph-chef which is the most important
+3. Issue vagrant up that creates 4 VMs (dynamic and part of yaml file in /bootstrap/vms directory)
+4. Spins down VMs and adds network adapters and interfaces, sets up folder sharing and start VMs again
+5. Mounts shared folders (makes it easy to move cookbooks etc to VMs) and sets network and then setups up the bootstrap node ceph-bootstrap as a Chef Server
+6. Sets up chef-client on all other VMs
+7. Adds roles for specific Ceph types such as ceph-mon and ceph-osd etc for the given VM
+8. Updates the environment json file (contains all of your override values of the defaults - different one for vagrant.json, qa.json and/or prod.json) [Only vagrant.json is included in the repo. You will need to create the specific environment json file for your targeted environment]
+9. Creates the Ceph Monitors first (ceph-mon role)
+10. Creates the Ceph OSD nodes (ceph-osd role)
+11. Creates the Ceph RGW node (ceph-radosgw role)
+12. Finishes the cluster simply by enabling the services
+
+### Nodes (Vagrant) - Creates an S3 Ceph Object Store Example Cluster
+These are the default names. You can can call them anything you want. The main thing is to keep them numbered and not named like a pet but instead, named like cattle :)
+ceph-bootstrap - Bootstrap node that acts as the Chef Server, Repo Mirror (in some cases) and Cobbler Server
+ceph-vm1 - VM that has the ceph-mon, ceph-osd and ceph-radosgw roles applied
+ceph-vm2 - VM that has the ceph-mon and ceph-osd roles applied
+ceph-vm3 - VM that has the ceph-mon and ceph-osd roles applied
+
+Note: ceph-bootstrap does NOT contain any ceph functionality
+
+RADOS Gateway (RGW) is only on the first vm, ceph-vm1. It uses civetweb as the embedded web server. You can login to any VM and issue a simple curl command (i.e., curl localhost or curl ceph-vm1.ceph.example.com or curl ceph-vm1). The hosts file is updated on all three VMs to support FQDN and short names.
+
+### Login to VMs (Vagrant)
+*Must* be located in the <whereever repo>/bootstrap/vms/vagrant directory (vagrant keeps a .vagrant directory with node information in it)
+Command(s):
+vagrant ssh ceph-bootstrap
+vagrant ssh ceph-vm1
+vagrant ssh ceph-vm2
+vagrant ssh ceph-vm3
+
+Sidebar: Vagrant uses port forwarding on the first network adapter of a given VM it manages. It then uses ssh port on the localhost to make it simple on itself.
+
+### Helper Scripts (used in development to break tasks into smaller units of work)
+<whereever repo>/bootstrap/common
+<whereever repo>/bootstrap/vms
+<whereever repo>/bootstrap/vms/vagrant
+Note: The only one you must call is VAGRANT_UP which starts the whole process from creation of VMs to running Ceph cluster
 
 For documentation on how to use this cookbook, refer to the [USAGE](#USAGE) section.
 
@@ -30,7 +82,7 @@ Tested as working:
 
 ### Cookbooks
 
-### [IMPORTANT - Main cookbook that everything else is based on]
+### [IMPORTANT - Cookbook that everything else is based on]
 ### https://github.com/ceph/ceph-chef
 
 The ceph cookbook requires the following cookbooks from Chef:
@@ -40,6 +92,18 @@ https://supermarket.chef.io/
 * [apt](https://supermarket.chef.io/cookbooks/apt)
 * [apache2](https://supermarket.chef.io/cookbooks/apache2)
 * [yum](https://supermarket.chef.io/cookbooks/yum)
+* [ceph-chef](https://supermarket.chef.io/cookbooks/ceph-chef)
+* [chef-client](https://supermarket.chef.io/cookbooks/chef-client)
+* [chef-handler](https://supermarket.chef.io/cookbooks/chef-handler)
+* [chef-sugar](https://supermarket.chef.io/cookbooks/chef-sugar)
+* [cron](https://supermarket.chef.io/cookbooks/cron)
+* [firewall](https://supermarket.chef.io/cookbooks/firewall)
+* [logrotate](https://supermarket.chef.io/cookbooks/logrotate)
+* [ntp](https://supermarket.chef.io/cookbooks/ntp)
+* [sudo](https://supermarket.chef.io/cookbooks/sudo)
+* [windows](https://supermarket.chef.io/cookbooks/windows)
+* [yum-epel](https://supermarket.chef.io/cookbooks/yum-epel)
+* [cobblerd](https://supermarket.chef.io/cookbooks/cobblerd)
 
 ## TEMPLATES
 
