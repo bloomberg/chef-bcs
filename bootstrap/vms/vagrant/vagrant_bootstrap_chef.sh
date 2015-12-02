@@ -38,9 +38,14 @@ do_on_node $CEPH_CHEF_BOOTSTRAP "sudo chmod 0644 /etc/opscode/admin.pem /etc/ops
 do_on_node $CEPH_CHEF_BOOTSTRAP "mkdir -p \$HOME/.chef && echo -e \"chef_server_url 'https://$CEPH_CHEF_BOOTSTRAP.$BOOTSTRAP_DOMAIN/organizations/ceph'\\\nvalidation_client_name 'ceph-validator'\\\nvalidation_key '/etc/opscode/ceph-validator.pem'\\\nnode_name 'admin'\\\nclient_key '/etc/opscode/admin.pem'\\\nknife['editor'] = 'vim'\\\ncookbook_path [ \\\"#{ENV['HOME']}/chef-bcs/cookbooks\\\" ]\" > \$HOME/.chef/knife.rb"
 do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE ssl fetch"
 
+if [ -n "$CEPH_CHEF_HTTP_PROXY" ];
+then
+  KNIFE_HTTP_PROXY_PARAM="--bootstrap-proxy \$http_proxy"
+fi
+
 # NOTE: If this command seems to stall then the network needs to be reset. Run ./vagrant_reset_network.sh from the
 # directory this script is located in. This will clean any network issues. Same holds true for other VMs.
-do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE bootstrap -x vagrant -P vagrant --sudo $CEPH_CHEF_BOOTSTRAP_IP"
+do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE bootstrap -x vagrant --bootstrap-no-proxy '$CEPH_CHEF_BOOTSTRAP.$BOOTSTRAP_DOMAIN' $KNIFE_HTTP_PROXY_PARAM -P vagrant --sudo $CEPH_CHEF_BOOTSTRAP_IP"
 
 # install the knife-acl plugin into embedded knife
 do_on_node $CEPH_CHEF_BOOTSTRAP "sudo /opt/opscode/embedded/bin/gem install /ceph-files/knife-acl-0.0.12.gem"

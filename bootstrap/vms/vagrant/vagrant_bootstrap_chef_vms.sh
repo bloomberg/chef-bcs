@@ -24,13 +24,18 @@ source vagrant_base.sh
 
 # This ONLY bootstraps Chef on the working vms and sets up authorization via actor maps.
 
+if [ -n "$CEPH_CHEF_HTTP_PROXY" ];
+then
+  KNIFE_HTTP_PROXY_PARAM="--bootstrap-proxy \$http_proxy"
+fi
+
 for vm in ${ceph_vms[@]}; do
   # TODO: Make OS check here to do for Ubuntu or RHEL based...
   do_on_node $vm "sudo rpm -Uvh \$(find /ceph-files/ -name chef-\*rpm -not -name \*downloaded | tail -1)"
 
   # NOTE: If this command seems to stall then the network needs to be reset. Run ./vagrant_reset_network.sh from the
   # directory this script is located in. This will clean any network issues. Same holds true for other VMs.
-  do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE bootstrap -x vagrant -P vagrant --sudo $vm.$BOOTSTRAP_DOMAIN"
+  do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE bootstrap -x vagrant --bootstrap-no-proxy '$CEPH_CHEF_BOOTSTRAP.$BOOTSTRAP_DOMAIN,$vm.$BOOTSTRAP_DOMAIN' $KNIFE_HTTP_PROXY_PARAM -P vagrant --sudo $vm.$BOOTSTRAP_DOMAIN"
 done
 
 # augment the previously configured nodes with our newly uploaded environments and roles
