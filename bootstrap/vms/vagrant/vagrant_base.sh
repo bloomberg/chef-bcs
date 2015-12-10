@@ -29,6 +29,7 @@ source ../base_environment.sh
 source $REPO_ROOT/bootstrap/vms/ceph_chef_bootstrap.env
 source $REPO_ROOT/bootstrap/vms/ceph_chef_hosts.env
 source $REPO_ROOT/bootstrap/vms/ceph_chef_adapters.env
+source $REPO_ROOT/bootstrap/vms/ceph_chef_proxy.env
 
 source $REPO_ROOT/bootstrap/vms/vbox_functions.sh
 

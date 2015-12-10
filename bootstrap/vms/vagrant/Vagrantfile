@@ -47,6 +47,10 @@ $storage_controller = environment['vagrant']['storage_controller']
 $domain = environment['vagrant']['domain']
 $http_proxy_server = environment['vagrant']['http_proxy']
 $https_proxy_server = environment['vagrant']['https_proxy']
+$ssl_ca_file_path = environment['vagrant']['ssl_ca_file_path']
+$ssl_intermediate_file_path = environment['vagrant']['ssl_intermediate_file_path']
+$ssl_ca_file = File.basename($ssl_ca_file_path)
+$ssl_intermediate_file = File.basename($ssl_intermediate_file_path)
 
 # Some settings for each VM
 $num_of_osds = environment['vagrant']['osd_drives']
@@ -63,19 +67,48 @@ $proxy_configuration_script = <<-EOH
   touch $HOME/proxy_config.sh
 EOH
 
+$proxy_string = ""
+
 unless $http_proxy_server.nil? or $http_proxy_server.empty?
     if $lsb_name == 'centos' or $lsb_name == 'rhel'
+        $bootstrap_node_name = servers.select { |k| k["types"] == ["bootstrap"] }[0]["name"]
         $proxy_configuration_script << <<-EOH
-            echo 'proxy="http://#{$http_proxy_server}";' | sudo tee -a /etc/yum.conf
+            echo 'Defaults    env_keep += "http_proxy https_proxy no_proxy SSL_CERT_FILE"' | sudo tee -a /etc/sudoers
+            echo 'export http_proxy=http://#{$http_proxy_server}' | sudo tee -a /etc/profile
+            echo 'export https_proxy=https://#{$https_proxy_server}' | sudo tee -a /etc/profile
+            echo 'export no_proxy=127.0.0.1,#{$bootstrap_node_name}.#{$domain}' | sudo tee -a /etc/profile
+            echo 'proxy=http://#{$http_proxy_server};' | sudo tee -a /etc/yum.conf
             echo 'export http_proxy=#{$http_proxy_server}' | tee -a $HOME/proxy_config.sh
         EOH
     end
+    $proxy_string = "export CEPH_CHEF_HTTP_PROXY=http://#{$http_proxy_server}\nexport CEPH_CHEF_HTTPS_PROXY=https://#{$https_proxy_server}\n"
+end
+
+# custom SSL CA cert support
+unless $ssl_ca_file.nil? or $ssl_ca_file.empty?
+  if $lsb_name == 'centos' or $lsb_name == 'rhel'
+    $proxy_configuration_script << <<-EOH
+        echo "export SSL_CERT_FILE='/etc/pki/ca-trust/source/anchors/chef-bcs_ca_bundle.crt'" | sudo tee -a /etc/profile
+        sudo cp /tmp/#{$ssl_ca_file} /etc/pki/ca-trust/source/anchors/
+        cat /tmp/#{$ssl_ca_file} | sudo tee /etc/pki/ca-trust/source/anchors/chef-bcs_ca_bundle.crt
+    EOH
+
+    unless $ssl_intermediate_file.nil? or $ssl_intermediate_file.empty?
+      $proxy_configuration_script << <<-EOH
+          sudo cp /tmp/#{$ssl_intermediate_file} /etc/pki/ca-trust/source/anchors/
+          cat /tmp/#{$ssl_intermediate_file} | sudo tee -a /etc/pki/ca-trust/source/anchors/chef-bcs_ca_bundle.crt
+      EOH
+    end
+
+    $proxy_configuration_script << <<-EOH
+        sudo update-ca-trust
+    EOH
+  end
 end
 
 unless $https_proxy_server.nil? or $https_proxy_server.empty?
     if $lsb_name == 'centos' or $lsb_name == 'rhel'
         $proxy_configuration_script << <<-EOH
-            echo 'proxy="https://#{$https_proxy_server}";' | sudo tee -a /etc/yum.conf
             echo 'export https_proxy=#{$https_proxy_server}' | tee -a $HOME/proxy_config.sh
         EOH
     end
@@ -138,6 +171,20 @@ Vagrant.configure("2") do |config|
         puts "<コ:彡 " + machine.vm.hostname + " <コ:彡"
         puts "-" * (machine.vm.hostname.length + 14)
 
+        # copy custom certs to host
+        unless $ssl_ca_file.nil? or $ssl_ca_file.empty?
+          machine.vm.provision "file", source: "#{$path}/../../#{$ssl_ca_file_path}", destination: "/tmp/#{$ssl_ca_file}"
+          unless $ssl_intermediate_file.nil? or $ssl_intermediate_file.empty?
+            machine.vm.provision "file", source: "#{$path}/../../#{$ssl_intermediate_file_path}", destination: "/tmp/#{$ssl_intermediate_file}"
+          end
+        end
+
+        # configure proxy servers (do not run as root)
+        machine.vm.provision "configure-proxy-servers", type: "shell" do |s|
+          s.privileged = false
+          s.inline = $proxy_configuration_script
+        end
+
         # Set up repositories
         # This is done here because we skip it in chef configuration PLUS there is an issue
         # where the package manager *may* update the kernel and when it does that the VBoxGuestAdditions
@@ -177,12 +224,6 @@ Vagrant.configure("2") do |config|
         machine.vm.provision "vbox-chg-permissions", type: "shell" do |s|
           s.privileged = true
           s.inline = "chmod +x vbox_check_guestaddons.sh"
-        end
-
-        # configure proxy servers (do not run as root)
-        machine.vm.provision "configure-proxy-servers", type: "shell" do |s|
-          s.privileged = false
-          s.inline = $proxy_configuration_script
         end
 
         machine.vm.provision "add-custom-key", type: "shell" do |s|
@@ -236,6 +277,7 @@ Vagrant.configure("2") do |config|
             File.open("#{$path}/ceph_chef_hosts.env", "w") { |file| file.write($hosts_string) }
             File.open("#{$path}/ceph_chef_adapters.env", "w") { |file| file.write($adapters_string) }
             File.open("#{$path}/ceph_chef_bootstrap.env", "w") { |file| file.write($bootstrap_name) }
+            File.open("#{$path}/ceph_chef_proxy.env", "w") { |file| file.write($proxy_string) }
         end
 
       end # config.vm.define
