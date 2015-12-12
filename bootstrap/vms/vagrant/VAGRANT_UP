@@ -32,12 +32,12 @@ echo "| |   | '_ \ / _ \ |_ _____|  _ \| |   \___ \ "
 echo "| |___| | | |  __/  _|_____| |_) | |___ ___) |"
 echo " \____|_| |_|\___|_|       |____/ \____|____/ "
 echo
-echo "Chef-BCS Vagrant Bootstrap 0.9.0"
+echo "Chef-BCS Vagrant Bootstrap 0.9.1"
 echo "--------------------------------------------"
 echo "Bootstrapping local Vagrant environment..."
 echo
 
-while getopts bsv opt; do
+while getopts bsvd opt; do
     case $opt in
         b)
             BUILD_VMS_ONLY=1
@@ -48,6 +48,9 @@ while getopts bsv opt; do
             # verbose
         v)
             set -x
+            ;;
+        d)
+            BOOTSTRAP_VAGRANT_DEBUG=1
             ;;
     esac
 done
@@ -72,6 +75,9 @@ export BUILD_VMS_ONLY=${BUILD_VMS_ONLY:-0}
 
 # Bootstrap specific variables
 export BOOTSTRAP_SKIP_VMS=${BOOTSTRAP_SKIP_VMS:-0}
+
+# Vagrant debug flag
+export BOOTSTRAP_VAGRANT_DEBUG=${BOOTSTRAP_VAGRANT_DEBUG:-0}
 
 # Perform preflight checks to validate environment sanity as much as possible.
 echo "Performing preflight environment validation..."

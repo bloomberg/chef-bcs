@@ -67,10 +67,12 @@ if [[ $BOOTSTRAP_OS == "vagrant-centos-7.1" ]]; then
   download_file $BOX http://opscode-vm-bento.s3.amazonaws.com/vagrant/virtualbox/$BOX
 fi
 
+# TODO: Add different OS support
 # Obtain Chef client and server RPMs.
 # knife actor map issue with latest version so reverting back to previous
 CHEF_CLIENT_RPM=chef-12.5.1-1.el7.x86_64.rpm
-CHEF_SERVER_RPM=chef-server-core-12.2.0-1.el7.x86_64.rpm
+CHEF_SERVER_RPM=chef-server-core-12.3.1-1.el7.x86_64.rpm
+# CHEF_SERVER_RPM=chef-server-core-12.2.0-1.el7.x86_64.rpm
 download_file $CHEF_CLIENT_RPM https://opscode-omnibus-packages.s3.amazonaws.com/el/7/x86_64/$CHEF_CLIENT_RPM
 download_file $CHEF_SERVER_RPM https://web-dl.packagecloud.io/chef/stable/packages/el/7/$CHEF_SERVER_RPM
 
@@ -78,7 +80,7 @@ download_file $CHEF_SERVER_RPM https://web-dl.packagecloud.io/chef/stable/packag
 mkdir -p $BOOTSTRAP_CACHE_DIR/cookbooks
 
 # Most important cookbook
-download_file cookbooks/ceph-chef-0.9.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/ceph-chef/versions/0.9.0/download
+download_file cookbooks/ceph-chef-0.9.1.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/ceph-chef/versions/0.9.1/download
 
 download_file cookbooks/chef-client-4.3.1.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/chef-client/versions/4.3.1/download
 download_file cookbooks/windows-1.38.1.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/windows/versions/1.38.1/download
@@ -93,6 +95,9 @@ download_file cookbooks/chef_handler-1.2.0.tar.gz http://cookbooks.opscode.com/a
 download_file cookbooks/firewall-2.1.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/firewall/versions/2.1.0/download
 download_file cookbooks/chef-sugar-3.1.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/chef-sugar/versions/3.1.0/download
 download_file cookbooks/sudo-2.7.2.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/sudo/versions/2.7.2/download
+
+# Gems
+download_file netaddr-1.5.0.gem https://rubygems.org/downloads/netaddr-1.5.0.gem
 
 # Pull knife-acl gem.
 # 0.0.12
