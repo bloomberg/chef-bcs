@@ -41,7 +41,11 @@ function create_vagrant_vms {
     echo "Shutting down and unregistering VMs from VirtualBox..."
     $REPO_ROOT/bootstrap/vms/vagrant/vagrant_clean.sh
     ssh-keygen -b 2048 -t rsa -f $REPO_ROOT/bootstrap/vms/chef-bcs -q -N ""
-    vagrant up
+    if [[ $BOOTSTRAP_VAGRANT_DEBUG -eq 0 ]]; then
+      vagrant up
+    else
+      vagrant up --debug
+    fi
 
     echo
     echo "-----------------"
