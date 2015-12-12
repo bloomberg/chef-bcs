@@ -60,7 +60,7 @@ Sidebar: Vagrant uses port forwarding on the first network adapter of a given VM
 <whereever repo>/bootstrap/vms/vagrant
 Note: The only one you must call is VAGRANT_UP which starts the whole process from creation of VMs to running Ceph cluster
 
-For documentation on how to use this cookbook, refer to the [USAGE](#USAGE) section.
+For documentation on how to use this cookbook, refer to the [USAGE](#usage) section.
 
 Note: The documentation is a WIP along with a few other features. This repo is actively managed.  
 

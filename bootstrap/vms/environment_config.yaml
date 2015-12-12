@@ -16,3 +16,5 @@ vagrant:
     drive_size: 20480
     http_proxy:
     https_proxy:
+    ssl_ca_file_path:
+    ssl_intermediate_file_path:
