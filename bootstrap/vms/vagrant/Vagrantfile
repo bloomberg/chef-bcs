@@ -48,9 +48,13 @@ $domain = environment['vagrant']['domain']
 $http_proxy_server = environment['vagrant']['http_proxy']
 $https_proxy_server = environment['vagrant']['https_proxy']
 $ssl_ca_file_path = environment['vagrant']['ssl_ca_file_path']
-$ssl_intermediate_file_path = environment['vagrant']['ssl_intermediate_file_path']
-$ssl_ca_file = File.basename($ssl_ca_file_path)
-$ssl_intermediate_file = File.basename($ssl_intermediate_file_path)
+$ssl_ca_intermediate_file_path = environment['vagrant']['ssl_ca_intermediate_file_path']
+unless $ssl_ca_file_path.nil? or $ssl_ca_file_path.empty?
+  $ssl_ca_file = File.basename($ssl_ca_file_path)
+end
+unless $ssl_ca_intermediate_file_path.nil? or $ssl_ca_intermediate_file_path.empty?
+  $ssl_ca_intermediate_file = File.basename($ssl_ca_intermediate_file_path)
+end
 
 # Some settings for each VM
 $num_of_osds = environment['vagrant']['osd_drives']
@@ -93,10 +97,10 @@ unless $ssl_ca_file.nil? or $ssl_ca_file.empty?
         cat /tmp/#{$ssl_ca_file} | sudo tee /etc/pki/ca-trust/source/anchors/chef-bcs_ca_bundle.crt
     EOH
 
-    unless $ssl_intermediate_file.nil? or $ssl_intermediate_file.empty?
+    unless $ssl_ssl_ca_intermediate_ediate_file.nil? or $ssl_ca_intermediate_file.empty?
       $proxy_configuration_script << <<-EOH
-          sudo cp /tmp/#{$ssl_intermediate_file} /etc/pki/ca-trust/source/anchors/
-          cat /tmp/#{$ssl_intermediate_file} | sudo tee -a /etc/pki/ca-trust/source/anchors/chef-bcs_ca_bundle.crt
+          sudo cp /tmp/#{$ssl_ca_intermediate_file} /etc/pki/ca-trust/source/anchors/
+          cat /tmp/#{$ssl_ca_intermediate_file} | sudo tee -a /etc/pki/ca-trust/source/anchors/chef-bcs_ca_bundle.crt
       EOH
     end
 
@@ -174,8 +178,8 @@ Vagrant.configure("2") do |config|
         # copy custom certs to host
         unless $ssl_ca_file.nil? or $ssl_ca_file.empty?
           machine.vm.provision "file", source: "#{$path}/../../#{$ssl_ca_file_path}", destination: "/tmp/#{$ssl_ca_file}"
-          unless $ssl_intermediate_file.nil? or $ssl_intermediate_file.empty?
-            machine.vm.provision "file", source: "#{$path}/../../#{$ssl_intermediate_file_path}", destination: "/tmp/#{$ssl_intermediate_file}"
+          unless $ssl_ca_intermediate_file.nil? or $ssl_ca_intermediate_file.empty?
+            machine.vm.provision "file", source: "#{$path}/../../#{$ssl_ca_intermediate_file_path}", destination: "/tmp/#{$ssl_ca_intermediate_file}"
           end
         end
 

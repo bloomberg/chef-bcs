@@ -5,16 +5,21 @@ vagrant:
     storage_controller: SATA Controller
     domain: ceph.example.com
     osd_drives: 3
+    # Netmask and CIDR block suffix
     net_mask:
         - 255.255.255.0
         - 24
     front_end_adapter_ip: 10.0.101.2
-    back_end_adapter_ip: 192.168.101.2 # 172.16.101.2
+    back_end_adapter_ip: 192.168.101.2
     memory: 2560
     cpus: 2
     vram: 16
     drive_size: 20480
+    # If proxies are used then the following syntax is used: http://<proxy node>:<port> <-- could be https
     http_proxy:
     https_proxy:
+    # Important: CA cert directory *must* reside in the root of the project. Put cert(s) in that directory.
+    # Also, you may not use an intermediate CA cert. If so, then leave it blank.
+    # Example: certs/my_firm_cert.pem and certs/my_firm_intermediate_cert.pem
     ssl_ca_file_path:
-    ssl_intermediate_file_path:
+    ssl_ca_intermediate_file_path:
