@@ -44,3 +44,5 @@ bin/*
 # SSH key pair - regenerated on each build
 bootstrap/vms/chef-bcs
 bootstrap/vms/chef-bcs.pub
+certs/*.pem
+certs/*.crt
