@@ -197,8 +197,10 @@ function config_networks {
 
     # Force a pause to allow for spin up
     echo "Updating IPs on network interfaces..."
-    sleep 5
+    sleep 10
     update_network_interfaces
+
+    echo "Completed IP assignments..."
 
     export BOOTSTRAP_LAST_COMPLETE=3
 }
