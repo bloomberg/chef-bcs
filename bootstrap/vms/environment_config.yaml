@@ -1,6 +1,6 @@
 ---
 vagrant:
-    box: bento/centos-7.1
+    box: bento/centos-7.1  # centos/7
     lsb_name: centos
     storage_controller: SATA Controller
     domain: ceph.example.com

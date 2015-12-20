@@ -45,6 +45,7 @@ else
   package 'dnsmasq'
   package 'syslinux'
   package 'pykickstart'
+  package 'xinetd'
 end
 
 package 'cobbler'

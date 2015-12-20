@@ -22,9 +22,12 @@ set -e
 source $REPO_ROOT/bootstrap/vms/vbox_functions.sh
 
 function update_network_interfaces {
-    for vm in ${CEPH_CHEF_HOSTS[@]}; do
-        node_update_network_interfaces $vm
-    done
+  echo ${CEPH_CHEF_HOSTS[@]}
+  echo '---------------------------------------------'
+
+  for vm in ${CEPH_CHEF_HOSTS[@]}; do
+      node_update_network_interfaces $vm
+  done
 }
 
 # This function calls a function by the same name on the given node to update the interfaces
