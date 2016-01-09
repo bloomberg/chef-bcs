@@ -93,6 +93,8 @@ default['chef-bcs']['enabled']['network_tests'] = true
 
 # If radosgw_cache is enabled, default to 20MB max file size
 default['chef-bcs']['radosgw']['cache_max_file_size'] = 20000000
+default['chef-bcs']['radosgw']['port'] = 80
+default['chef-bcs']['restapi']['port'] = 5080
 
 ###########################################
 #
@@ -109,7 +111,9 @@ default['chef-bcs']['ceph']['pgs_per_node'] = 1024
 # Journal size could be 10GB or higher in some cases
 default['chef-bcs']['ceph']['journal_size'] = 10000
 # The 'portion' parameters should add up to ~100 across all pools
-default['chef-bcs']['ceph']['replicas'] = 3
+
+# NOTE: The default pool type is replicated. If you wish to change to Erasure Coding then override the node
+# settings in ceph-radosgw.rb recipe.
 
 # If you are about to make a big change to the ceph cluster
 # setting to true will reduce the load form the resulting

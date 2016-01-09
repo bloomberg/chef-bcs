@@ -1,7 +1,7 @@
 #
 # Author:: Chris Jones <cjones303@bloomberg.net>
 # Cookbook Name:: chef-bcs
-# Recipe:: ceph-rgw
+# Recipe:: ceph-restapi
 #
 # Copyright 2015, Bloomberg Finance L.P.
 #
@@ -22,10 +22,4 @@
 # attribute values are normally a better choice but in this case we want to set the 'rgw dns name' from
 # another node attribute value.
 
-# This recipe sets up ceph rgw configuration information needed by the ceph cookbook recipes
-node.default['ceph']['config']['rgw']['rgw dns name'] = node['chef-bcs']['domain_name']
-
-# An example of using sharding for RGW (small value for testing...). Putting it in the 'global' section.
-node.default['ceph']['config']['global']['rgw override bucket index max shards']=3
-
-node.default['ceph']['radosgw']['port'] = node['chef-bcs']['radosgw']['port']
+node.default['ceph']['restapi']['port'] = node['chef-bcs']['restapi']['port']
