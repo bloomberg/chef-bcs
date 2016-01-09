@@ -25,6 +25,9 @@
 # This recipe sets up ceph rgw configuration information needed by the ceph cookbook recipes
 node.default['ceph']['config']['rgw']['rgw dns name'] = node['chef-bcs']['domain_name']
 
+# An example of using sharding for RGW (small value for testing...). Putting it in the 'global' section.
+node.default['ceph']['config']['global']['rgw override bucket index max shards']=3
+
 # FirewallD rules for radosgw
 # open standard http port to tcp traffic only; insert as first rule
 # 443 is not required since civetweb does not terminate SSL. Use anyone of the following to terminate SSL traffic:
@@ -35,6 +38,9 @@ node.default['ceph']['config']['rgw']['rgw dns name'] = node['chef-bcs']['domain
 firewall_rule 'http' do
   port     80
   protocol :tcp
-  position 1
   command :allow
+end
+
+firewall 'default' do
+  action :save
 end
