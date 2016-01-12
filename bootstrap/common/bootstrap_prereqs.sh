@@ -57,9 +57,9 @@ fi
 
 # Obtain an RHEL 7.1 image to be used for PXE booting in production.
 # To call this, do not call VAGRANT_UP but instead set BOOTSTRAP_OS to 'centos-7.1' before sourcing this file.
-#if [[ $BOOTSTRAP_OS == "centos-7.1" ]]; then
-download_file centos-7-x86_64-minimal.iso http://mirror.umd.edu/centos/7/isos/x86_64/CentOS-7-x86_64-Minimal-1503-01.iso
-#fi
+if [[ $BOOTSTRAP_OS == "centos-7.1" ]]; then
+  download_file centos-7-x86_64-minimal.iso http://mirror.umd.edu/centos/7/isos/x86_64/CentOS-7-x86_64-Minimal-1503-01.iso
+fi
 
 # The vagrant BOOTSTRAP_OS var is set in VAGRANT_UP
 if [[ $BOOTSTRAP_OS == "vagrant-centos-7.1" ]]; then
@@ -80,7 +80,7 @@ download_file $CHEF_SERVER_RPM https://web-dl.packagecloud.io/chef/stable/packag
 mkdir -p $BOOTSTRAP_CACHE_DIR/cookbooks
 
 # Most important cookbook
-download_file cookbooks/ceph-chef-0.9.1.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/ceph-chef/versions/0.9.1/download
+download_file cookbooks/ceph-chef-0.9.3.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/ceph-chef/versions/0.9.3/download
 
 download_file cookbooks/chef-client-4.3.1.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/chef-client/versions/4.3.1/download
 download_file cookbooks/windows-1.38.1.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/windows/versions/1.38.1/download

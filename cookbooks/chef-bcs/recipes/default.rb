@@ -40,6 +40,10 @@ package "iotop"
 # System troubleshooting tools
 package "htop"
 package "sysstat"
+package "vim"
+
+# RHEL version...
+package "python-pip"
 
 # Create an operations user
 if node['chef-bcs']['users']

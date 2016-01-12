@@ -44,6 +44,8 @@ source vagrant_ceph_rgw.sh
 
 source vagrant_ceph_rgw_users.sh
 
+source vagrant_ceph_restapi.sh
+
 source vagrant_ceph_finish.sh
 
 echo "Completed Chef configuration!!"

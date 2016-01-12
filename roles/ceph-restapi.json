@@ -1,0 +1,14 @@
+{
+  "name": "ceph-restapi",
+  "json_class": "Chef::Role",
+  "description": "Ceph RESTful API",
+  "run_list": [
+    "role[common]",
+    "recipe[chef-bcs::repo]",
+    "recipe[ceph-chef::repo]",
+    "recipe[chef-bcs::ceph-restapi]",
+    "recipe[ceph-chef::restapi]",
+    "recipe[ceph-chef::restapi_start]",
+    "recipe[chef-bcs::restapi-firewall]"
+  ]
+}

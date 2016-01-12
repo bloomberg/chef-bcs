@@ -8,6 +8,7 @@
     "recipe[ceph-chef::repo]",
     "recipe[chef-bcs::ceph-radosgw]",
     "recipe[ceph-chef::radosgw]",
-    "recipe[ceph-chef::radosgw_start]"
+    "recipe[ceph-chef::radosgw_start]",
+    "recipe[chef-bcs::radosgw-firewall]"
   ]
 }
