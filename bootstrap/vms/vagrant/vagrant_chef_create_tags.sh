@@ -29,3 +29,6 @@ for vm in ${ceph_vms[@]}; do
 done
 # Just use the first VM as a radosgw node
 do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE tag create ${CEPH_CHEF_HOSTS[@]:1:1}.$BOOTSTRAP_DOMAIN 'ceph-rgw'"
+
+# Just use the first VM as a restapi node
+do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE tag create ${CEPH_CHEF_HOSTS[@]:1:1}.$BOOTSTRAP_DOMAIN 'ceph-restapi'"

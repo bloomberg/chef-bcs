@@ -26,6 +26,7 @@
 node.default['ceph']['config']['rgw']['rgw dns name'] = node['chef-bcs']['domain_name']
 
 # An example of using sharding for RGW (small value for testing...). Putting it in the 'global' section.
-node.default['ceph']['config']['global']['rgw override bucket index max shards']=3
+# Default is 0 - no sharding index. Anything > 0 will initiate index sharding.
+node.default['ceph']['config']['global']['rgw override bucket index max shards']=0
 
 node.default['ceph']['radosgw']['port'] = node['chef-bcs']['radosgw']['port']

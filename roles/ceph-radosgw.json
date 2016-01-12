@@ -9,6 +9,6 @@
     "recipe[chef-bcs::ceph-radosgw]",
     "recipe[ceph-chef::radosgw]",
     "recipe[ceph-chef::radosgw_start]",
-    "recipe[ceph-bcs::radosgw-firewall]"
+    "recipe[chef-bcs::radosgw-firewall]"
   ]
 }
