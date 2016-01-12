@@ -70,7 +70,7 @@ fi
 # TODO: Add different OS support
 # Obtain Chef client and server RPMs.
 # knife actor map issue with latest version so reverting back to previous
-CHEF_CLIENT_RPM=chef-12.5.1-1.el7.x86_64.rpm
+CHEF_CLIENT_RPM=chef-12.6.0-1.el7.x86_64.rpm
 CHEF_SERVER_RPM=chef-server-core-12.3.1-1.el7.x86_64.rpm
 # CHEF_SERVER_RPM=chef-server-core-12.2.0-1.el7.x86_64.rpm
 download_file $CHEF_CLIENT_RPM https://opscode-omnibus-packages.s3.amazonaws.com/el/7/x86_64/$CHEF_CLIENT_RPM

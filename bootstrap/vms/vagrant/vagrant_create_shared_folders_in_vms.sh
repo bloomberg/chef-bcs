@@ -19,28 +19,6 @@
 set -e
 source vagrant_base.sh
 
-#source ../base_environment.sh
-
-#source $REPO_ROOT/bootstrap/vms/ceph_chef_bootstrap.env
-#source $REPO_ROOT/bootstrap/vms/ceph_chef_hosts.env
-#source $REPO_ROOT/bootstrap/vms/ceph_chef_adapters.env
-#source $REPO_ROOT/bootstrap/vms/vbox_functions.sh
-
-#do_on_node() {
-#  echo
-#  echo "Issuing command: vagrant ssh $1 -c ${2}"
-#  echo "----------------------------------------------------------------------------------------"
-#  NODE=$1
-#  shift
-#  COMMAND="${*}"
-#  vagrant ssh $NODE -c "$COMMAND"
-#}
-
-#cd $REPO_ROOT/bootstrap/vms/vagrant
-
-# use Chef Server embedded knife instead of the one in /usr/bin
-#KNIFE=/opt/opscode/embedded/bin/knife
-
 CEPH_CHEF_FILES=ceph-files
 CEPH_CHEF_REPO=ceph-host
 

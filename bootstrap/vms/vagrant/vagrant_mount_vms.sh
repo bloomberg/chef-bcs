@@ -22,28 +22,6 @@
 
 source vagrant_base.sh
 
-#export REPO_ROOT=$(git rev-parse --show-toplevel)
-
-#source $REPO_ROOT/bootstrap/vms/base_environment.sh
-
-#source $REPO_ROOT/bootstrap/vms/vbox_functions.sh
-#source $REPO_ROOT/bootstrap/vms/ceph_chef_hosts.env
-#source $REPO_ROOT/bootstrap/vms/ceph_chef_adapters.env
-#source $REPO_ROOT/bootstrap/vms/ceph_chef_bootstrap.env
-
-#do_on_node() {
-#  echo
-#  echo "Issuing command: vagrant ssh $1 -c ${2}"
-#  echo "----------------------------------------------------------------------------------------"
-#  NODE=$1
-#  shift
-#  COMMAND="${*}"``
-#  vagrant ssh $NODE -c "$COMMAND"
-#}
-
-#cd $REPO_ROOT/bootstrap/vms/vagrant
-
-#for vm in ceph-bootstrap; do
 for vm in ${CEPH_CHEF_HOSTS[@]}; do
     echo "Mounting $vm..."
     do_on_node $vm "sudo mount -t vboxsf -o umask=0022,gid=\$(id -u vagrant),uid=\$(id -u vagrant) ceph-host /ceph-host"

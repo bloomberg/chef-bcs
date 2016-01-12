@@ -4,7 +4,6 @@ vagrant:
     lsb_name: centos
     storage_controller: SATA Controller
     domain: ceph.example.com
-    osd_drives: 3
     # Netmask and CIDR block suffix
     net_mask:
         - 255.255.255.0

@@ -18,6 +18,10 @@
 
 source vagrant_base.sh
 
-do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE node run_list add ${CEPH_CHEF_HOSTS[@]:1:1}.$BOOTSTRAP_DOMAIN 'role[ceph-radosgw]'"
-# Run entire run so that ceph.conf is updated properly. Things installed and running are skipped.
-do_on_node ${CEPH_CHEF_HOSTS[@]:1:1} "sudo chef-client"
+for vm in ${CEPH_RGW_HOSTS[@]}; do
+  do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE node run_list add $vm.$BOOTSTRAP_DOMAIN 'role[ceph-radosgw]'"
+  do_on_node $vm "sudo chef-client -o 'role[ceph-radosgw]'"
+
+  #do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE node run_list add ${CEPH_CHEF_HOSTS[@]:1:1}.$BOOTSTRAP_DOMAIN 'role[ceph-radosgw]'"
+  #do_on_node ${CEPH_CHEF_HOSTS[@]:1:1} "sudo chef-client"
+done
