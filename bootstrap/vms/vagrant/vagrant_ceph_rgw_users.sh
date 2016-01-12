@@ -19,7 +19,4 @@
 source vagrant_base.sh
 
 # Should ONLY run this once. It's here just in case you want to break it out and use it that way.
-do_on_node ${CEPH_CHEF_HOSTS[@]:1:1} "sudo chef-client -o 'recipe[ceph-chef::radosgw_users]'"
-
-# This is here to show that radosgw_users can be broken out if did not want it apart of the ceph-radosgw role. Just uncomment and remove from the role.
-# do_on_node ${CEPH_CHEF_HOSTS[@]:1:1} "sudo chef-client -o 'recipe[ceph-chef::radosgw_users]'"
+do_on_node ${CEPH_RGW_HOSTS[@]:1:1} "sudo chef-client -o 'recipe[ceph-chef::radosgw_users]'"

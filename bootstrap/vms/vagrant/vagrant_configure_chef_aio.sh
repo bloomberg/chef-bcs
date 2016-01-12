@@ -22,6 +22,7 @@ set -e
 # NOTE: This is the Vagrant AIO (All In One) Chef configuration for Ceph script.
 #################
 
+# NOTE: vagrant_base MUST be first! Actually, everything below should be in the order shown for Object Store.
 source vagrant_base.sh
 
 source vagrant_bootstrap_chef.sh

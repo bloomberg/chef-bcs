@@ -15,16 +15,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-set -e
+#set -e
 
-# Clone VMs to make working on Chef portion faster. No need to rebuild. Instead, run vbox_reverse_cloning_vms.sh
-
-export REPO_ROOT=$(git rev-parse --show-toplevel)
-
-source $REPO_ROOT/bootstrap/vms/vbox_functions.sh
-source $REPO_ROOT/bootstrap/vms/ceph_chef_hosts.env
-source $REPO_ROOT/bootstrap/vms/ceph_chef_adapters.env
-source $REPO_ROOT/bootstrap/vms/ceph_chef_bootstrap.env
+source vagrant_base.sh
 
 # IMPORTANT: This file is currently called in vbox_functions in the function called config_networks
 # It's done there for now because it already has the VMs down for network adapters so it made since
@@ -41,18 +34,18 @@ dev=0
 
 echo "Starting drive attachment..."
 
-#for vm in ${CEPH_OSD_HOSTS[@]}; do
-for vm in ceph-vm1 ceph-vm2 ceph-vm3; do
+#for vm in ceph-vm1 ceph-vm2 ceph-vm3; do
+for vm in ${CEPH_OSD_HOSTS[@]}; do
   echo $vm
   #count=0
-  #for i in $(seq 0 $CEPH_OSD_DRIVES); do
-  for i in $(seq 0 3); do
+  #for i in $(seq 0 3); do
+  for i in $(seq 0 $CEPH_OSD_DRIVES); do
     vbox_delete_hdd $vm "$controller" $dev $((3+$i)) "$vm_dir/$vm/$vm-osd-$i.vdi"
     vbox_create_hdd "$vm_dir/$vm/$vm-osd-$i.vdi" 20480
     vbox_add_hdd $vm "$controller" $dev $((3+$i)) "$vm_dir/$vm/$vm-osd-$i.vdi"
     #count=`expr $count + 1`
   done
-  
+
   # Add Journal drive
   vbox_delete_hdd $vm "$controller" $dev 10 "$vm_dir/$vm/$vm-osd-journal.vdi"
   vbox_create_hdd "$vm_dir/$vm/$vm-osd-journal.vdi" 20480

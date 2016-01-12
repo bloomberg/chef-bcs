@@ -3,18 +3,21 @@
   types:
     - bootstrap
   front_end_ip: 10.0.101.10
-  back_end_ip: 192.168.101.10 
+  back_end_ip: 192.168.101.10
 - name: ceph-vm1
   types:
     - mon
     - osd
     - rgw
+    - admin
   front_end_ip: 10.0.101.11
   back_end_ip: 192.168.101.11
 - name: ceph-vm2
   types:
     - mon
     - osd
+    - rgw
+    - admin
   front_end_ip: 10.0.101.12
   back_end_ip: 192.168.101.12
 - name: ceph-vm3

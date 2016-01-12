@@ -57,7 +57,6 @@ unless $ssl_ca_intermediate_file_path.nil? or $ssl_ca_intermediate_file_path.emp
 end
 
 # Some settings for each VM
-$num_of_osds = environment['vagrant']['osd_drives']
 $vm_os = environment['vagrant']['box']
 $memory = ( environment['vagrant']['memory'] or "2560" )
 $cpus = ( environment['vagrant']['cpus'] or "2" )
@@ -72,6 +71,7 @@ $proxy_configuration_script = <<-EOH
 EOH
 
 $proxy_string = ""
+$bootstrap_node_name = ""
 
 unless $http_proxy_server.nil? or $http_proxy_server.empty?
     if $lsb_name == 'centos' or $lsb_name == 'rhel'
@@ -141,17 +141,69 @@ $bootstrap_name = "export CEPH_CHEF_BOOTSTRAP="
 $host_file_entries = ""
 
 $hosts_string = "export CEPH_CHEF_HOSTS=( "
+$osd_hosts_string = "export CEPH_OSD_HOSTS=( "
+$mon_hosts_string = "export CEPH_MON_HOSTS=( "
+$mds_hosts_string = "export CEPH_MDS_HOSTS=( "
+$rgw_hosts_string = "export CEPH_RGW_HOSTS=( "
+$admin_hosts_string = "export CEPH_ADMIN_HOSTS=( "
+
+# admin_hosts also contain the ceph-rest-api node
+
 # Build hosts File
 servers.each do |server|
-    $hosts_string += "#{server['name']} "
-    # Build the entries dynamically to go into hosts file for Chef
-    $host_file_entries += "#{server['front_end_ip']}\t#{server['name']}\t#{server['name']}.#{$domain}\n"
+  $hosts_string += "#{server['name']} "
+  # Build the entries dynamically to go into hosts file for Chef
+  $host_file_entries += "#{server['front_end_ip']}\t#{server['name']}\t#{server['name']}.#{$domain}\n"
 end
 $hosts_string  += ")"
 
+# Build osd hosts File
+$osd_drives = 0
+servers.each do |server|
+  if server['types'].include? 'osd'
+    $osd_hosts_string += "#{server['name']} "
+    $osd_drives += 1
+  end
+end
+$osd_hosts_string  += ")\n"
+$osd_hosts_string += "export CEPH_OSD_DRIVES="
+$osd_hosts_string += "#{$osd_drives}"
+$osd_hosts_string += "\n"
+
+# Build mon hosts File
+servers.each do |server|
+  if server['types'].include? 'mon'
+    $mon_hosts_string += "#{server['name']} "
+  end
+end
+$mon_hosts_string  += ")\n"
+
+# Build mds hosts File
+servers.each do |server|
+  if server['types'].include? 'mds'
+    $mds_hosts_string += "#{server['name']} "
+  end
+end
+$mds_hosts_string  += ")\n"
+
+# Build rgw hosts File
+servers.each do |server|
+  if server['types'].include? 'rgw'
+    $rgw_hosts_string += "#{server['name']} "
+  end
+end
+$rgw_hosts_string  += ")\n"
+
+# Build admin hosts File
+servers.each do |server|
+  if server['types'].include? 'admin'
+    $admin_hosts_string += "#{server['name']} "
+  end
+end
+$admin_hosts_string  += ")\n"
+
 Vagrant.configure("2") do |config|
   config.vm.box = $vm_os
-  File.open("#{$path}/ceph_chef_host_file.env", "w") { |file| file.write($host_file_entries) }
 
   servers.each_with_index do |server, i|
       config.vm.define server['name'] do |machine|
@@ -160,6 +212,8 @@ Vagrant.configure("2") do |config|
         if server['name'].include? 'bootstrap'
             $bootstrap_node = i
             $bootstrap_name += server['name']
+            # Can only be one bootstrap node
+            $bootstrap_node_name = server['name']
         end
 
         # NOTE: May want to add two other exports to this file for external OSD drive mounts for VMs
@@ -257,18 +311,30 @@ Vagrant.configure("2") do |config|
         if i == (servers.length - 1)
             #$hosts_string += ")"
             # Check bootstrap name. If for some reason it's not set then set to default value
+            if $bootstrap_node_name.empty?
+              # Default it if not found earlier
+              $bootstrap_node_name = "ceph-bootstrap"
+            end
+
             if $bootstrap_name == "export CEPH_CHEF_BOOTSTRAP="
-                $bootstrap_name += "ceph-bootstrap\n"
+                $bootstrap_name += $bootstrap_node_name
+                $bootstrap_name += "\n"
                 $bootstrap_name += "export CEPH_CHEF_BOOTSTRAP_IP=#{servers[0]['front_end_ip']}"
             end
 
             $bootstrap_name += "\n"
 
             # Now create files to be sourced after this vagrant run is over...
+            File.open("#{$path}/ceph_chef_host_file.env", "w") { |file| file.write($host_file_entries) }
             File.open("#{$path}/ceph_chef_hosts.env", "w") { |file| file.write($hosts_string) }
             File.open("#{$path}/ceph_chef_adapters.env", "w") { |file| file.write($adapters_string) }
             File.open("#{$path}/ceph_chef_bootstrap.env", "w") { |file| file.write($bootstrap_name) }
             File.open("#{$path}/ceph_chef_proxy.env", "w") { |file| file.write($proxy_string) }
+            File.open("#{$path}/ceph_chef_osd_hosts.env", "w") { |file| file.write($osd_hosts_string) }
+            File.open("#{$path}/ceph_chef_mon_hosts.env", "w") { |file| file.write($mon_hosts_string) }
+            File.open("#{$path}/ceph_chef_mds_hosts.env", "w") { |file| file.write($mds_hosts_string) }
+            File.open("#{$path}/ceph_chef_rgw_hosts.env", "w") { |file| file.write($rgw_hosts_string) }
+            File.open("#{$path}/ceph_chef_admin_hosts.env", "w") { |file| file.write($admin_hosts_string) }
         end
 
       end # config.vm.define

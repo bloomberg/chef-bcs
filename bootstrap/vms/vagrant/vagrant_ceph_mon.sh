@@ -20,19 +20,22 @@ source vagrant_base.sh
 
 # Handles the install, start and key gathering for Ceph Monitor nodes.
 # Step 1
-for vm in ${ceph_vms[@]}; do
+#for vm in ${ceph_vms[@]}; do
+for vm in ${CEPH_MON_HOSTS[@]}; do
   do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE node run_list add $vm.$BOOTSTRAP_DOMAIN 'role[ceph-mon-install]'"
   do_on_node $vm "sudo chef-client"
 done
 
 # Step 2
-for vm in ${ceph_vms[@]}; do
+#for vm in ${ceph_vms[@]}; do
+for vm in ${CEPH_MON_HOSTS[@]}; do
   do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE node run_list add $vm.$BOOTSTRAP_DOMAIN 'role[ceph-mon-start]'"
   do_on_node $vm "sudo chef-client -o 'role[ceph-mon-start]'"
 done
 
 # Step 3
-for vm in ${ceph_vms[@]}; do
+#for vm in ${ceph_vms[@]}; do
+for vm in ${CEPH_MON_HOSTS[@]}; do
   sleep 3 # Let things settle down from the mon-start
   do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE node run_list add $vm.$BOOTSTRAP_DOMAIN 'role[ceph-mon-keys]'"
   do_on_node $vm "sudo chef-client -o 'role[ceph-mon-keys]'"

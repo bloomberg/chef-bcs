@@ -30,11 +30,16 @@ source $REPO_ROOT/bootstrap/vms/ceph_chef_bootstrap.env
 source $REPO_ROOT/bootstrap/vms/ceph_chef_hosts.env
 source $REPO_ROOT/bootstrap/vms/ceph_chef_adapters.env
 source $REPO_ROOT/bootstrap/vms/ceph_chef_proxy.env
+source $REPO_ROOT/bootstrap/vms/ceph_chef_osd_hosts.env
+source $REPO_ROOT/bootstrap/vms/ceph_chef_mon_hosts.env
+source $REPO_ROOT/bootstrap/vms/ceph_chef_rgw_hosts.env
+source $REPO_ROOT/bootstrap/vms/ceph_chef_mds_hosts.env
+source $REPO_ROOT/bootstrap/vms/ceph_chef_admin_hosts.env
 
 source $REPO_ROOT/bootstrap/vms/vbox_functions.sh
 
 FAILED_ENVVAR_CHECK=0
-REQUIRED_VARS=( BOOTSTRAP_CHEF_ENV BOOTSTRAP_DOMAIN REPO_ROOT CEPH_CHEF_BOOTSTRAP CEPH_CHEF_HOSTS )
+REQUIRED_VARS=( BOOTSTRAP_CHEF_ENV BOOTSTRAP_DOMAIN REPO_ROOT CEPH_CHEF_BOOTSTRAP CEPH_CHEF_HOSTS CEPH_OSD_HOSTS CEPH_OSD_DRIVES CEPH_MON_HOSTS CEPH_RGW_HOSTS )
 for ENVVAR in ${REQUIRED_VARS[@]}; do
   if [[ -z ${!ENVVAR} ]]; then
     echo "Environment variable $ENVVAR must be set!" >&2
@@ -75,6 +80,7 @@ KNIFE=/opt/opscode/embedded/bin/knife
 
 # Did not call the remove_array_element from bash_functions.sh here because we don't want to modify the CEPH_CHEF_HOSTS
 delete=($CEPH_CHEF_BOOTSTRAP)
+# All of the VMs for Ceph with the bootstrap node removed.
 ceph_vms=("${CEPH_CHEF_HOSTS[@]/$delete}")
 
 echo
