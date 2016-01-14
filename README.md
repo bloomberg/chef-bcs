@@ -68,7 +68,7 @@ NOTE: These names can be changed in the [wherever root dir]/bootstrap/vms/server
 ***
 **Sidebar:** Vagrant uses port forwarding on the first network adapter of a given VM it manages. It then uses ssh port on the localhost to make it simple on itself.
 
-### Helper Scripts (used in development to break tasks into smaller units of work)
+##### Helper Scripts (used in development to break tasks into smaller units of work)
 
 **<wherever repo>/bootstrap/common**
 
