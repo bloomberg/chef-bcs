@@ -20,6 +20,7 @@ The current version is focused on installing and configuring Ceph for CentOS and
 
 ## Process (Vagrant)
 After launching **./VAGRANT_UP** the process will do the following:
+
 1. Download CentOS 7.1 box version from Chef Bento upstream
 2. Download required cookbooks including ceph-chef which is the most important
 3. Issue vagrant up that creates 4 VMs (dynamic and part of yaml file in /bootstrap/vms directory)
