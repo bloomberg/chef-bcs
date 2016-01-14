@@ -32,7 +32,7 @@ echo "| |   | '_ \ / _ \ |_ _____|  _ \| |   \___ \ "
 echo "| |___| | | |  __/  _|_____| |_) | |___ ___) |"
 echo " \____|_| |_|\___|_|       |____/ \____|____/ "
 echo
-echo "Chef-BCS Vagrant Bootstrap 0.9.3"
+echo "Chef-BCS Vagrant Bootstrap 0.9.5"
 echo "--------------------------------------------"
 echo "Bootstrapping local Vagrant environment..."
 echo

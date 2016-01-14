@@ -15,7 +15,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-#set -e
 
 source vagrant_base.sh
 
@@ -29,21 +28,15 @@ vm_dir=$(vbox_dir)
 # Items that need addressing...
 controller="SATA Controller"
 dev=0
-# port
-#disk_file
 
 echo "Starting drive attachment..."
 
-#for vm in ceph-vm1 ceph-vm2 ceph-vm3; do
 for vm in ${CEPH_OSD_HOSTS[@]}; do
   echo $vm
-  #count=0
-  #for i in $(seq 0 3); do
   for i in $(seq 0 $CEPH_OSD_DRIVES); do
     vbox_delete_hdd $vm "$controller" $dev $((3+$i)) "$vm_dir/$vm/$vm-osd-$i.vdi"
     vbox_create_hdd "$vm_dir/$vm/$vm-osd-$i.vdi" 20480
     vbox_add_hdd $vm "$controller" $dev $((3+$i)) "$vm_dir/$vm/$vm-osd-$i.vdi"
-    #count=`expr $count + 1`
   done
 
   # Add Journal drive
@@ -51,6 +44,3 @@ for vm in ${CEPH_OSD_HOSTS[@]}; do
   vbox_create_hdd "$vm_dir/$vm/$vm-osd-journal.vdi" 20480
   vbox_add_hdd $vm "$controller" $dev 10 "$vm_dir/$vm/$vm-osd-journal.vdi"
 done
-
-#start_vms
-#source $REPO_ROOT/bootstrap/vms/vagrant/vagrant_mount_vms.sh
