@@ -15,11 +15,12 @@ The current version is focused on installing and configuring Ceph for CentOS and
 
 ## Instructions
 1. Fork/clone repo
-2. Navigate to <whatever path>/ceph-bcs/bootstrap/vms/vagrant directory
-3. Launch Vagrant version to see how it works and to do development and testing by issuing ./VAGRANT_UP command (in /bootstrap/vms/vagrant directory)
+2. Navigate to [whatever path]/ceph-bcs/bootstrap/vms/vagrant directory
+3. Launch Vagrant version to see how it works and to do development and testing by issuing **./VAGRANT_UP** command (in /bootstrap/vms/vagrant directory)
 
 ## Process (Vagrant)
-After launching ./VAGRANT_UP the process will do the following:
+After launching **./VAGRANT_UP** the process will do the following:
+
 1. Download CentOS 7.1 box version from Chef Bento upstream
 2. Download required cookbooks including ceph-chef which is the most important
 3. Issue vagrant up that creates 4 VMs (dynamic and part of yaml file in /bootstrap/vms directory)
@@ -27,50 +28,67 @@ After launching ./VAGRANT_UP the process will do the following:
 5. Mounts shared folders (makes it easy to move cookbooks etc to VMs) and sets network and then setups up the bootstrap node ceph-bootstrap as a Chef Server
 6. Sets up chef-client on all other VMs
 7. Adds roles for specific Ceph types such as ceph-mon and ceph-osd etc for the given VM
-8. Updates the environment json file (contains all of your override values of the defaults - different one for vagrant.json, qa.json and/or prod.json) [Only vagrant.json is included in the repo. You will need to create the specific environment json file for your targeted environment]
+8. Updates the environment json file (contains all of your override values of the defaults - different one for vagrant.json, staging.json and/or production.json) [Only vagrant.json is used in this repo. You will need to create the specific environment json file for your targeted environment]
 9. Creates the Ceph Monitors first (ceph-mon role)
 10. Creates the Ceph OSD nodes (ceph-osd role)
 11. Creates the Ceph RGW node (ceph-radosgw role)
-12. Finishes the cluster simply by enabling the services
+12. Creates the Ceph restapi node (ceph-restapi role)
+13. Finishes the cluster simply by enabling the services
 
 ### Nodes (Vagrant) - Creates an S3 Ceph Object Store Example Cluster
 These are the default names. You can can call them anything you want. The main thing is to keep them numbered and not named like a pet but instead, named like cattle :)
-ceph-bootstrap - Bootstrap node that acts as the Chef Server, Repo Mirror (in some cases) and Cobbler Server
-ceph-vm1 - VM that has the ceph-mon, ceph-osd and ceph-radosgw roles applied
-ceph-vm2 - VM that has the ceph-mon and ceph-osd roles applied
-ceph-vm3 - VM that has the ceph-mon and ceph-osd roles applied
 
-Note: ceph-bootstrap does NOT contain any ceph functionality
+**ceph-bootstrap** - Bootstrap node that acts as the Chef Server, Repo Mirror (in some cases) and Cobbler Server
 
-RADOS Gateway (RGW) is only on the first vm, ceph-vm1. It uses civetweb as the embedded web server. You can login to any VM and issue a simple curl command (i.e., curl localhost or curl ceph-vm1.ceph.example.com or curl ceph-vm1). The hosts file is updated on all three VMs to support FQDN and short names.
+**ceph-vm1** - VM that has the ceph-mon, ceph-osd and ceph-radosgw roles applied
+
+**ceph-vm2** - VM that has the ceph-mon and ceph-osd roles applied
+
+**ceph-vm3** - VM that has the ceph-mon and ceph-osd roles applied
+
+**NOTE:** ceph-bootstrap does NOT contain any ceph functionality
+
+RADOS Gateway (RGW) uses **civetweb** as the embedded web server. You can login to any VM and issue a simple curl command (i.e., curl localhost or curl ceph-vm1.ceph.example.com or curl ceph-vm1). The hosts file is updated on all three VMs to support FQDN and short names.
 
 ### Login to VMs (Vagrant)
-*Must* be located in the <whereever repo>/bootstrap/vms/vagrant directory (vagrant keeps a .vagrant directory with node information in it)
+*Must* be located in the [wherever root dir]/bootstrap/vms/vagrant directory (vagrant keeps a .vagrant directory with node information in it)
+
+***
 Command(s):
-vagrant ssh ceph-bootstrap
-vagrant ssh ceph-vm1
-vagrant ssh ceph-vm2
-vagrant ssh ceph-vm3
 
-Sidebar: Vagrant uses port forwarding on the first network adapter of a given VM it manages. It then uses ssh port on the localhost to make it simple on itself.
+**vagrant ssh ceph-bootstrap**
 
-### Helper Scripts (used in development to break tasks into smaller units of work)
-<whereever repo>/bootstrap/common
-<whereever repo>/bootstrap/vms
-<whereever repo>/bootstrap/vms/vagrant
+**vagrant ssh ceph-vm1**
+
+**vagrant ssh ceph-vm2**
+
+**vagrant ssh ceph-vm3**
+
+NOTE: These names can be changed in the [wherever root dir]/bootstrap/vms/servers_config.yaml file.
+***
+**Sidebar:** Vagrant uses port forwarding on the first network adapter of a given VM it manages. It then uses ssh port on the localhost to make it simple on itself.
+
+##### Helper Scripts (used in development to break tasks into smaller units of work)
+
+**<wherever repo>/bootstrap/common**
+
+**<wherever repo>/bootstrap/vms**
+
+**<wherever repo>/bootstrap/vms/vagrant**
+
 Note: The only one you must call is VAGRANT_UP which starts the whole process from creation of VMs to running Ceph cluster
 
-For documentation on how to use this cookbook, refer to the [USAGE](#usage) section.
+For documentation on how to use this cookbook, refer to the **[USAGE](#usage)** section.
 
 Note: The documentation is a WIP along with a few other features. This repo is actively managed.  
 
-[issues](https://github.com/bloomberg/chef-bcs/issues)
+If there are **[issues](https://github.com/bloomberg/chef-bcs/issues)** then please go to the ISSUES section in this repo.
 
 ## REQUIREMENTS
 
 ### Chef
 
-\>= 12+
+\>= 12.5+
 
 ### Platform
 
@@ -82,13 +100,14 @@ Tested as working:
 
 ### Cookbooks
 
-### [IMPORTANT - Cookbook that everything else is based on]
-### https://github.com/ceph/ceph-chef
+##### [IMPORTANT - Cookbook that everything else is based on]
+##### https://github.com/ceph/ceph-chef
 
 The ceph cookbook requires the following cookbooks from Chef:
 
 https://supermarket.chef.io/
 
+* [poise](https://supermarket.chef.io/cookbooks/poise)
 * [apt](https://supermarket.chef.io/cookbooks/apt)
 * [apache2](https://supermarket.chef.io/cookbooks/apache2)
 * [yum](https://supermarket.chef.io/cookbooks/yum)
@@ -167,9 +186,9 @@ Includes:
 
 * ceph-chef::default
 
-### Ceph Rados Gateway
+### Ceph RADOS Gateway
 
-Ceph Rados Gateway nodes should use the ceph-radosgw role
+Ceph RADOS Gateway nodes should use the ceph-radosgw role
 
 ## ATTRIBUTES
 
@@ -203,15 +222,12 @@ Ceph Rados Gateway nodes should use the ceph-radosgw role
 * `node['ceph']['cephfs_mount']` - where the cephfs recipe should mount CephFS
 * `node['ceph']['cephfs_use_fuse']` - whether the cephfs recipe should use the fuse cephfs client. It will default to heuristics based on the kernel version
 
-### Ceph Rados Gateway (RGW)
-### Note: Only supports the newer 'civetweb' version of RGW (not Apache)
+### Ceph RADOS Gateway (RGW)
+##### Note: Only supports the newer 'civetweb' version of RGW (not Apache)
 
 * `node['ceph']['radosgw']['api_fqdn']` - what vhost to configure in the web server
 * `node['ceph']['radosgw']['admin_email']` - the admin email address to configure in the web server
-* `node['ceph']['radosgw']['rgw_addr']` - the web server's bind address, such as *:80
-* `node['ceph']['radosgw']['rgw_port']` - if set, connects to the radosgw fastcgi over this port instead of a unix socket
-* `node['ceph']['radosgw']['webserver_companion']` - defaults to 'apache2', but it can be set to 'civetweb', or to false in order to leave it unconfigured
-* `node['ceph']['radosgw']['path']` - where to save the s3gw.fcgi file
+* `node['ceph']['radosgw']['port']` - if set, connects to the radosgw fastcgi over this port instead of a unix socket
 * `node['ceph']['config']['global']['rgw dns name']` -  the main domain of the radosgw daemon, to calculate the bucket name from a subdomain
 
 ## Resources/Providers
@@ -293,10 +309,10 @@ This cookbook uses Test Kitchen to verify functionality. A Pull Request can't be
 5. `bundle exec kitchen test aio-ubuntu-1204`
 6. `bundle exec kitchen test aio-ubuntu-1404`
 
-## LICENSE AND AUTHORS
+## LICENSE
 * Author: Chris Jones <cjones303@bloomberg.net>
 
-* Copyright 2015, Bloomberg Finance L.P.
+* Copyright 2016, Bloomberg Finance L.P.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

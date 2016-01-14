@@ -1,6 +1,10 @@
 ## Chef roles
-There are two roles that execute in only one pass of the chef-client, ceph-bootstrap and ceph-radosgw. The reason for this is due to the synchronization required with Ceph where the Ceph Monitors need to be functioning properly first for consistent results. Because of the unique nature of Ceph, this method allows for very flexible and clean recipes where some can be reused for normal Ceph maintenance such as stopping and starting clusters in correct order etc.
+### Important to understand
 
-An alternative to this method is to "re-chef" nodes a second or maybe third time so that everything is eventually in sync.
+Roles are used to define what gets installed and what order it gets installed in (simplified way of looking at it).
 
-The wrapper bash script sets a given node's run_list and then calls chef-client on the given node.
+Ceph is different than most products when it comes to installing and setting up the environment since it has so many moving parts that have very specific dependencies and setup precedents.
+
+To accommodate this we use roles and tags (we are looking at using policies for later releases). For example, we apply tags (can be found in the attributes files for each type [mon, osd, rgw, restapi, mds]). The nodes are tagged for whatever role they will play in the Ceph configuration. So, based on those roles we have the given recipes that are executed in a specific order because of dependencies.
+
+The wrapper bash script sets a given node's run_list and then calls chef-client on the given node based on these roles.

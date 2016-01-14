@@ -1,11 +1,15 @@
 ---
+# Example server config file that defines the role that a given node will play in the Ceph cluster.
+# Any of these values can be changed for any given environment.
+# NOTE: The bootstrap role is a build and/or admin node used to hold the Chef Server and launch access to the other nodes
+# in a production like environment. There is no Ceph related data on the bootstrap node.
 - name: ceph-bootstrap
-  types:
+  roles:
     - bootstrap
   front_end_ip: 10.0.101.10
   back_end_ip: 192.168.101.10
 - name: ceph-vm1
-  types:
+  roles:
     - mon
     - osd
     - rgw
@@ -13,7 +17,7 @@
   front_end_ip: 10.0.101.11
   back_end_ip: 192.168.101.11
 - name: ceph-vm2
-  types:
+  roles:
     - mon
     - osd
     - rgw
@@ -21,7 +25,7 @@
   front_end_ip: 10.0.101.12
   back_end_ip: 192.168.101.12
 - name: ceph-vm3
-  types:
+  roles:
     - mon
     - osd
   front_end_ip: 10.0.101.13

@@ -75,7 +75,7 @@ $bootstrap_node_name = ""
 
 unless $http_proxy_server.nil? or $http_proxy_server.empty?
     if $lsb_name == 'centos' or $lsb_name == 'rhel'
-        $bootstrap_node_name = servers.select { |k| k["types"] == ["bootstrap"] }[0]["name"]
+        $bootstrap_node_name = servers.select { |k| k["roles"] == ["bootstrap"] }[0]["name"]
         $proxy_configuration_script << <<-EOH
             echo 'Defaults    env_keep += "http_proxy https_proxy no_proxy SSL_CERT_FILE"' | sudo tee -a /etc/sudoers
             echo 'export http_proxy=http://#{$http_proxy_server}' | sudo tee -a /etc/profile
@@ -121,7 +121,6 @@ end
 # After other yum updates you may also need to re-install the kernel-devel-* so it's in the
 if $lsb_name == 'centos' or $lsb_name == 'rhel'
     $repos_script = <<-EOH
-      #sudo yum update -y
       sudo yum install -y kernel-devel-`uname -r` gcc make perl bzip2
       sudo yum install -y epel-release rsync
     EOH
@@ -134,6 +133,8 @@ end
 at_exit do
   raise $! unless $!.success?
 end
+
+# NOTE: Now build *ALL* of the environment related files that drive the bash scripts and Chef...
 
 # Last value in adapters_string array is net_mask
 $adapters_string = "export CEPH_CHEF_ADAPTERS=( #{environment['vagrant']['front_end_adapter_ip']} #{environment['vagrant']['back_end_adapter_ip']} #{environment['vagrant']['net_mask'][0]} )"
@@ -160,7 +161,7 @@ $hosts_string  += ")"
 # Build osd hosts File
 $osd_drives = 0
 servers.each do |server|
-  if server['types'].include? 'osd'
+  if server['roles'].include? 'osd'
     $osd_hosts_string += "#{server['name']} "
     $osd_drives += 1
   end
@@ -172,7 +173,7 @@ $osd_hosts_string += "\n"
 
 # Build mon hosts File
 servers.each do |server|
-  if server['types'].include? 'mon'
+  if server['roles'].include? 'mon'
     $mon_hosts_string += "#{server['name']} "
   end
 end
@@ -180,7 +181,7 @@ $mon_hosts_string  += ")\n"
 
 # Build mds hosts File
 servers.each do |server|
-  if server['types'].include? 'mds'
+  if server['roles'].include? 'mds'
     $mds_hosts_string += "#{server['name']} "
   end
 end
@@ -188,7 +189,7 @@ $mds_hosts_string  += ")\n"
 
 # Build rgw hosts File
 servers.each do |server|
-  if server['types'].include? 'rgw'
+  if server['roles'].include? 'rgw'
     $rgw_hosts_string += "#{server['name']} "
   end
 end
@@ -196,11 +197,13 @@ $rgw_hosts_string  += ")\n"
 
 # Build admin hosts File
 servers.each do |server|
-  if server['types'].include? 'admin'
+  if server['roles'].include? 'admin'
     $admin_hosts_string += "#{server['name']} "
   end
 end
 $admin_hosts_string  += ")\n"
+
+# End of environment related file builds.
 
 Vagrant.configure("2") do |config|
   config.vm.box = $vm_os

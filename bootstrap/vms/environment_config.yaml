@@ -1,4 +1,8 @@
 ---
+# Example of Vagrant specific environment configuration file. In production there should another one with 'production'
+# as the main type instead of 'vagrant'.
+# NOTE: The values below are Vagrant only. A production like version would only have values reflective of that
+# environment which may or may not contain some of the information below (i.e., http_proxy etc).
 vagrant:
     box: bento/centos-7.1  # centos/7
     lsb_name: centos
