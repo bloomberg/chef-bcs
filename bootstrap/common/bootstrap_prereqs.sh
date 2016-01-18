@@ -80,7 +80,7 @@ download_file $CHEF_SERVER_RPM https://web-dl.packagecloud.io/chef/stable/packag
 mkdir -p $BOOTSTRAP_CACHE_DIR/cookbooks
 
 # Most important cookbook
-download_file cookbooks/ceph-chef-0.9.6.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/ceph-chef/versions/0.9.6/download
+download_file cookbooks/ceph-chef-0.9.7.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/ceph-chef/versions/0.9.7/download
 
 download_file cookbooks/poise-2.5.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/poise/versions/2.5.0/download
 download_file cookbooks/chef-client-4.3.1.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/chef-client/versions/4.3.1/download

@@ -4,7 +4,7 @@ maintainer_email 'cjones303@bloomberg.net'
 license 'Apache v2.0'
 description 'Installs/Configures chef-bcs'
 long_description 'Installs/Configures chef-bcs - requires github.com/ceph/ceph-chef'
-version '0.9.6'
+version '0.9.7'
 
 depends "chef-client", ">= 2.2.2"
 depends "cron", ">= 1.2.2"
