@@ -80,7 +80,7 @@ download_file $CHEF_SERVER_RPM https://web-dl.packagecloud.io/chef/stable/packag
 mkdir -p $BOOTSTRAP_CACHE_DIR/cookbooks
 
 # Most important cookbook
-download_file cookbooks/ceph-chef-0.9.4.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/ceph-chef/versions/0.9.4/download
+download_file cookbooks/ceph-chef-0.9.6.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/ceph-chef/versions/0.9.6/download
 
 download_file cookbooks/poise-2.5.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/poise/versions/2.5.0/download
 download_file cookbooks/chef-client-4.3.1.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/chef-client/versions/4.3.1/download
@@ -98,15 +98,16 @@ download_file cookbooks/chef-sugar-3.1.0.tar.gz http://cookbooks.opscode.com/api
 download_file cookbooks/sudo-2.7.2.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/sudo/versions/2.7.2/download
 
 # Gems
-download_file netaddr-1.5.0.gem https://rubygems.org/downloads/netaddr-1.5.0.gem
+# REQUIRED for ceph-chef cookbook - must be installed before doing 'sudo chef-client' on any node
+download_file gems/netaddr-1.5.0.gem https://rubygems.org/downloads/netaddr-1.5.0.gem
 
 # Pull knife-acl gem.
 # 0.0.12
 download_file knife-acl-0.0.12.gem https://rubygems.global.ssl.fastly.net/gems/knife-acl-0.0.12.gem
 
-# Pull needed gems for fpm.
+# Pull needed gems for fpm
 GEMS=( arr-pm-0.0.10 backports-3.6.4 cabin-0.7.1 childprocess-0.5.6 clamp-0.6.5 ffi-1.9.8 fpm-1.3.3 json-1.8.2 )
-mkdir -p $BOOTSTRAP_CACHE_DIR/fpm_gems
+mkdir -p $BOOTSTRAP_CACHE_DIR/gems
 for GEM in ${GEMS[@]}; do
-  download_file fpm_gems/$GEM.gem https://rubygems.global.ssl.fastly.net/gems/$GEM.gem
+  download_file gems/$GEM.gem https://rubygems.global.ssl.fastly.net/gems/$GEM.gem
 done

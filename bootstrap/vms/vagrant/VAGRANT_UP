@@ -32,7 +32,7 @@ echo "| |   | '_ \ / _ \ |_ _____|  _ \| |   \___ \ "
 echo "| |___| | | |  __/  _|_____| |_) | |___ ___) |"
 echo " \____|_| |_|\___|_|       |____/ \____|____/ "
 echo
-echo "Chef-BCS Vagrant Bootstrap 0.9.5"
+echo "Chef-BCS Vagrant Bootstrap 0.9.6"
 echo "--------------------------------------------"
 echo "Bootstrapping local Vagrant environment..."
 echo
@@ -63,9 +63,6 @@ BOOTSTRAP_CONFIG="$REPO_ROOT/bootstrap/config/bootstrap_config.sh"
 if [[ -f $BOOTSTRAP_CONFIG ]]; then
   source $BOOTSTRAP_CONFIG
 fi
-
-#export CEPH_ARCHITECTURE=converged
-#export CEPH_VM_DIR=${CEPH_VM_DIR:-$HOME/CEPH-VMs}
 
 # Set environment var BOOTSTRAP_OS here for vagrant
 export BOOTSTRAP_OS='vagrant-centos-7'
@@ -129,3 +126,5 @@ echo "You can access the vms using the following:"
 for vm in ${CEPH_CHEF_HOSTS[@]}; do
   echo "  vagrant ssh $vm"
 done
+
+echo "Finished in $SECONDS seconds"
