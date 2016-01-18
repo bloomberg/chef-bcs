@@ -22,6 +22,6 @@ source vagrant_base.sh
 
 do_on_node $CEPH_CHEF_BOOTSTRAP "cd \$HOME && rsync -a /ceph-host/* ./chef-bcs"
 
-do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE cookbook upload ceph -a"
+do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE cookbook upload ceph-chef -a"
 do_on_node $CEPH_CHEF_BOOTSTRAP "cd \$HOME/chef-bcs/roles && $KNIFE role from file *.json"
 do_on_node $CEPH_CHEF_BOOTSTRAP "cd \$HOME/chef-bcs/environments && $KNIFE environment from file $BOOTSTRAP_CHEF_ENV.json"

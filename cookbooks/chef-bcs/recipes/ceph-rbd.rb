@@ -1,7 +1,7 @@
 #
 # Author:: Chris Jones <cjones303@bloomberg.net>
 # Cookbook Name:: chef-bcs
-# Recipe:: ceph-mds
+# Recipe:: ceph-rbd
 #
 # Copyright 2015, Bloomberg Finance L.P.
 #

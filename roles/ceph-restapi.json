@@ -7,6 +7,7 @@
     "recipe[chef-bcs::repo]",
     "recipe[ceph-chef::repo]",
     "recipe[chef-bcs::ceph-restapi]",
+    "recipe[ceph-chef::restapi_install]",
     "recipe[ceph-chef::restapi]",
     "recipe[ceph-chef::restapi_start]",
     "recipe[chef-bcs::restapi-firewall]"

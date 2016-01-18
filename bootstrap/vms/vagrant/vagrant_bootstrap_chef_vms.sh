@@ -36,6 +36,11 @@ for vm in ${ceph_vms[@]}; do
   # NOTE: If this command seems to stall then the network needs to be reset. Run ./vagrant_reset_network.sh from the
   # directory this script is located in. This will clean any network issues. Same holds true for other VMs.
   do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE bootstrap -x vagrant --bootstrap-no-proxy '$CEPH_CHEF_BOOTSTRAP.$BOOTSTRAP_DOMAIN,$vm.$BOOTSTRAP_DOMAIN' $KNIFE_HTTP_PROXY_PARAM -P vagrant --sudo $vm.$BOOTSTRAP_DOMAIN"
+
+  # REQUIRED gems: netaddr-1.5.0 for ceph-chef Cookbook
+  #do_on_node $vm "sudo yum install gem -y"
+  do_on_node $vm "sudo cp /ceph-files/gems/netaddr-1.5.0.gem /tmp/."
+  #do_on_node $vm "sudo gem install --local /tmp/netaddr-1.5.0.gem"
 done
 
 # augment the previously configured nodes with our newly uploaded environments and roles
