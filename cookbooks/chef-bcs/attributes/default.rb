@@ -123,5 +123,12 @@ default['chef-bcs']['ceph']['rebalance'] = false
 
 # Set the default niceness of Ceph OSD and monitor processes
 # May only need to set these if you're running a converged cluster with OpenStack and Ceph on SAME hardware nodes
-# default['chef-bcs']['ceph']['osd_niceness'] = -10
-# default['chef-bcs']['ceph']['mon_niceness'] = -10
+default['chef-bcs']['ceph']['osd_niceness'] = -10
+default['chef-bcs']['ceph']['mon_niceness'] = -10
+
+# NOTE: See environment file for given environment to see other cobbler variables.
+default['chef-bcs']['cobbler']['server'] = nil
+default['chef-bcs']['cobbler']['http_port'] = 80
+default['chef-bcs']['cobbler']['https_port'] = 443
+default['chef-bcs']['cobbler']['xmlrpc_port'] = 25151
+default['chef-bcs']['cobbler']['distro'] = 'CentOS-7-x86_64-Minimal-1511.iso'

@@ -20,21 +20,18 @@
 
 package 'whois'
 
+# Generate web_user_pwd and save. NOTE: This attribute 'web_user_pwd' is not in an environment file!
+ruby_block 'gen-web-user-pwd' do
+  block do
+    node.set['chef-bcs']['cobbler']['web_user_pwd'] = %x[ printf "#{node['chef-bcs']['cobbler']['web_user']}:Cobbler:#{secure_password()}" | md5sum | awk '{print $1}' ]
+    node.save
+  end
+end
+
 # Set to Permissive
 execute "selinux-permissive" do
     command "setenforce 0"
     not_if "getenforce | egrep -qx 'Permissive|Disabled'"
-end
-
-# This is to help as an example of setting variables needed for PXE booting using Cobbler
-ruby_block 'initialize-cobbler-config' do
-    block do
-        make_config('cobbler-web-user', "cobbler")
-        make_config('cobbler-web-password', secure_password)
-        make_config('cobbler-web-password-digest', %x[ printf "#{get_config('cobbler-web-user')}:Cobbler:#{get_config('cobbler-web-password')}" | md5sum | awk '{print $1}' ])
-        make_config('cobbler-root-password', secure_password)
-        make_config('cobbler-root-password-salted', %x[ printf "#{get_config('cobbler-root-password')}" | mkpasswd -s -m sha-512 ])
-    end
 end
 
 case node['platform']
@@ -85,8 +82,8 @@ template '/etc/cobbler/modules.conf' do
     mode 00644
 end
 
-template "/var/lib/cobbler/kickstarts/#{node['chef-bcs']['kickstart']['file']}" do
-    source "#{node['chef-bcs']['kickstart']['file']}.erb"
+template "/var/lib/cobbler/kickstarts/#{node['chef-bcs']['cobbler']['kickstart']['file']}" do
+    source "#{node['chef-bcs']['cobbler']['kickstart']['file']}.erb"
     mode 00644
 end
 
@@ -99,8 +96,17 @@ else
   end
 end
 
-# cookbook_file "/tmp/#{node['chef-bcs']['cobbler']['distro']}.iso" do
-#     source "#{node['chef-bcs']['cobbler']['distro']}.iso"
-#     owner "root"
-#     mode 00444
-# end
+# NOTE: *.iso are blocked from github push/pull via .gitignore so download desired ISO and put it into files directory.
+if ENV.has_key?('BOOTSTRAP_OS')
+  cookbook_file "/tmp/#{node['chef-bcs']['cobbler']['distro']}.iso" do
+    source "#{node['chef-bcs']['cobbler']['distro']}.iso"
+    owner 'root'
+    group 'root'
+    mode 00444
+  end
+end
+
+remote_directory "/var/lib/cobbler/loaders/" do
+  source "loaders"
+  action :create_if_missing
+end

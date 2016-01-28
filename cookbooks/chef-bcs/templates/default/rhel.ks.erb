@@ -10,7 +10,7 @@ cdrom
 # Use text mode install
 text
 # Firewall configuration
-firewall --disabled
+firewall --enabled
 firstboot --disable
 ignoredisk --only-use=sda
 # Keyboard layouts
@@ -25,15 +25,15 @@ network  --bootproto=dhcp
 network  --hostname=localhost.localdomain
 unsupported_hardware
 # Root password
-rootpw --plaintext <%= node['chef-bcs']['kickstart']['rootpwd'] %>
+rootpw --plaintext <%= node['chef-bcs']['cobbler']['kickstart']['rootpwd'] %>
 # SELinux configuration
 selinux --permissive
 # Do not configure the X Window System
 skipx
 # System timezone
 timezone UTC --isUtc
-<% if node['chef-bcs']['kickstart']['user']['name'] %>
-user --name=<%= node['chef-bcs']['kickstart']['user']['name'] %> --password=<%= node['chef-bcs']['kickstart']['user']['passwd'] %>
+<% if node['chef-bcs']['cobbler']['kickstart']['user']['name'] %>
+user --name=<%= node['chef-bcs']['cobbler']['kickstart']['user']['name'] %> --password=<%= node['chef-bcs']['cobbler']['kickstart']['user']['passwd'] %>
 <% end -%>
 # System bootloader configuration
 bootloader --append=" crashkernel=auto" --location=mbr --boot-drive=sda
@@ -45,8 +45,8 @@ clearpart --all --initlabel
 
 %post
 # sudo
-<% if node['chef-bcs']['kickstart']['sudoer'] %>
-echo "%<%= node['chef-bcs']['kickstart']['sudoer'] %> ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/<%= node['chef-bcs']['kickstart']['sudoer'] %>
+<% if node['chef-bcs']['cobbler']['kickstart']['sudoer'] %>
+echo "%<%= node['chef-bcs']['cobbler']['kickstart']['sudoer'] %> ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/<%= node['chef-bcs']['cobbler']['kickstart']['sudoer'] %>
 sed -i "s/^[^#].*requiretty/#Defaults requiretty/" /etc/sudoers
 <% end %>
 %end
@@ -64,6 +64,7 @@ openssh-clients
 perl
 sudo
 wget
+curl
 -aic94xx-firmware
 -atmel-firmware
 -b43-openfwwf

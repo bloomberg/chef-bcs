@@ -18,6 +18,9 @@
 # The script is just here to reset the network interfaces for the cluster if needed
 set -e
 
+# It's safe to put this here since this script is for vagrant only
+export BOOTSTRAP_CHEF_ENV={$BOOSTRAP_CHEF_ENV:-"vagrant"}
+
 # Important
 source vagrant_base.sh
 

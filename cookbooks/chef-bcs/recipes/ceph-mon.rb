@@ -25,8 +25,8 @@
 
 # Example of how to customize ceph.conf for the 'mon' section
 node.default['ceph']['config']['mon']['mon pg warn max per osd']=0
-node.default['ceph']['config']['mon']['mon osd full ratio']=0.85
-node.default['ceph']['config']['mon']['mon osd nearfull ratio']=0.70
+node.default['ceph']['config']['mon']['mon osd full ratio']=0.90
+node.default['ceph']['config']['mon']['mon osd nearfull ratio']=0.80
 
 # Another (better) example is in the 'roles' section in ceph-mon-install. It contains role override attributes of the
 # same settings as above.

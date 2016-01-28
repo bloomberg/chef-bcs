@@ -26,25 +26,26 @@ bash 'import-distro-distribution-cobbler' do
         mount -o loop /tmp/#{node['chef-bcs']['cobbler']['distro']}.iso /mnt
         cobbler import --name=#{node['chef-bcs']['cobbler']['os_name']} --path=/mnt --breed=#{node['chef-bcs']['cobbler']['breed']} --arch=#{node['chef-bcs']['cobbler']['os_arch']}
         umount /mnt
-        cobbler sync
     EOH
     not_if "cobbler distro list | grep #{node['chef-bcs']['cobbler']['os_name']}"
 end
 
-bash 'import-chef-bcs-profile-cobbler' do
+bash 'profile-add-cobbler' do
     user 'root'
     code <<-EOH
-        cobbler profile add --name=ceph_chef_host --distro=#{node['chef-bcs']['cobbler']['os_name']}-#{node['chef-bcs']['cobbler']['os_arch']} --kickstart=/var/lib/cobbler/kickstarts/#{node['chef-bcs']['kickstart']['file']} --kopts="interface=auto"
-        cobbler sync
+        cobbler profile add --name=ceph_hosts --distro=#{node['chef-bcs']['cobbler']['os_name']}-#{node['chef-bcs']['cobbler']['os_arch']} --kickstart=/var/lib/cobbler/kickstarts/#{node['chef-bcs']['cobbler']['kickstart']['file']} --kopts="interface=auto"
     EOH
-    not_if "cobbler profile list | grep ceph_chef_host"
+    not_if "cobbler profile list | grep ceph_hosts"
 end
 
 bash 'add-system-to-cobbler' do
     user 'root'
     code <<-EOH
-        cobbler system add --name=ceph_nodes --profile=ceph_chef_host
-        cobbler sync
+        cobbler system add --name=ceph_nodes --profile=ceph_hosts
     EOH
     # not_if "cobbler system list | grep ceph_nodes"
+end
+
+execute 'cobbler-sync' do
+  command lazy{ "cobbler sync" }
 end

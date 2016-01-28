@@ -1,0 +1,17 @@
+{
+    "name": "ceph-bootstrap",
+    "default_attributes": {
+    },
+    "json_class": "Chef::Role",
+    "run_list": [
+      "role[common]",
+      "recipe[chef-bcs::cobbler-install]",
+      "recipe[chef-bcs::cobbler-firewall]",
+      "recipe[chef-bcs::cobbler-start]",
+      "recipe[chef-bcs::cobbler-sync]"
+    ],
+    "description": "Cobbler Server for bootstrapping the cluster",
+    "chef_type": "role",
+    "override_attributes": {
+    }
+}

@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 
-# Exit immediately if anything goes wrong, instead of making things worse.
+# Exit immediately if anything goes wrong!
 set -e
 
 # Check for required environment variables and exit if not all are set.
@@ -30,7 +30,7 @@ done
 if [[ $FAILED_ENVVAR_CHECK != 0 ]]; then exit 1; fi
 
 # Create directory for download cache.
-mkdir -p $BOOTSTRAP_CACHE_DIR
+mkdir -p $BOOTSTRAP_CACHE_DIR/cobbler/{isos,loaders}
 
 # download_file wraps the usual behavior of curling a remote URL to a local file
 download_file() {
@@ -48,21 +48,29 @@ download_file() {
 # This uses ROM-o-Matic to generate a custom PXE boot ROM.
 # (doesn't use the function because of the unique curl command)
 ROM=gpxe-1.0.1-80861004.rom
-if [[ ! -f $BOOTSTRAP_CACHE_DIR/$ROM && ! -f $BOOTSTRAP_CACHE_DIR/${ROM}_downloaded ]]; then
+if [[ ! -f $BOOTSTRAP_CACHE_DIR/cobbler/$ROM && ! -f $BOOTSTRAP_CACHE_DIR/cobbler/${ROM}_downloaded ]]; then
   echo $ROM
-  rm -f $BOOTSTRAP_CACHE_DIR/$ROM
-  curl -L --progress-bar -o $BOOTSTRAP_CACHE_DIR/$ROM "http://rom-o-matic.net/gpxe/gpxe-1.0.1/contrib/rom-o-matic/build.php" -H "Origin: http://rom-o-matic.net" -H "Host: rom-o-matic.net" -H "Content-Type: application/x-www-form-urlencoded" -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" -H "Referer: http://rom-o-matic.net/gpxe/gpxe-1.0.1/contrib/rom-o-matic/build.php" -H "Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.3" --data "version=1.0.1&use_flags=1&ofmt=ROM+binary+%28flashable%29+image+%28.rom%29&nic=all-drivers&pci_vendor_code=8086&pci_device_code=1004&PRODUCT_NAME=&PRODUCT_SHORT_NAME=gPXE&CONSOLE_PCBIOS=on&BANNER_TIMEOUT=20&NET_PROTO_IPV4=on&COMCONSOLE=0x3F8&COMSPEED=115200&COMDATA=8&COMPARITY=0&COMSTOP=1&DOWNLOAD_PROTO_TFTP=on&DNS_RESOLVER=on&NMB_RESOLVER=off&IMAGE_ELF=on&IMAGE_NBI=on&IMAGE_MULTIBOOT=on&IMAGE_PXE=on&IMAGE_SCRIPT=on&IMAGE_BZIMAGE=on&IMAGE_COMBOOT=on&AUTOBOOT_CMD=on&NVO_CMD=on&CONFIG_CMD=on&IFMGMT_CMD=on&IWMGMT_CMD=on&ROUTE_CMD=on&IMAGE_CMD=on&DHCP_CMD=on&SANBOOT_CMD=on&LOGIN_CMD=on&embedded_script=&A=Get+Image"
-  touch $BOOTSTRAP_CACHE_DIR/${ROM}_downloaded
+  rm -f $BOOTSTRAP_CACHE_DIR/cobbler/$ROM
+  curl -L --progress-bar -o $BOOTSTRAP_CACHE_DIR/cobbler/$ROM "http://rom-o-matic.net/gpxe/gpxe-1.0.1/contrib/rom-o-matic/build.php" -H "Origin: http://rom-o-matic.net" -H "Host: rom-o-matic.net" -H "Content-Type: application/x-www-form-urlencoded" -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" -H "Referer: http://rom-o-matic.net/gpxe/gpxe-1.0.1/contrib/rom-o-matic/build.php" -H "Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.3" --data "version=1.0.1&use_flags=1&ofmt=ROM+binary+%28flashable%29+image+%28.rom%29&nic=all-drivers&pci_vendor_code=8086&pci_device_code=1004&PRODUCT_NAME=&PRODUCT_SHORT_NAME=gPXE&CONSOLE_PCBIOS=on&BANNER_TIMEOUT=20&NET_PROTO_IPV4=on&COMCONSOLE=0x3F8&COMSPEED=115200&COMDATA=8&COMPARITY=0&COMSTOP=1&DOWNLOAD_PROTO_TFTP=on&DNS_RESOLVER=on&NMB_RESOLVER=off&IMAGE_ELF=on&IMAGE_NBI=on&IMAGE_MULTIBOOT=on&IMAGE_PXE=on&IMAGE_SCRIPT=on&IMAGE_BZIMAGE=on&IMAGE_COMBOOT=on&AUTOBOOT_CMD=on&NVO_CMD=on&CONFIG_CMD=on&IFMGMT_CMD=on&IWMGMT_CMD=on&ROUTE_CMD=on&IMAGE_CMD=on&DHCP_CMD=on&SANBOOT_CMD=on&LOGIN_CMD=on&embedded_script=&A=Get+Image"
+  touch $BOOTSTRAP_CACHE_DIR/cobbler/${ROM}_downloaded
 fi
 
-# Obtain an RHEL 7.1 image to be used for PXE booting in production.
-# To call this, do not call VAGRANT_UP but instead set BOOTSTRAP_OS to 'centos-7.1' before sourcing this file.
-if [[ $BOOTSTRAP_OS == "centos-7.1" ]]; then
-  download_file centos-7-x86_64-minimal.iso http://mirror.umd.edu/centos/7/isos/x86_64/CentOS-7-x86_64-Minimal-1503-01.iso
+# Obtain an RHEL 7.2 image to be used for PXE booting in production.
+# To call this, do not call VAGRANT_UP without setting env var BOOTSTRAP_OS to 'centos-7.1' first.
+if [[ $COBBLER_BOOTSTRAP_OS == "centos-7.1" ]]; then
+  # Get 7.2 instead of 7.1
+  download_file cobbler/isos/centos-7-x86_64-minimal.iso http://mirror.umd.edu/centos/7.2.1511/isos/x86_64/CentOS-7-x86_64-Minimal-1511.iso
+fi
+
+if [[ ! -z $COBBLER_BOOTSTRAP_OS ]]; then
+  download_file cobbler/loaders/pxelinux.0 http://cobbler.github.io/loaders/pxelinux.0-3.86
+  download_file cobbler/loaders/menu.c32 http://cobbler.github.io/loaders/menu.c32-3.86
+  download_file cobbler/loaders/grub-x86.efi http://cobbler.github.io/loaders/grub-0.97-x86.efi
+  download_file cobbler/loaders/grub-x86_64.efi http://cobbler.github.io/loaders/grub-0.97-x86_64.efi
 fi
 
 # The vagrant BOOTSTRAP_OS var is set in VAGRANT_UP
-if [[ $BOOTSTRAP_OS == "vagrant-centos-7.1" ]]; then
+if [[ $BOOTSTRAP_OS == "centos-7.1" && $BOOTSTRAP_TYPE == "vagrant" ]]; then
   BOX=opscode_centos-7.1_chef-provisionerless.box
   download_file $BOX http://opscode-vm-bento.s3.amazonaws.com/vagrant/virtualbox/$BOX
 fi
@@ -77,10 +85,10 @@ download_file $CHEF_CLIENT_RPM https://opscode-omnibus-packages.s3.amazonaws.com
 download_file $CHEF_SERVER_RPM https://web-dl.packagecloud.io/chef/stable/packages/el/7/$CHEF_SERVER_RPM
 
 # Pull needed *cookbooks* from the Chef Supermarket.
-mkdir -p $BOOTSTRAP_CACHE_DIR/cookbooks
+mkdir -p $BOOTSTRAP_CACHE_DIR/{cookbooks,gems}
 
 # Most important cookbook
-download_file cookbooks/ceph-chef-0.9.7.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/ceph-chef/versions/0.9.7/download
+#download_file cookbooks/ceph-chef-0.9.7.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/ceph-chef/versions/0.9.7/download
 
 download_file cookbooks/poise-2.5.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/poise/versions/2.5.0/download
 download_file cookbooks/chef-client-4.3.1.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/chef-client/versions/4.3.1/download

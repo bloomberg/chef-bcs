@@ -26,12 +26,12 @@ allow_duplicate_macs: 0
 allow_dynamic_settings: 0
 
 # by default, installs are *not* set to send installation logs to the cobbler
-# # # server.  With 'anamon_enabled', kickstart templates may use the pre_anamon
-# # # snippet to allow remote live monitoring of their installations from the
-# # # cobbler server.  Installation logs will be stored under
-# # # /var/log/cobbler/anamon/.  NOTE: This does allow an xmlrpc call to send logs
-# # # to this directory, without authentication, so enable only if you are
-# # # ok with this limitation.
+# server.  With 'anamon_enabled', automatic installation templates may use
+# the pre_anamon snippet to allow remote live monitoring of their installations
+# from the cobbler server.  Installation logs will be stored under
+# /var/log/cobbler/anamon/.  NOTE: This does allow an xmlrpc call to send logs
+# to this directory, without authentication, so enable only if you are
+# ok with this limitation.
 anamon_enabled: 0
 
 # If using authn_pam in the modules.conf, this can be configured
@@ -41,6 +41,15 @@ authn_pam_service: "login"
 
 # How long the authentication token is valid for, in seconds
 auth_token_expiration: 3600
+
+# this is a directory of files that cobbler uses to make
+# templating easier.  See the Wiki for more information.  Changing
+# this directory should not be required.
+autoinstall_snippets_dir: /var/lib/cobbler/snippets
+autoinstall_templates_dir: /var/lib/cobbler/templates
+
+# location of templates used for boot loader config generation
+boot_loader_conf_template_dir: "/etc/cobbler/boot_loader_conf"
 
 # Email out a report when cobbler finishes installing a system.
 # enabled: set to 1 to turn this feature on
@@ -66,6 +75,7 @@ cheetah_import_whitelist:
  - "random"
  - "re"
  - "time"
+ - "netaddr"
 
 # Default createrepo_flags to use for new repositories. If you have
 # createrepo >= 0.4.10, consider "-c cache --update -C", which can
@@ -298,6 +308,19 @@ pxe_template_dir: "/etc/cobbler/pxe"
 # Path to where system consoles are
 consoles: "/var/consoles"
 
+# if this setting is set to 1, cobbler systems that pxe boot
+# will request at the end of their installation to toggle the
+# --netboot-enabled record in the cobbler system record.  This eliminates
+# the potential for a PXE boot loop if the system is set to PXE
+# first in it's BIOS order.  Enable this if PXE is first in your BIOS
+# boot order, otherwise leave this disabled.   See the manpage
+# for --netboot-enabled.
+#pxe_just_once: 1
+
+# if this setting is set to one, triggers will be executed when systems
+# will request to toggle the --netboot-enabled record at the end of their installation.
+#nopxe_with_triggers: 1
+
 # Are you using a Red Hat management platform in addition to Cobbler?
 # Cobbler can help you register to it.  Choose one of the following:
 #   "off"    : I'm not using Red Hat Network, Satellite, or Spacewalk
@@ -313,13 +336,13 @@ redhat_management_type: <%= node['chef-bcs']['cobbler']['redhat_management_type'
 # within Cobbler Web and Cobbler XMLRPC.  Using RHN Hosted for this is not supported.
 # This feature can be used even if redhat_management_type is off, you just have
 # to have authn_spacewalk selected in modules.conf
-redhat_management_server: "xmlrpc.rhn.redhat.com"
+redhat_management_server: <%= node['chef-bcs']['cobbler']['redhat_management_server'] %>
 
 # specify the default Red Hat authorization key to use to register
 # system.  If left blank, no registration will be attempted.  Similarly
 # you can set the --redhat-management-key to blank on any system to
 # keep it from trying to register.
-redhat_management_key: ""
+redhat_management_key: <%= node['chef-bcs']['cobbler']['redhat_management_key'] %>
 
 # if using authn_spacewalk in modules.conf to let cobbler authenticate
 # against Satellite/Spacewalk's auth system, by default it will not allow per user
@@ -374,6 +397,8 @@ run_install_triggers: 1
 # but git is the recommend SCM for use with this feature.
 scm_track_enabled: 0
 scm_track_mode: "git"
+scm_track_author: "cobbler <cobbler@localhost>"
+scm_push_script: "/bin/true"
 
 # this is the address of the cobbler server -- as it is used
 # by systems during the install process, it must be the address
@@ -413,12 +438,30 @@ virt_auto_boot: 1
 # cobbler's web directory.  Don't change this setting -- see the
 # Wiki on "relocating your cobbler install" if your /var partition
 # is not large enough.
+# @@webroot@@/cobbler
 webdir: /var/www/cobbler
+
+# directories that will not get wiped and recreated on a 'cobbler sync'
+webdir_whitelist:
+  - aux
+  - web
+  - webui
+  - localmirror
+  - repo_mirror
+  - distro_mirror
+  - images
+  - links
+  - pub
+  - repo_profile
+  - repo_system
+  - svc
+  - rendered
+  - .link_cache
 
 # cobbler's public XMLRPC listens on this port.  Change this only
 # if absolutely needed, as you'll have to start supplying a new
 # port option to koan if it is not the default.
-xmlrpc_port: 25151
+xmlrpc_port: <%= node['chef-bcs']['cobbler']['xmlrpc_port'] %>
 
 # "cobbler repo add" commands set cobbler up with repository
 # information that can be used during kickstart and is automatically
@@ -442,7 +485,7 @@ yum_distro_priority: 1
 yumdownloader_flags: "--resolve"
 
 # sort and indent JSON output to make it more human-readable
-serializer_pretty_json: 0
+serializer_pretty_json: 1
 
 # replication rsync options for distros, kickstarts, snippets set to override default value of "-avzH"
 replicate_rsync_options: "-avzH"
@@ -460,3 +503,6 @@ proxy_url_ext: ""
 # internal proxy - used by systems to reach cobbler for kickstarts
 # eg: proxy_url_int: "http://10.0.0.1:8080"
 proxy_url_int: ""
+
+# include other configuration snippets
+include: [ "/etc/cobbler/settings.d/*.settings" ]

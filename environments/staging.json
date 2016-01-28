@@ -16,20 +16,22 @@
           "passwordless": "true"
         }
       },
-      "kickstart": {
-        "rootpw": "vagrant",
-        "file": "rhel.ks",
-        "sudoer": "vagrant",
-        "user": { "name": "vagrant", "passwd": "vagrant" }
-      },
       "cobbler": {
         "interface": "enp0s3",
         "pxe_interface": "enp0s8",
         "server": "10.0.101.10",
         "dhcp_subnet": "10.0.101.0",
         "dhcp_range": "10.0.101.11 10.0.101.250",
-        "port": 80,
-        "distro": "centos-7-x86_64-minimal",
+        "kickstart": {
+          "rootpw": "vagrant",
+          "file": "rhel.ks",
+          "sudoer": "vagrant",
+          "user": { "name": "vagrant", "passwd": "vagrant" }
+        },
+        "http_port": 80,
+        "https_port": 443,
+        "xmlrpc_port": 25151,
+        "distro": "CentOS-7-x86_64-Minimal-1511.iso",
         "os_name": "centos-7",
         "os_version": "7.1",
         "os_arch": "x86_64",
@@ -40,19 +42,19 @@
         "pgp_auto_adjust" : true,
         "osd": {
             "devices": [
-                { "device": "/dev/sdb", "type": "hdd", "journal": "/dev/sdf" },
-                { "device": "/dev/sdc", "type": "hdd", "journal": "/dev/sdf" },
-                { "device": "/dev/sdd", "type": "hdd", "journal": "/dev/sdf" },
-                { "device": "/dev/sde", "type": "hdd", "journal": "/dev/sdf" }
+                { "data": "/dev/sdb", "type": "hdd", "journal": "/dev/sdf" },
+                { "data": "/dev/sdc", "type": "hdd", "journal": "/dev/sdf" },
+                { "data": "/dev/sdd", "type": "hdd", "journal": "/dev/sdf" },
+                { "data": "/dev/sde", "type": "hdd", "journal": "/dev/sdf" }
             ],
             "remove": {
               "devices": [
-                { "node": "ceph-vm1", "osd": 0, "zap": true, "partition": 1, "device": "/dev/sdb", "journal": "/dev/sdf" }
+                { "node": "ceph-vm1", "osd": 0, "zap": true, "partition": 1, "data": "/dev/sdb", "journal": "/dev/sdf" }
               ]
             },
             "add": {
               "devices": [
-                { "node": "ceph-vm3", "device": "/dev/sde", "type": "hdd", "journal": "/dev/sde" }
+                { "node": "ceph-vm3", "data": "/dev/sde", "type": "hdd", "journal": "/dev/sde" }
               ]
             }
         },

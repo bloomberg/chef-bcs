@@ -41,23 +41,4 @@ else
   end
 end
 
-execute 'get cobbler signatures' do
-  command "cobbler signature update"
-  ignore_failure true
-end
-
-execute 'get_loaders' do
-  command "cobbler get_loaders"
-  ignore_failure true
-end
-
-case node['platform']
-when 'ubuntu'
-  service 'cobbler' do
-      action [:restart]
-  end
-else
-  service 'cobblerd' do
-      action [:restart]
-  end
-end
+# No need to get_loaders or do signature update

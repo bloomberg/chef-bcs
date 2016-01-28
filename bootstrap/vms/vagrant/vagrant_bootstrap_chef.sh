@@ -62,3 +62,13 @@ do_on_node $CEPH_CHEF_BOOTSTRAP "cd \$HOME/chef-bcs/cookbooks && rm -f *.tar.gz"
 do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE cookbook upload -a"
 do_on_node $CEPH_CHEF_BOOTSTRAP "cd \$HOME/chef-bcs/roles && $KNIFE role from file *.json"
 do_on_node $CEPH_CHEF_BOOTSTRAP "cd \$HOME/chef-bcs/environments && $KNIFE environment from file $BOOTSTRAP_CHEF_ENV.json"
+
+# Setup ISO for bootstrapping now that chef-bcs cookbook has been copied to right place.
+if [[ ! -z $BOOTSTRAP_OS ]]; then
+  do_on_node $CEPH_CHEF_BOOTSTRAP "sudo cp /ceph-files/cobbler/isos/*.iso \$HOME/chef-bcs/cookbooks/chef-bcs/files/default"
+fi
+
+if [[ ! -z $COBBLER_BOOTSTRAP_OS ]]; then
+  do_on_node $CEPH_CHEF_BOOTSTRAP "sudo mkdir -p \$HOME/chef-bcs/cookbooks/chef-bcs/files/default/loaders"
+  do_on_node $CEPH_CHEF_BOOTSTRAP "sudo cp /ceph-files/cobbler/loaders/* \$HOME/chef-bcs/cookbooks/chef-bcs/files/default/loaders"
+fi
