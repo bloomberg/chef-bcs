@@ -32,7 +32,7 @@ allow_dynamic_settings: 0
 # /var/log/cobbler/anamon/.  NOTE: This does allow an xmlrpc call to send logs
 # to this directory, without authentication, so enable only if you are
 # ok with this limitation.
-anamon_enabled: 0
+anamon_enabled: 1
 
 # If using authn_pam in the modules.conf, this can be configured
 # to change the PAM service authentication will be tested against.
@@ -86,12 +86,12 @@ cheetah_import_whitelist:
 createrepo_flags: "-c cache -s sha"
 
 # if no kickstart is specified to profile add, use this template
-default_kickstart: /var/lib/cobbler/kickstarts/default.ks
+default_kickstart: /var/lib/cobbler/kickstarts/<%= node['chef-bcs']['cobbler']['kickstart']['file'] %>
 
 # configure all installed systems to use these nameservers by default
 # unless defined differently in the profile.  For DHCP configurations
 # you probably do /not/ want to supply this.
-default_name_servers: []
+default_name_servers: [<%= @node['chef-bcs']['dns_servers'].join(',')%>]
 
 # if using the authz_ownership module (see the Wiki), objects
 # created without specifying an owner are assigned to this
@@ -125,7 +125,7 @@ default_template_type: "cheetah"
 # "virbr0".  This can be overriden on a per-profile
 # basis or at the koan command line though this saves
 # typing to just set it here to the most common option.
-default_virt_bridge: xenbr0
+default_virt_bridge: virbr0
 
 # use this as the default disk size for virt guests (GB)
 default_virt_file_size: 5
@@ -137,7 +137,7 @@ default_virt_ram: 512
 # is set on the profile/system, what virtualization type
 # should be assumed?  Values: xenpv, xenfv, qemu, vmware
 # (NOTE: this does not change what virt_type is chosen by import)
-default_virt_type: xenpv
+default_virt_type: qemu
 
 # enable gPXE booting? Enabling this option will cause cobbler
 # to copy the undionly.kpxe file to the tftp root directory,
@@ -315,7 +315,7 @@ consoles: "/var/consoles"
 # first in it's BIOS order.  Enable this if PXE is first in your BIOS
 # boot order, otherwise leave this disabled.   See the manpage
 # for --netboot-enabled.
-#pxe_just_once: 1
+pxe_just_once: 1
 
 # if this setting is set to one, triggers will be executed when systems
 # will request to toggle the --netboot-enabled record at the end of their installation.
@@ -441,23 +441,6 @@ virt_auto_boot: 1
 # @@webroot@@/cobbler
 webdir: /var/www/cobbler
 
-# directories that will not get wiped and recreated on a 'cobbler sync'
-webdir_whitelist:
-  - aux
-  - web
-  - webui
-  - localmirror
-  - repo_mirror
-  - distro_mirror
-  - images
-  - links
-  - pub
-  - repo_profile
-  - repo_system
-  - svc
-  - rendered
-  - .link_cache
-
 # cobbler's public XMLRPC listens on this port.  Change this only
 # if absolutely needed, as you'll have to start supplying a new
 # port option to koan if it is not the default.
@@ -504,5 +487,5 @@ proxy_url_ext: ""
 # eg: proxy_url_int: "http://10.0.0.1:8080"
 proxy_url_int: ""
 
-# include other configuration snippets
-include: [ "/etc/cobbler/settings.d/*.settings" ]
+# Default gateway to put in if none specified on cli
+gateway: <%= node['chef-bcs']['network']['public']['gateway'] %>

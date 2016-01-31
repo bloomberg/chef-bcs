@@ -6,6 +6,10 @@
   "chef_type": "environment",
   "override_attributes": {
     "chef-bcs": {
+      "chef": {
+        "owner": "vagrant",
+        "group": "vagrant"
+      },
       "users": [
         { "name": "operations", "comment": "Operations user", "passwd": "" }
       ],
@@ -22,17 +26,20 @@
         "pxe_interface": "enp0s8",
         "server": "10.0.101.10",
         "dhcp_subnet": "10.0.101.0",
-        "dhcp_range": "10.0.101.11 10.0.101.250",
+        "dhcp_range": ["10.0.101.11", "10.0.101.250"],
         "kickstart": {
           "rootpw": "vagrant",
           "file": "rhel.ks",
           "sudoer": "vagrant",
-          "user": { "name": "vagrant", "passwd": "vagrant" }
+          "user": {
+            "name": "vagrant",
+            "passwd": "vagrant"
+          }
         },
         "http_port": 80,
         "https_port": 443,
         "xmlrpc_port": 25151,
-        "distro": "CentOS-7-x86_64-Minimal-1511.iso",
+        "distro": "centos-7-x86_64-minimal.iso",
         "os_name": "centos-7",
         "os_version": "7.1",
         "os_arch": "x86_64",

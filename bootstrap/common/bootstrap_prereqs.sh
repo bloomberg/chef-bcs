@@ -57,22 +57,15 @@ fi
 
 # Obtain an RHEL 7.2 image to be used for PXE booting in production.
 # To call this, do not call VAGRANT_UP without setting env var BOOTSTRAP_OS to 'centos-7.1' first.
-if [[ $COBBLER_BOOTSTRAP_OS == "centos-7.1" ]]; then
-  # Get 7.2 instead of 7.1
-  download_file cobbler/isos/centos-7-x86_64-minimal.iso http://mirror.umd.edu/centos/7.2.1511/isos/x86_64/CentOS-7-x86_64-Minimal-1511.iso
+if [[ ! -z $COBBLER_BOOTSTRAP_ISO ]]; then
+  download_file cobbler/isos/$COBBLER_BOOTSTRAP_ISO $COBBLER_REMOTE_URL_ISO
 fi
 
-if [[ ! -z $COBBLER_BOOTSTRAP_OS ]]; then
+if [[ ! -z $COBBLER_BOOTSTRAP_ISO ]]; then
   download_file cobbler/loaders/pxelinux.0 http://cobbler.github.io/loaders/pxelinux.0-3.86
   download_file cobbler/loaders/menu.c32 http://cobbler.github.io/loaders/menu.c32-3.86
   download_file cobbler/loaders/grub-x86.efi http://cobbler.github.io/loaders/grub-0.97-x86.efi
   download_file cobbler/loaders/grub-x86_64.efi http://cobbler.github.io/loaders/grub-0.97-x86_64.efi
-fi
-
-# The vagrant BOOTSTRAP_OS var is set in VAGRANT_UP
-if [[ $BOOTSTRAP_OS == "centos-7.1" && $BOOTSTRAP_TYPE == "vagrant" ]]; then
-  BOX=opscode_centos-7.1_chef-provisionerless.box
-  download_file $BOX http://opscode-vm-bento.s3.amazonaws.com/vagrant/virtualbox/$BOX
 fi
 
 # TODO: Add different OS support
@@ -101,7 +94,7 @@ download_file cookbooks/yum-epel.0.6.3.tar.gz http://cookbooks.opscode.com/api/v
 download_file cookbooks/apt-1.10.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/apt/versions/1.10.0/download
 download_file cookbooks/apache2-3.1.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/apache2/versions/3.1.0/download
 download_file cookbooks/chef_handler-1.2.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/chef_handler/versions/1.2.0/download
-download_file cookbooks/firewall-2.1.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/firewall/versions/2.1.0/download
+download_file cookbooks/firewall-2.4.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/firewall/versions/2.4.0/download
 download_file cookbooks/chef-sugar-3.1.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/chef-sugar/versions/3.1.0/download
 download_file cookbooks/sudo-2.7.2.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/sudo/versions/2.7.2/download
 

@@ -131,4 +131,5 @@ default['chef-bcs']['cobbler']['server'] = nil
 default['chef-bcs']['cobbler']['http_port'] = 80
 default['chef-bcs']['cobbler']['https_port'] = 443
 default['chef-bcs']['cobbler']['xmlrpc_port'] = 25151
-default['chef-bcs']['cobbler']['distro'] = 'CentOS-7-x86_64-Minimal-1511.iso'
+# IMPORTANT: The name of this distro *MUST* match the 'prerequisite' script that downloads dependencies
+default['chef-bcs']['cobbler']['distro'] = 'centos-7-x86_64-minimal.iso'

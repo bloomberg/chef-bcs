@@ -62,10 +62,20 @@ while getopts bsvdot opt; do
 done
 
 source ../base_environment.sh
-export BOOTSTRAP_CHEF_ENV=vagrant  # Override for other environments like production, staging etc.
-export BOOTSTRAP_TYPE=${BOOTSTRAP_TYPE:-"vagrant"}  # Other type is 'bare_metal'
+
+# Override for other environments like production, staging etc.
+export BOOTSTRAP_CHEF_ENV=${BOOTSTRAP_CHEF_ENV:-"vagrant"}
+# Other type is 'bare_metal'
+export BOOTSTRAP_TYPE=${BOOTSTRAP_TYPE:-"vagrant"}
 # Set environment var BOOTSTRAP_OS here - default to centos-7
 export BOOTSTRAP_OS=${BOOTSTRAP_OS:-"centos-7"}
+# IMPORTANT: *MUST* match environment with 'chef owner' NOTE: This is also the Chef user
+export CHEF_BCS_OWNER=${CHEF_BCS_OWNER:-"vagrant"}
+export CHEF_BCS_GROUP=${CHEF_BCS_GROUP:-"vagrant"}
+# IMPORTANT: The name of the cobbler distro that must match node['chef-bcs']['cobbler']['distro']
+export COBBLER_BOOTSTRAP_ISO=${COBBLER_BOOTSTRAP_ISO:-"centos-7-x86_64-minimal.iso"}
+# IMPORTANT: The remote url of where to download the iso from.
+export COBBLER_REMOTE_URL_ISO=${COBBLER_REMOTE_URL_ISO:-"http://mirror.umd.edu/centos/7.2.1511/isos/x86_64/CentOS-7-x86_64-Minimal-1511.iso"}
 
 # Source the bootstrap configuration file if present.
 BOOTSTRAP_CONFIG="$REPO_ROOT/bootstrap/common/bootstrap_config.sh"

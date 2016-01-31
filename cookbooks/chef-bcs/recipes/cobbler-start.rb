@@ -36,8 +36,18 @@ else
   service 'httpd' do
       action [:enable, :start]
   end
+  service 'dnsmasq' do
+      action [:enable, :start]
+  end
   service 'xinetd' do
       action [:enable, :start]
+  end
+  # xinetd - tftp is managed by it but there can be an issue on some systemd systems so try to start it again.
+  # NOTE: tftp.socket gets enabled on some systems but tftp.service does not thus on reboot tftp may not start. If
+  # that's the case then a manual start is required or another 'custom' tftp.service in /etc/systemd/service 
+  service 'tftp' do
+      action [:enable, :start]
+      not_if "pgrep tftp"
   end
 end
 

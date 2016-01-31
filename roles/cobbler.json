@@ -1,5 +1,5 @@
 {
-    "name": "ceph-bootstrap",
+    "name": "cobbler",
     "default_attributes": {
     },
     "json_class": "Chef::Role",
