@@ -40,9 +40,8 @@ case node['platform']
 when 'ubuntu'
   package 'isc-dhcp-server'
 else
-  # package 'dhcp'
   package 'dnsmasq'
-  package 'tftp'
+  package 'tftp-server'
   package 'syslinux'
   package 'pykickstart'
   package 'xinetd'
@@ -50,17 +49,17 @@ end
 
 package 'cobbler'
 package 'cobbler-web'
+# ipmitool is mainly used for power mgt.
+package 'ipmitool'
 
 template '/etc/cobbler/settings' do
     source 'cobbler.settings.erb'
     mode 00644
-    # notifies :restart, 'service[cobbler]', :delayed
 end
 
 template '/etc/cobbler/users.digest' do
     source 'cobbler.users.digest.erb'
     mode 00600
-    not_if "test -f /etc/cobbler/user.digest"
 end
 
 template '/etc/cobbler/dhcp.template' do
@@ -70,7 +69,6 @@ template '/etc/cobbler/dhcp.template' do
         :range => node['chef-bcs']['cobbler']['dhcp_range'].join(' '),
         :subnet => node['chef-bcs']['cobbler']['dhcp_subnet']
     )
-    # notifies :restart, 'service[cobbler]', :delayed
 end
 
 template '/etc/cobbler/dnsmasq.template' do
@@ -81,23 +79,13 @@ template '/etc/cobbler/dnsmasq.template' do
     )
 end
 
-# NOTE: These next two aid in starting dhcp and dnsmasq *before* cobbler does a 'cobbler sync'. They will get
+# NOTE: These next one aid in starting dhcp and dnsmasq *before* cobbler does a 'cobbler sync'. They will get
 # overridden on sync.
-template '/etc/dhcp.conf' do
-    source 'cobbler.dhcp.template.erb'
-    mode 00644
-    variables(
-        :range => node['chef-bcs']['cobbler']['dhcp_range'].join(' '),
-        :subnet => node['chef-bcs']['cobbler']['dhcp_subnet']
-    )
-    # notifies :restart, 'service[cobbler]', :delayed
-end
-
 template '/etc/dnsmasq.conf' do
     source 'cobbler.dnsmasq.template.erb'
     mode 00644
     variables(
-        :range => node['chef-bcs']['cobbler']['dhcp_range'].join(',')
+      :range => node['chef-bcs']['cobbler']['dhcp_range'].join(',')
     )
 end
 
@@ -106,11 +94,18 @@ template '/etc/cobbler/modules.conf' do
     mode 00644
 end
 
+parts = node['chef-bcs']['cobbler']['partitions']
+
+# NOTE: This is for the BCS NODE kickstart and not the bootstrap kickstart.
 template "/var/lib/cobbler/kickstarts/#{node['chef-bcs']['cobbler']['kickstart']['file']}" do
     source "#{node['chef-bcs']['cobbler']['kickstart']['file']}.erb"
     mode 00644
+    variables(
+      :parts => Hash[(0...parts.size).zip parts] unless parts.is_a? Hash
+    )
 end
 
+# NOTE: This removes the default SSL from Apache so that Chef Server (NGINX) has no issues. However, this will not allow the web ui of Cobbler to be accessed.
 case node['platform']
 when 'ubuntu'
 else
@@ -130,6 +125,11 @@ if ENV.has_key?('COBBLER_BOOTSTRAP_ISO')
   end
 end
 
+# Load the loaders simply for completness so the only thing that should ever run on the cli is the following:
+# cobbler sync
+# cobbler system <whatever commands>
+# cobbler profile <whatever commands>
+# cobbler import <whatever commands>
 %w{ grub-x86_64.efi  grub-x86.efi  menu.c32  pxelinux.0 }.each do |ext|
   cookbook_file "/var/lib/cobbler/loaders/#{ext}" do
     source "loaders/#{ext}"

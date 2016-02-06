@@ -119,6 +119,7 @@ unless $https_proxy_server.nil? or $https_proxy_server.empty?
 end
 
 # After other yum updates you may also need to re-install the kernel-devel-* so it's in the
+# Only need this for Vagrant
 if $lsb_name == 'centos' or $lsb_name == 'rhel'
     $repos_script = <<-EOH
       sudo yum install -y kernel-devel-`uname -r` gcc make perl bzip2

@@ -31,24 +31,28 @@ bash 'import-distro-distribution-cobbler' do
     only_if "test -f /tmp/#{node['chef-bcs']['cobbler']['distro']}"
 end
 
-bash 'profile-add-cobbler' do
+# NOTE: By default, cobbler import above will create a profile with the name of the import + arch
+bash 'profile-edit-cobbler' do
     user 'root'
     code <<-EOH
-        cobbler profile add --name=ceph_hosts --distro=#{node['chef-bcs']['cobbler']['os_name']}-#{node['chef-bcs']['cobbler']['os_arch']} --kickstart=/var/lib/cobbler/kickstarts/#{node['chef-bcs']['cobbler']['kickstart']['file']} --kopts="interface=auto"
+        cobbler profile edit --name=#{node['chef-bcs']['cobbler']['os_name']}-#{node['chef-bcs']['cobbler']['os_arch']} --kickstart=/var/lib/cobbler/kickstarts/#{node['chef-bcs']['cobbler']['kickstart']['file']} --kopts="interface=auto"
     EOH
-    not_if "cobbler profile list | grep ceph_hosts"
+    only_if "cobbler profile list | grep #{node['chef-bcs']['cobbler']['os_name']}"
     only_if "test -f /tmp/#{node['chef-bcs']['cobbler']['distro']}"
 end
 
+# Set up a default system - you will need to add the information via cobbler system edit on the cli to match your environment
+# Also, do cobbler system add for every ceph node with mac, IP, etc OR modify the json data used by cobber and then restart cobbler
 bash 'add-system-to-cobbler' do
     user 'root'
     code <<-EOH
-        cobbler system add --name=ceph_nodes --profile=ceph_hosts
+        cobbler system add --name=ceph_node --profile=#{node['chef-bcs']['cobbler']['os_name']}-#{node['chef-bcs']['cobbler']['os_arch']}
     EOH
-    not_if "cobbler system list | grep ceph_nodes"
+    not_if "cobbler system list | grep ceph_node"
     only_if "test -f /tmp/#{node['chef-bcs']['cobbler']['distro']}"
 end
 
+# Cobbler will create the base pxe boot files needed. Every time you modify profile/system/distro you will need to do a cobbler sync
 execute 'cobbler-sync' do
   command lazy{ "cobbler sync" }
   only_if "test -f /tmp/#{node['chef-bcs']['cobbler']['distro']}"

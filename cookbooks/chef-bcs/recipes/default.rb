@@ -27,23 +27,24 @@
 # The recipe also adds the PS1 prompt change for all nodes!
 
 # Network troubleshooting tools
-package "ethtool"
-package "nmap"
-package "iperf"
-package "curl"
+package 'ethtool'
+package 'nmap'
+package 'iperf'
+package 'curl'
+package 'tmux'
 
 # I/O troubleshooting tools
-package "fio"
-package "bc"
-package "iotop"
+package 'fio'
+package 'bc'
+package 'iotop'
 
 # System troubleshooting tools
-package "htop"
-package "sysstat"
-package "vim"
+package 'htop'
+package 'sysstat'
+package 'vim'
 
 # RHEL version...
-package "python-pip"
+package 'python-pip'
 
 # Create an operations user
 if node['chef-bcs']['users']
@@ -81,4 +82,10 @@ if node['chef-bcs']['authorization']
   node.normal['authorization']['sudo']['users'] = node['chef-bcs']['authorization']['sudo']['users'] if node['chef-bcs']['authorization']['sudo']['users']
   node.save
   # Add more metadata if needed
+end
+
+# Add the scary MOTD to let people know it's production!!
+template '/etc/motd.tail' do
+  source 'motd.tail.erb'
+  mode 00640
 end

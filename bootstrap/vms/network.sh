@@ -16,6 +16,10 @@
 #
 
 # Exit immediately if anything goes wrong, instead of making things worse.
+
+# IMPORTANT: Cobbler system ... are configured with network info so no need for this file except for vagrant and
+# to build the bootstrap node for vbox.
+
 set -e
 
 function node_update_network_interfaces {

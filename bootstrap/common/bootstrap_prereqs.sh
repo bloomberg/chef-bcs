@@ -56,9 +56,16 @@ if [[ ! -f $BOOTSTRAP_CACHE_DIR/cobbler/$ROM && ! -f $BOOTSTRAP_CACHE_DIR/cobble
 fi
 
 # Obtain an RHEL 7.2 image to be used for PXE booting in production.
-# To call this, do not call VAGRANT_UP without setting env var BOOTSTRAP_OS to 'centos-7.1' first.
 if [[ ! -z $COBBLER_BOOTSTRAP_ISO ]]; then
-  download_file cobbler/isos/$COBBLER_BOOTSTRAP_ISO $COBBLER_REMOTE_URL_ISO
+  # This cmd only works for non-rhel distros. Redhat has timed urls for downloads you could login to the rhn access portal
+  # and get the url and then update $COBBLER_REMOTE_URL_ISO or copy the ISO to cobber/isos.
+  substring=http
+  if [ "${COBBLER_REMOTE_URL_ISO/$substring}" = "$COBBLER_REMOTE_URL_ISO" ] ; then
+    cp $COBBLER_REMOTE_URL_ISO $BOOTSTRAP_CACHE_DIR/cobbler/isos/$COBBLER_BOOTSTRAP_ISO
+    echo "$COBBLER_REMOTE_URL_ISO"
+  else
+    download_file cobbler/isos/$COBBLER_BOOTSTRAP_ISO $COBBLER_REMOTE_URL_ISO
+  fi
 fi
 
 if [[ ! -z $COBBLER_BOOTSTRAP_ISO ]]; then

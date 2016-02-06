@@ -44,17 +44,25 @@ end
 firewall_rule 'ssh' do
   port     22
   command  :allow
+  permanent true
+end
+
+firewall_rule 'ntp' do
+  command  :allow
+  permanent true
 end
 
 # IMPORTANT: ALL nodes have a public network (no dedicated management network) including the bootstrap node in this
 # example. You can change this to fit your needs.
 firewall_rule 'public' do
   interface "#{node['chef-bcs']['network']['public']['interface']}"
+  permanent true
   command  :allow
 end
 
 firewall_rule 'cluster' do
   interface "#{node['chef-bcs']['network']['cluster']['interface']}"
+  permanent true
   command  :allow
 end
 

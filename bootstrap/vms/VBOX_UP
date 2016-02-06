@@ -1,0 +1,107 @@
+#!/bin/bash
+#
+# Copyright 2015, Bloomberg Finance L.P.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# Exit immediately if anything goes wrong, instead of making things worse.
+
+##########
+# NOTE: If you run this script and receive a VBoxManage related error then most likely the VM(s) have been removed or
+# missing from where you store VirtualBox VMs BUT VBoxManage still thinks they are there. Simply pull up the
+# VirtualBox UI application, stop and remove the 'ceph-*' VMs that should be shown and then start this script again.
+##########
+
+# Exit immediately if anything goes wrong, instead of making things worse.
+set -e
+
+clear
+
+echo "  ____ _           __       ____   ____ ____  "
+echo " / ___| |__   ___ / _|     | __ ) / ___/ ___| "
+echo "| |   | '_ \ / _ \ |_ _____|  _ \| |   \___ \ "
+echo "| |___| | | |  __/  _|_____| |_) | |___ ___) |"
+echo " \____|_| |_|\___|_|       |____/ \____|____/ "
+echo
+echo "Chef-BCS VirtualBox Bootstrap"
+echo "--------------------------------------------"
+echo "Bootstrapping local VirtualBox environment..."
+echo
+
+source base_environment.sh
+source vbox_functions.sh
+
+# Override for other environments like production, staging etc.
+export BOOTSTRAP_CHEF_ENV=${BOOTSTRAP_CHEF_ENV:-"vm"}
+# Other type is 'bare_metal'
+export BOOTSTRAP_TYPE=${BOOTSTRAP_TYPE:-"vbox"}
+# Set environment var BOOTSTRAP_OS here - default to centos-7
+export BOOTSTRAP_OS=${BOOTSTRAP_OS:-"centos-7"}
+# IMPORTANT: *MUST* match environment with 'chef owner' NOTE: This is also the Chef user
+export CHEF_BCS_OWNER=${CHEF_BCS_OWNER:-"vbox"}
+export CHEF_BCS_GROUP=${CHEF_BCS_GROUP:-"vbox"}
+# IMPORTANT: The name of the cobbler distro that must match node['chef-bcs']['cobbler']['distro']
+export COBBLER_BOOTSTRAP_ISO=${COBBLER_BOOTSTRAP_ISO:-"centos-7-x86_64-minimal.iso"}
+# IMPORTANT: The remote url of where to download the iso from. For RHEL this is a timed url.
+# You can also set COBBLER_REMOTE_URL_ISO to the path where the iso is location on the node and it will copy instead of downloading.
+# The condition statement looks for 'http' and if does not find it then it does a copy instead.
+# export COBBLER_REMOTE_URL_ISO=${COBBLER_REMOTE_URL_ISO:-"/tmp/rhel-server-7.2-x86_64-boot.iso"}
+export COBBLER_REMOTE_URL_ISO=${COBBLER_REMOTE_URL_ISO:-"http://mirror.umd.edu/centos/7.2.1511/isos/x86_64/CentOS-7-x86_64-Minimal-1511.iso"}
+
+# Configure and test any proxies configured.
+if [[ ! -z $BOOTSTRAP_HTTP_PROXY ]] || [[ ! -z $BOOTSTRAP_HTTPS_PROXY ]] ; then
+  echo "Testing configured proxies..."
+  source $REPO_ROOT/bootstrap/common/bootstrap_proxy_setup.sh
+fi
+
+# Do prerequisite work prior to starting build, downloading files and
+# creating local directories.
+echo "Downloading necessary files to local cache..."
+source $REPO_ROOT/bootstrap/common/bootstrap_prereqs.sh
+
+vm=test_bootstrap
+dev=0
+
+vbox_create $vm
+
+#######
+vbox_create_storage_controller $vm "$VBOX_SATA_CONTROLLER"
+
+vbox_create_hdd "$(vbox_dir)/$vm/$vm-osd-0.vdi" 51200
+vbox_add_hdd $vm "$VBOX_SATA_CONTROLLER" $dev 10 "$(vbox_dir)/$vm/$vm-osd-0.vdi"
+
+vbox_create_hdd "$(vbox_dir)/$vm/$vm-osd-1.vdi" 20480
+vbox_add_hdd $vm "$VBOX_SATA_CONTROLLER" $dev 11 "$(vbox_dir)/$vm/$vm-osd-1.vdi"
+
+vbox_create_hdd "$(vbox_dir)/$vm/$vm-osd-2.vdi" 20480
+vbox_add_hdd $vm "$VBOX_SATA_CONTROLLER" $dev 12 "$(vbox_dir)/$vm/$vm-osd-2.vdi"
+#######
+
+#VBoxManage hostonlyif create
+#VBoxManage hostonlyif create
+
+VBoxManage modifyvm $vm --nic1 hostonly --hostonlyadapter1 vboxnet0
+VBoxManage modifyvm $vm --nic2 hostonly --hostonlyadapter2 vboxnet1
+VBoxManage modifyvm $vm --nictype1 82543GC
+VBoxManage modifyvm $vm --nictype2 82543GC
+
+vbox_boot_order $vm 1 net
+vbox_nic_boot_order $vm 1 1
+
+vbox_nic_mac $vm 1 "08002761B449"
+vbox_nic_mac $vm 2 "080027ACD955"
+
+vboxmanage startvm $vm --type headless
+
+echo "Finished in $SECONDS seconds"

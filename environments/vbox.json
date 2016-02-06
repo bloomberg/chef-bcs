@@ -1,14 +1,14 @@
 {
-  "name": "vagrant",
+  "name": "vbox",
   "json_class": "Chef::Environment",
-  "description": "Vagrant test environment",
+  "description": "VBox test environment",
   "cookbook_versions": {},
   "chef_type": "environment",
   "override_attributes": {
     "chef-bcs": {
       "chef": {
-        "owner": "vagrant",
-        "group": "vagrant"
+        "owner": "vbox",
+        "group": "vbox"
       },
       "users": [
         { "name": "operations", "comment": "Operations user", "passwd": "" }
@@ -33,12 +33,12 @@
         "dhcp_subnet": "10.0.101.0",
         "dhcp_range": ["10.0.101.11", "10.0.101.250"],
         "kickstart": {
-          "rootpw": "vagrant",
+          "rootpw": "vbox",
           "file": "bcs_node_rhel.ks",
-          "sudoer": "vagrant",
+          "sudoer": "vbox",
           "user": {
-            "name": "vagrant",
-            "passwd": "vagrant"
+            "name": "vbox",
+            "passwd": "vbox"
           }
         },
         "partition_option": "ignoredisk --only-use=sda",

@@ -31,6 +31,66 @@ function vbox_dir {
   echo $(vboxmanage list systemproperties | grep 'Default machine folder' | awk -F\: '{gsub(/^[ \t]+/, "", $2); print $2}')
 }
 
+# NOTE: Additional parameters could be passed to customize if desired.
+function vbox_create {
+  local vm=$1
+  local ostype=RedHat_64
+  # ostype for Ubuntu - Ubuntu_64
+  vm_dir=$(vbox_dir)
+  echo $vm
+  echo $vm_dir
+  echo $ostype
+
+  if [[ `is_vm_present $vm` -eq 0 ]]; then
+    echo $(vboxmanage createvm --name $vm --ostype $ostype 2>/dev/null)
+    echo $(vboxmanage registervm "$vm_dir/$vm/$vm.vbox")
+    echo $(vboxmanage modifyvm $vm --ioapic on --memory 2560 --vram 16 --cpus 2 --largepages on --nestedpaging on --vtxvpid on --hwvirtex on  2>/dev/null)
+  fi
+}
+
+# Set the vm's boot order
+function vbox_boot_order {
+  local vm=$1
+  local order=$2
+  local type=$3
+  # vm and order must be valid!
+  # order can be slot index is 1,2,3,4
+  # type can be none|floppy|dvd|disk|net
+  #echo $(vboxmanage modifyvm $vm --boot$order $type 2>/dev/null)
+  vboxmanage modifyvm $vm --boot$order $type
+}
+
+# Set which nic boot order for pxe
+# For Ceph this should be the 'public' cluster nic unless using a mgt interface
+function vbox_nic_boot_order {
+  local vm=$1
+  local nic=$2
+  local priority=$3
+  # nic is slot index is 1,2,3,4...
+  # priority 0 - lowest (default), 1 (highest), 2, 3, 4 (low)
+
+  #echo $(vboxmanage modifyvm $vm --nicbootprio$nic $priority 2>/dev/null)
+  vboxmanage modifyvm $vm --nicbootprio$nic $priority
+}
+
+function vbox_nic_mac {
+  local vm=$1
+  local nic=$2
+  local mac=$3
+  # nic is slot index is 1,2,3,4...
+  # mac address
+
+  echo $(vboxmanage modifyvm $vm --macaddress$nic $mac 2>/dev/null)
+}
+
+function vbox_create_storage_controller {
+  local vm=$1
+  local controller="$2"
+
+  #echo $(vboxmanage storagectl $vm --name "$controller" --add sata --bootable on --controller IntelAhci --sataportcount 15 2>/dev/null)
+  vboxmanage storagectl $vm --name "$controller" --add sata --bootable on --controller IntelAhci --portcount 15
+}
+
 function vbox_remove_hdd {
   local vm=$1
   local controller="$2"
@@ -64,7 +124,8 @@ function vbox_add_hdd {
 
   echo "add_hdd - $vm, $controller, $dev, $port, $disk_file"
 
-  echo $(vboxmanage storageattach $vm --storagectl "$controller" --device $dev --port $port --type hdd --medium "$disk_file" 2>/dev/null)
+  #echo $(vboxmanage storageattach $vm --storagectl "$controller" --device $dev --port $port --type hdd --medium "$disk_file" 2>/dev/null)
+  vboxmanage storageattach $vm --storagectl "$controller" --device $dev --port $port --type hdd --medium "$disk_file"
 }
 
 function vbox_create_hdd {

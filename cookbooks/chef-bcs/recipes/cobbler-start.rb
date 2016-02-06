@@ -21,33 +21,39 @@
 case node['platform']
 when 'ubuntu'
   service 'isc-dhcp-server' do
-      action [:enable, :start]
+    action [:enable, :start]
   end
   service 'cobbler' do
-      action [:enable, :start]
+    action [:enable, :start]
   end
   service 'apache2' do
-      action [:enable, :start]
+    action [:enable, :start]
   end
 else
-  service 'cobblerd' do
-      action [:enable, :start]
-  end
   service 'httpd' do
-      action [:enable, :start]
+    action [:enable, :start]
   end
   service 'dnsmasq' do
-      action [:enable, :start]
+    action [:enable, :start]
   end
+  # Normally tftp will start with xinetd.
   service 'xinetd' do
-      action [:enable, :start]
+    action [:enable, :start]
   end
   # xinetd - tftp is managed by it but there can be an issue on some systemd systems so try to start it again.
   # NOTE: tftp.socket gets enabled on some systems but tftp.service does not thus on reboot tftp may not start. If
-  # that's the case then a manual start is required or another 'custom' tftp.service in /etc/systemd/service 
-  service 'tftp' do
-      action [:enable, :start]
-      not_if "pgrep tftp"
+  # that's the case then a manual start is required or another 'custom' tftp.service in /etc/systemd/service
+  service 'tftp-start' do
+    service_name 'tftp'
+    action [:start]
+    not_if "pgrep tftp"
+  end
+  service 'tftp-enable' do
+    service_name 'tftp'
+    action [:enable]
+  end
+  service 'cobblerd' do
+    action [:enable, :start]
   end
 end
 

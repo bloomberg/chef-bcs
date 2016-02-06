@@ -26,7 +26,7 @@ source vagrant_base.sh
 
 vm_dir=$(vbox_dir)
 # Items that need addressing...
-controller="SATA Controller"
+controller=$VBOX_SATA_CONTROLLER
 dev=0
 
 echo "Starting drive attachment..."

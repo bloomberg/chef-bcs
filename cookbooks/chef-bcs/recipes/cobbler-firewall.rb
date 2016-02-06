@@ -29,35 +29,48 @@
 firewall_rule 'http' do
   port node['chef-bcs']['cobbler']['http_port']
   command :allow
+  permanent true
 end
 
 firewall_rule 'https' do
   port node['chef-bcs']['cobbler']['https_port']
   command :allow
+  permanent true
 end
 
 firewall_rule 'xmlrpc' do
   port node['chef-bcs']['cobbler']['xmlrpc_port']
   command :allow
+  permanent true
 end
 
 firewall_rule 'cobbler-api' do
   port 25150
   command :allow
+  permanent true
+end
+
+firewall_rule 'koan' do
+  port 25152
+  command :allow
+  permanent true
 end
 
 firewall_rule 'dhcp' do
   port 69
   interface node['chef-bcs']['cobbler']['pxe_interface']
   command :allow
+  permanent true
 end
 
 firewall_rule 'dns' do
   port 53
   interface node['chef-bcs']['cobbler']['pxe_interface']
   command :allow
+  permanent true
 end
 
 firewall 'default' do
   action :save
+  permanent true
 end

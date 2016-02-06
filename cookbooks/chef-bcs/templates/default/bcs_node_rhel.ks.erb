@@ -1,4 +1,4 @@
-# kickstart template for Fedora 8 and later.
+# kickstart template for Chef-BCS Nodes
 # (includes %end blocks)
 # do not use with earlier distros
 
@@ -45,8 +45,19 @@ timezone UTC --isUtc
 install
 # Clear the Master Boot Record
 zerombr
-# Allow anaconda to partition the system as needed
-autopart
+
+# Important: If you need other drives partitioned then change the 'partition_option' in the data and remove 'ignoredisk'
+# ignoredisk --drives=sdb,sdc
+# ignoredisk --only-use=sda
+<%= node['chef-bcs']['cobbler']['partition_option'] %>
+<% @parts.each do |part| %>
+part <%= part['part'] %> --fstype=<%= part['fstype'] %> --size=<%= part['size'] %> <%= part['options'] %>
+<% end %>
+#part /boot    --fstype=xfs --size=1024   --ondisk=sda
+#part /        --fstype=xfs --size=10000  --ondisk=sda
+#part /var/lib --fstype=xfs --size=20000  --ondisk=sda
+#part swap                  --size=8000
+#part swap                  --size=32768
 
 %pre
 $SNIPPET('log_ks_pre')
@@ -58,6 +69,9 @@ $SNIPPET('pre_anamon')
 
 %packages
 @Infrastructure Server
+wget
+curl
+ntp
 %end
 
 %post --nochroot
@@ -66,6 +80,16 @@ $SNIPPET('log_ks_post_nochroot')
 
 %post
 $SNIPPET('log_ks_post')
+
+# Allow root login to begin with. Chef recipe will disable later in process.
+sed -i "s/#PermitRootLogin yes/PermitRootLogin yes/" /etc/ssh/sshd_config
+sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
+mkdir -p /root/.ssh
+<% if node['chef-bcs']['cobbler']['kickstart']['key'] %>
+wget -O /root/.ssh/authorized_keys http://$http_server:$http_port/cobbler/pub/<%= node['chef-bcs']['cobbler']['kickstart']['key'] %>
+chmod 0600 /root/.ssh/authorized_keys
+<% end %>
+
 # Start yum configuration
 $yum_config_stanza
 # End yum configuration
@@ -83,8 +107,6 @@ $SNIPPET('post_anamon')
 echo "%<%= node['chef-bcs']['cobbler']['kickstart']['sudoer'] %> ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/<%= node['chef-bcs']['cobbler']['kickstart']['sudoer'] %>
 sed -i "s/^[^#].*requiretty/#Defaults requiretty/" /etc/sudoers
 <% end %>
-# 'autoinstall_done' snippet may not be on certain versions of cobbler so default back to kickstart_done
-$SNIPPET('autoinstall_done')
 # Sets the --netboot flag for the host on cobbler
 $SNIPPET('kickstart_done')
 # End final steps
