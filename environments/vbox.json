@@ -33,9 +33,10 @@
         "dhcp_subnet": "10.0.101.0",
         "dhcp_range": ["10.0.101.11", "10.0.101.250"],
         "kickstart": {
+          "password_iscrypted": true,
           "rootpw": "vbox",
           "file": "bcs_node_rhel.ks",
-          "sudoer": "vbox",
+          "bootloader_pwd": "",
           "user": {
             "name": "vbox",
             "passwd": "vbox"
@@ -45,8 +46,8 @@
         "partitions": [
           {"part": "/boot", "fstype": "xfs", "size": 1024, "options": "--ondisk=sda"},
           {"part": "/", "fstype": "xfs", "size": 10000, "options": "--ondisk=sda"},
-          {"part": "/var/lib", "fstype": "xfs" "size": 20000, "options": "--ondisk=sda"},
-          {"part": "swap", "fstype": "",  "size": 8000, "options": ""}
+          {"part": "/var/lib", "fstype": "xfs", "size": 20000, "options": "--ondisk=sda"},
+          {"part": "swap", "fstype": "", "size": 8000, "options": ""}
         ],
         "http_port": 80,
         "https_port": 443,

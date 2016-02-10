@@ -65,7 +65,7 @@ source ../base_environment.sh
 
 # Override for other environments like production, staging etc.
 export BOOTSTRAP_CHEF_ENV=${BOOTSTRAP_CHEF_ENV:-"vagrant"}
-# Other type is 'bare_metal'
+# Other types are 'bare_metal, vbox'
 export BOOTSTRAP_TYPE=${BOOTSTRAP_TYPE:-"vagrant"}
 # IMPORTANT: *MUST* match environment with 'chef owner' NOTE: This is also the Chef user
 export CHEF_BCS_OWNER=${CHEF_BCS_OWNER:-"vagrant"}

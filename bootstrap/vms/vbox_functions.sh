@@ -41,6 +41,7 @@ function vbox_create {
   echo $vm_dir
   echo $ostype
 
+  # NOTE: Modify memory, vram, cpus etc below if desired.
   if [[ `is_vm_present $vm` -eq 0 ]]; then
     echo $(vboxmanage createvm --name $vm --ostype $ostype 2>/dev/null)
     echo $(vboxmanage registervm "$vm_dir/$vm/$vm.vbox")
@@ -56,8 +57,7 @@ function vbox_boot_order {
   # vm and order must be valid!
   # order can be slot index is 1,2,3,4
   # type can be none|floppy|dvd|disk|net
-  #echo $(vboxmanage modifyvm $vm --boot$order $type 2>/dev/null)
-  vboxmanage modifyvm $vm --boot$order $type
+  echo $(vboxmanage modifyvm $vm --boot$order $type 2>/dev/null)
 }
 
 # Set which nic boot order for pxe
@@ -69,11 +69,11 @@ function vbox_nic_boot_order {
   # nic is slot index is 1,2,3,4...
   # priority 0 - lowest (default), 1 (highest), 2, 3, 4 (low)
 
-  #echo $(vboxmanage modifyvm $vm --nicbootprio$nic $priority 2>/dev/null)
-  vboxmanage modifyvm $vm --nicbootprio$nic $priority
+  echo $(vboxmanage modifyvm $vm --nicbootprio$nic $priority 2>/dev/null)
 }
 
-function vbox_nic_mac {
+# Set the mac address
+function vbox_nic_mac_set {
   local vm=$1
   local nic=$2
   local mac=$3
@@ -83,12 +83,20 @@ function vbox_nic_mac {
   echo $(vboxmanage modifyvm $vm --macaddress$nic $mac 2>/dev/null)
 }
 
+# Get the mac address from the vm and adapter (vboxnet0...)
+function vbox_nic_mac_get {
+  local vm=$1
+  local adapter=$2
+  # nic is slot index is 1,2,3,4...
+  echo $(vboxmanage showvminfo --machinereadable $vm | pcregrep -o1 -M '^hostonlyadapter\d="$adapter"$\n*^macaddress\d="(.+)"' | $SED 's/^(..)(..)(..)(..)(..)(..)$/\1:\2:\3:\4:\5:\6/' 2>/dev/null)
+}
+
 function vbox_create_storage_controller {
   local vm=$1
   local controller="$2"
 
-  #echo $(vboxmanage storagectl $vm --name "$controller" --add sata --bootable on --controller IntelAhci --sataportcount 15 2>/dev/null)
-  vboxmanage storagectl $vm --name "$controller" --add sata --bootable on --controller IntelAhci --portcount 15
+  # 5 ports - could be whatever you want as long as there are enough ports of the number of drives.
+  echo $(vboxmanage storagectl $vm --name "$controller" --add sata --bootable on --controller IntelAhci --portcount 5 2>/dev/null)
 }
 
 function vbox_remove_hdd {
@@ -124,8 +132,7 @@ function vbox_add_hdd {
 
   echo "add_hdd - $vm, $controller, $dev, $port, $disk_file"
 
-  #echo $(vboxmanage storageattach $vm --storagectl "$controller" --device $dev --port $port --type hdd --medium "$disk_file" 2>/dev/null)
-  vboxmanage storageattach $vm --storagectl "$controller" --device $dev --port $port --type hdd --medium "$disk_file"
+  echo $(vboxmanage storageattach $vm --storagectl "$controller" --device $dev --port $port --type hdd --medium "$disk_file" 2>/dev/null)
 }
 
 function vbox_create_hdd {

@@ -48,12 +48,13 @@ done
 
 do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE node run_list set $CEPH_CHEF_BOOTSTRAP.$BOOTSTRAP_DOMAIN 'role[ceph-bootstrap]'"
 
+##### TEST
 # generate actor map
-do_on_node $CEPH_CHEF_BOOTSTRAP "cd \$HOME && $KNIFE actor map"
+##### do_on_node $CEPH_CHEF_BOOTSTRAP "cd \$HOME && $KNIFE actor map"
 # using the actor map, set ceph-bootstrap, ceph-*-vms (if any) as admins so that they can write into the data bag
 #do_on_node ceph-bootstrap "cd \$HOME && $KNIFE group add actor admins ceph-bootstrap.$BOOTSTRAP_DOMAIN"  # && $KNIFE group add actor admins cos-vm1.$BOOTSTRAP_DOMAIN"
 
 # Add each node to the bootstrap actor map
-for vm in ${CEPH_CHEF_HOSTS[@]}; do
-  do_on_node $CEPH_CHEF_BOOTSTRAP "cd \$HOME && $KNIFE group add actor admins $vm.$BOOTSTRAP_DOMAIN"
-done
+#####for vm in ${CEPH_CHEF_HOSTS[@]}; do
+#####  do_on_node $CEPH_CHEF_BOOTSTRAP "cd \$HOME && $KNIFE group add actor admins $vm.$BOOTSTRAP_DOMAIN"
+#####done

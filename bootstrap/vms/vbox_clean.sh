@@ -18,7 +18,15 @@
 # Exit immediately if anything goes wrong, instead of making things worse.
 set -e
 
+# Important
+source vbox_base.sh
+
 # Shutdown vms, unregister and destroy including disks etc.
+shutdown_vms
+
+for vm in ${CEPH_CHEF_HOSTS[@]}; do
+  delete_vm $vm
+done
 
 rm -f $REPO_ROOT/bootstrap/vms/chef-bcs
 rm -f $REPO_ROOT/bootstrap/vms/chef-bcs.pub

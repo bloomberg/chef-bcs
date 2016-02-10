@@ -45,16 +45,6 @@ download_file() {
   fi
 }
 
-# This uses ROM-o-Matic to generate a custom PXE boot ROM.
-# (doesn't use the function because of the unique curl command)
-ROM=gpxe-1.0.1-80861004.rom
-if [[ ! -f $BOOTSTRAP_CACHE_DIR/cobbler/$ROM && ! -f $BOOTSTRAP_CACHE_DIR/cobbler/${ROM}_downloaded ]]; then
-  echo $ROM
-  rm -f $BOOTSTRAP_CACHE_DIR/cobbler/$ROM
-  curl -L --progress-bar -o $BOOTSTRAP_CACHE_DIR/cobbler/$ROM "http://rom-o-matic.net/gpxe/gpxe-1.0.1/contrib/rom-o-matic/build.php" -H "Origin: http://rom-o-matic.net" -H "Host: rom-o-matic.net" -H "Content-Type: application/x-www-form-urlencoded" -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" -H "Referer: http://rom-o-matic.net/gpxe/gpxe-1.0.1/contrib/rom-o-matic/build.php" -H "Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.3" --data "version=1.0.1&use_flags=1&ofmt=ROM+binary+%28flashable%29+image+%28.rom%29&nic=all-drivers&pci_vendor_code=8086&pci_device_code=1004&PRODUCT_NAME=&PRODUCT_SHORT_NAME=gPXE&CONSOLE_PCBIOS=on&BANNER_TIMEOUT=20&NET_PROTO_IPV4=on&COMCONSOLE=0x3F8&COMSPEED=115200&COMDATA=8&COMPARITY=0&COMSTOP=1&DOWNLOAD_PROTO_TFTP=on&DNS_RESOLVER=on&NMB_RESOLVER=off&IMAGE_ELF=on&IMAGE_NBI=on&IMAGE_MULTIBOOT=on&IMAGE_PXE=on&IMAGE_SCRIPT=on&IMAGE_BZIMAGE=on&IMAGE_COMBOOT=on&AUTOBOOT_CMD=on&NVO_CMD=on&CONFIG_CMD=on&IFMGMT_CMD=on&IWMGMT_CMD=on&ROUTE_CMD=on&IMAGE_CMD=on&DHCP_CMD=on&SANBOOT_CMD=on&LOGIN_CMD=on&embedded_script=&A=Get+Image"
-  touch $BOOTSTRAP_CACHE_DIR/cobbler/${ROM}_downloaded
-fi
-
 # Obtain an RHEL 7.2 image to be used for PXE booting in production.
 if [[ ! -z $COBBLER_BOOTSTRAP_ISO ]]; then
   # This cmd only works for non-rhel distros. Redhat has timed urls for downloads you could login to the rhn access portal
@@ -79,8 +69,7 @@ fi
 # Obtain Chef client and server RPMs.
 # knife actor map issue with latest version so reverting back to previous
 CHEF_CLIENT_RPM=chef-12.6.0-1.el7.x86_64.rpm
-CHEF_SERVER_RPM=chef-server-core-12.3.1-1.el7.x86_64.rpm
-# CHEF_SERVER_RPM=chef-server-core-12.2.0-1.el7.x86_64.rpm
+CHEF_SERVER_RPM=chef-server-core-12.4.1-1.el7.x86_64.rpm
 download_file $CHEF_CLIENT_RPM https://opscode-omnibus-packages.s3.amazonaws.com/el/7/x86_64/$CHEF_CLIENT_RPM
 download_file $CHEF_SERVER_RPM https://web-dl.packagecloud.io/chef/stable/packages/el/7/$CHEF_SERVER_RPM
 
@@ -111,7 +100,7 @@ download_file gems/netaddr-1.5.0.gem https://rubygems.org/downloads/netaddr-1.5.
 
 # Pull knife-acl gem.
 # 0.0.12
-download_file knife-acl-0.0.12.gem https://rubygems.global.ssl.fastly.net/gems/knife-acl-0.0.12.gem
+download_file gems/knife-acl-0.0.12.gem https://rubygems.global.ssl.fastly.net/gems/knife-acl-0.0.12.gem
 
 # Pull needed gems for fpm
 GEMS=( arr-pm-0.0.10 backports-3.6.4 cabin-0.7.1 childprocess-0.5.6 clamp-0.6.5 ffi-1.9.8 fpm-1.3.3 json-1.8.2 )

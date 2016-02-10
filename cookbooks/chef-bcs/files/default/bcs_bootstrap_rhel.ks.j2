@@ -1,0 +1,138 @@
+# Static for a given environment
+#
+# kickstart file for Chef-BCS Bootstrap
+#
+
+########## MODIFY SECTION ##########
+# To create encrypted pwd: python -c 'import crypt; print(crypt.crypt("password", "$6$Salt"))'
+# Change 'password' to whatever password you like.
+
+# Root password
+# rootpw --iscrypted {{ root_pwd }}
+rootpw --iscrypted $6$Salt$ygQwp3qFOrRhVYjIXpJ.pncgAiz/pE7KOhueH1fOZjbacHhTMYbfRW4lcU.MO9aBersBiskL9xMK.VXhCw.4a/
+
+# User
+# Simple clear text pwd for boot but changes once installed. You can also generate an encrypted pwd and put it here
+# Change pwd 'operations' to anything you like
+# user --groups={{ group }} --name={{ user_name }} --iscrypted --password={{ user_pwd }}
+user --groups=wheel --name=operations --iscrypted --password=$6$Salt$3xxLPT099nzTbWkOS3CPNcar/zSLQ8BEgZdJk/AOkOb4V80sPepbraWcvrJvEEu6PswpKUw1WodWeiqRo1bw2/
+
+# Static NETWORK
+network --bootproto=static --device=enp0s3 --mtu=1500 --noipv6 --activate --ip=10.0.101.10 --netmask=255.255.255.0 --gateway=10.0.101.10 --nameserver=8.8.8.8 --hostname=vbox-ceph-bootstrap --onboot=off
+network --bootproto=static --device=enp0s8 --mtu=9000 --noipv6 --activate --ip=192.168.101.10 --netmask=255.255.255.0 --gateway=192.168.101.10 --nameserver=8.8.8.8 --hostname=vbox-ceph-bootstrap --onboot=off
+
+# Important: The bootstrap partition schema is static to the given environment
+# ignoredisk --drives=sdb,sdc
+ignoredisk --only-use=sda
+part /boot    --fstype=xfs --size=1024   --ondisk=sda
+part /        --fstype=xfs --size=10000  --ondisk=sda
+part /var/lib --fstype=xfs --size=20000  --ondisk=sda
+part swap                  --size=8000
+# part swap                  --size=32768
+
+####################################
+
+# Install OS instead of upgrade
+# Bootstrap installs from mounted iso, not netboot like nodes kickstart
+install
+cdrom
+
+# System authorization information
+auth  --enableshadow  --passalgo=sha512
+
+eula --agreed
+
+# System bootloader configuration
+# Use grub2-mkpasswd-pbkdf2 to generate cryptic password for security
+# bootloader --append=" crashkernel=auto" --location=mbr --boot-drive=sda --iscrypted --password={{ bootloader_pwd }}
+bootloader --append=" crashkernel=auto" --location=mbr --boot-drive=sda
+
+# Partition clearing information
+clearpart --all --initlabel
+
+# Use text mode install
+text
+
+# Firewall configuration
+firewall --disabled
+
+# Run the Setup Agent on first boot
+firstboot --disable
+
+# System keyboard
+keyboard us
+
+# System language
+lang en_US
+
+# Reboot after installation
+reboot --eject
+
+# SELinux configuration
+selinux --disabled
+
+# Do not configure the X Window System
+skipx
+
+# System timezone
+timezone UTC --isUtc
+
+# Clear the Master Boot Record
+zerombr
+
+%pre
+%end
+
+%packages
+# CentOS
+# @^Infrastructure Server
+# RHEL begin
+@^infrastructure-server-environment
+# RHEL end
+vim
+git
+wget
+curl
+ntp
+tftp-server
+dnsmasq
+%end
+
+%post --nochroot
+# NOTE: This is the script that copies the data (i.e., ceph-files, etc) in the /tmp/postinstall directory of then
+# initial VM Build Server
+
+#!/bin/sh
+set -x -v
+exec 1>/mnt/sysimage/root/kickstart-stage1.log 2>&1
+
+echo "==> copying files from media to install drive..."
+cp -r /run/install/repo/postinstall /mnt/sysimage/tmp
+find /mnt/sysimage/tmp -name TRANS.TBL -exec rm -f {} \;
+
+%end
+
+%post
+exec 1>/mnt/sysimage/root/kickstart-stage2.log 2>&1
+
+# Start yum configuration
+$yum_config_stanza
+# End yum configuration
+
+# Start final steps
+# Allow root login to begin with. Chef recipe will disable later in process.
+sed -i "s/#PermitRootLogin yes/PermitRootLogin yes/" /etc/ssh/sshd_config
+sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
+
+# Add a public key here if you like to authorized_keys but make sure to set permission to 0600
+mkdir --mode=0700 -p /home/operations/.ssh
+echo "<whatever your .pub key>" >> /home/operations/.ssh/authorized_keys
+chmod 0600 /home/operations/.ssh/authorized_keys
+chown operations:operations -R /home/operations/.ssh
+
+# Setup sudoer
+echo "%operations ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/operations
+sed -i "s/^[^#].*requiretty/#Defaults requiretty/" /etc/sudoers
+
+# End final steps
+%end

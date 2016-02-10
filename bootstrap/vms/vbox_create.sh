@@ -38,14 +38,14 @@ function node_update_network_interfaces {
 }
 
 ###################################################################
-# Function to create all VMs using Vagrant
+# Function to create all VMs
 function create_vbox_vms {
   echo "Shutting down and unregistering VMs from VirtualBox..."
   $REPO_ROOT/bootstrap/vms/vbox_clean.sh
   ssh-keygen -b 2048 -t rsa -f $REPO_ROOT/bootstrap/vms/chef-bcs -q -N ""
 
-
-
+  # Create the nodes (not bootstrap - it should have already been created before calling this function)
+  
 
 }
 

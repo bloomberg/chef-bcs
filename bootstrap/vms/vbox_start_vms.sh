@@ -26,8 +26,12 @@ source $REPO_ROOT/bootstrap/vms/ceph_chef_bootstrap.env
 
 start_vms
 
-cd $REPO_ROOT/bootstrap/vms/vagrant
+if [[ $BOOTSTRAP_TYPE == "vagrant" ]]; then
+  cd $REPO_ROOT/bootstrap/vms/vagrant
 
-source $REPO_ROOT/bootstrap/vms/vagrant/vagrant_create_shared_folders_in_vms.sh
-source $REPO_ROOT/bootstrap/vms/vagrant/vagrant_mount_vms.sh
-source $REPO_ROOT/bootstrap/vms/vagrant/vagrant_reset_network.sh
+  source $REPO_ROOT/bootstrap/vms/vagrant/vagrant_create_shared_folders_in_vms.sh
+  source $REPO_ROOT/bootstrap/vms/vagrant/vagrant_mount_vms.sh
+  source $REPO_ROOT/bootstrap/vms/vagrant/vagrant_reset_network.sh
+else
+  source $REPO_ROOT/bootstrap/vms/vbox_reset_network.sh
+fi

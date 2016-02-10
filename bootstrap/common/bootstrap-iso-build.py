@@ -32,14 +32,16 @@ ISOFILE = "rhel-server-7.2-x86_64"
 ISOEXT = ".iso"
 
 # NOTE: This is VERY important starting in RHEL 7. It MUST be same as hd:LABEL= for it to work properly.
-ISOVOLUMEID = "rhel-server-7.2-x86_64"
+ISOVOLUMEID = "RHEL-7.2 Server.x86_64"
 
-ISOBASEDIR = "~/iso"
-ISOBASEBUILDDIR = "~/build"
-ISOBUILDDIR = "~/build/iso"
-ISOKICKSTARTDIR = "~/build/iso/ks"
-#ISOBUILDTESTDIR = "~/build/isotest"
-ISOMNTPNT = "~/build/mnt"
+ISOBUILDPACKAGESDIR = "/tmp/build/packages"
+ISOPOSTINSTALL = "postinstall"
+ISOBASEDIR = "/tmp"
+ISOBASEBUILDDIR = "/tmp/build"
+ISOBUILDDIR = "/tmp/build/iso"
+ISOKICKSTARTDIR = "/tmp/build/iso/ks"
+#ISOBUILDTESTDIR = "/tmp/build/isotest"
+ISOMNTPNT = "/tmp/build/mnt"
 
 PACKAGER = "Bloomberg"
 COMPS_FILE = "comps.xml"
@@ -69,16 +71,14 @@ init_cmds = [
         "sudo yum -y install anaconda anaconda-help anaconda-runtime",
         "sudo yum -y install createrepo /usr/bin/yumdownloader /usr/bin/mkisofs",
         "rm -rf %s" % ISOBASEBUILDDIR,
-        "mkdir -p %s" % ISOBASEDIR,
-        "mkdir -p %s" % ISOBUILDDIR,
-        "mkdir -p %s" % ISOMNTPNT,
+        "mkdir -p {%s,%s,%s}" % (ISOBASEDIR,ISOBUILDDIR,ISOMNTPNT),
         "sudo mount -o loop %s/%s %s" % (ISOBASEDIR, ISOBASEIMG, ISOMNTPNT),
         "rm -rf %s" % ISOBUILDDIR,
         "rsync -av %s/ %s/" % (ISOMNTPNT, ISOBUILDDIR),
         "rm -rf %s/repodata" % ISOBUILDDIR,
         "cp -av %s/.discinfo %s/.discinfo" % (ISOMNTPNT, ISOBUILDDIR),
         "cp -av %s/.treeinfo %s/.treeinfo" % (ISOMNTPNT, ISOBUILDDIR),
-        "mkdir -p %s" % ISOKICKSTARTDIR,
+        "mkdir -p {%s,%s}" % (ISOKICKSTARTDIR, ISOPOSTINSTALL),
         "cp %s/repodata/%s %s/%s" % (ISOMNTPNT, ANACONDAFILE, ISOBUILDDIR, COMPS_FILE),
         "sudo umount %s" % ISOMNTPNT,
         "find %s -name TRANS.TBL -exec rm -f {} \;" % ISOBUILDDIR]
@@ -97,11 +97,13 @@ repo_cmds = [
         "discinfo=$(head -1 %s/.discinfo)" % ISOBUILDDIR,
         "createrepo -u \"media://$discinfo\" -g %s %s" % (COMPS_FILE, ISOBUILDDIR)]
 
+# Commented out from iso_cmds below...
+#  "chmod 664 %s/isolinux/*" % ISOBUILDDIR,
+#  "chmod 664 %s/*" % ISOKICKSTARTDIR,
+
 iso_cmds = [
         "rm %s/%s" % (ISOBUILDDIR, COMPS_FILE),
         "rm -f %s/%s%s" % (ISOBASEDIR, ISOFILE, ISOEXT),
-        "chmod 664 %s/isolinux/*" % ISOBUILDDIR,
-        "chmod 664 %s/*" % ISOKICKSTARTDIR,
         "mkisofs -r -J -N -d -hide-rr-moved -R -T -no-emul-boot -boot-load-size 4 -boot-info-table -V \"%s\" -p \"%s\" -A \"%s - %s\" -b isolinux/isolinux.bin -c isolinux/boot.cat -x \"lost+found\" -eltorito-alt-boot -e images/efiboot.img -no-emul-boot -o %s/%s%s %s" % (ISOVOLUMEID, PACKAGER, ISOVOLUMEID, datetime.date.today(), ISOBASEDIR, ISOFILE, ISOEXT, ISOBUILDDIR),
         "implantisomd5 %s/%s%s" % (ISOBASEDIR, ISOFILE, ISOEXT)]
 
@@ -147,8 +149,8 @@ def add_kickstart():
     # NOTE: Add kickstart files to the /ks directory
     # IMPORTANT: Make sure you change the isolinux/isolinux.cfg to add/change menu item if there is a menu. Regardless,
     # put kickstart command after other 'append' items. For example:
-    # append initrd=initrd.img inst.stage2=hd:LABEL=CentOS\x207\x20x86_64 ks=cdrom:/ks/ks.cfg
-    # Also make sure ks=cdrom:/ks/ks.cfg (set directory to kickstart file). You can have one for each menu item.
+    # append initrd=initrd.img inst.stage2=hd:LABEL=CentOS\x207\x20x86_64 ks=cdrom:/ks/rhel.ks
+    # Also make sure ks=cdrom:/ks/rhel.ks (set directory to kickstart file). You can have one for each menu item.
     pass
 
 

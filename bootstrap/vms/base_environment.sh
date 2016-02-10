@@ -17,8 +17,7 @@
 
 export REPO_ROOT=$(git rev-parse --show-toplevel)
 
-export CEPH_OS=${CEPH_OS:-centos}
-export BOOTSTRAP_DOMAIN=${BOOTSTRAP_DOMAIN:-ceph.example.com}
+export BOOTSTRAP_DOMAIN=${BOOTSTRAP_DOMAIN:-"ceph.example.com"}
 # Set the env info in the given environment
 # NOTE: BOOTSTRAP_CHEF_ENV *MUST* be set to the correct environment (*.json) file (i.e., vagrant or production)
 export BOOTSTRAP_CHEF_ENV=${BOOTSTRAP_CHEF_ENV:-}

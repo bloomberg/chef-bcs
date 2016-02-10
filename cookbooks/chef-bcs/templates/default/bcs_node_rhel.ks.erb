@@ -1,63 +1,84 @@
 # kickstart template for Chef-BCS Nodes
-# (includes %end blocks)
-# do not use with earlier distros
 
-#platform=x86, AMD64, or Intel EM64T
 # System authorization information
-auth  --useshadow  --enablemd5
+auth  --enableshadow  --passalgo=sha512
+
+eula --agreed
+
 # System bootloader configuration
-bootloader --location=mbr
+# Use grub2-mkpasswd-pbkdf2 to generate cryptic password for security
+# bootloader --append=" crashkernel=auto" --location=mbr --boot-drive=sda --iscrypted --password={{ bootloader_pwd }}
+<% if node['chef-bcs']['cobbler']['kickstart']['password_iscrypted'] %>
+bootloader --append=" crashkernel=auto" --location=mbr --boot-drive=sda --iscrypted --password=<%= node['chef-bcs']['cobbler']['kickstart']['bootloader_pwd'] %>
+<% else %>
+bootloader --append=" crashkernel=auto" --location=mbr --boot-drive=sda
+<% end %>
+
 # Partition clearing information
 clearpart --all --initlabel
+
 # Use text mode install
 text
+
 # Firewall configuration
-firewall --enabled
+firewall --disable
+
 # Run the Setup Agent on first boot
 firstboot --disable
+
 # System keyboard
 keyboard us
+
 # System language
 lang en_US
-# Use network installation
-url --url=$tree
+
 # If any cobbler repo definitions were referenced in the kickstart profile, include them here.
 $yum_repo_stanza
 # Network information
 $SNIPPET('network_config')
+
 # Reboot after installation
 reboot
 
 #Root password
-#rootpw --iscrypted $default_password_crypted
+<% if node['chef-bcs']['cobbler']['kickstart']['password_iscrypted'] %>
+rootpw --iscrypted <%= node['chef-bcs']['cobbler']['kickstart']['rootpwd'] %>
+<% else %>
 rootpw --plaintext <%= node['chef-bcs']['cobbler']['kickstart']['rootpwd'] %>
+<% end -%>
+
 #User
-<% if node['chef-bcs']['cobbler']['kickstart']['user']['name'] %>
+<% if !node['chef-bcs']['cobbler']['kickstart']['user']['name'].empty? %>
 user --plaintext --name=<%= node['chef-bcs']['cobbler']['kickstart']['user']['name'] %> --password=<%= node['chef-bcs']['cobbler']['kickstart']['user']['passwd'] %>
 <% end -%>
+
 # SELinux configuration
 selinux --disabled
+
 # Do not configure the X Window System
 skipx
+
 # System timezone
 timezone UTC --isUtc
+
 # Install OS instead of upgrade
 install
+
+# Use network installation
+url --url=$tree
+
 # Clear the Master Boot Record
 zerombr
 
 # Important: If you need other drives partitioned then change the 'partition_option' in the data and remove 'ignoredisk'
 # ignoredisk --drives=sdb,sdc
-# ignoredisk --only-use=sda
-<%= node['chef-bcs']['cobbler']['partition_option'] %>
-<% @parts.each do |part| %>
-part <%= part['part'] %> --fstype=<%= part['fstype'] %> --size=<%= part['size'] %> <%= part['options'] %>
-<% end %>
-#part /boot    --fstype=xfs --size=1024   --ondisk=sda
-#part /        --fstype=xfs --size=10000  --ondisk=sda
-#part /var/lib --fstype=xfs --size=20000  --ondisk=sda
-#part swap                  --size=8000
-#part swap                  --size=32768
+# NOTE: Add partition automation in future - json environment file should go ahead and prepare for it.
+ignoredisk --only-use=sda
+part /boot    --fstype=xfs --size=1024   --ondisk=sda
+part /        --fstype=xfs --size=10000  --ondisk=sda
+part /var/lib --fstype=xfs --size=20000  --ondisk=sda
+part swap                  --size=8000
+part swap                  --size=32768
 
 %pre
 $SNIPPET('log_ks_pre')
@@ -68,31 +89,46 @@ $SNIPPET('pre_anamon')
 %end
 
 %packages
-@Infrastructure Server
+# CentOS
+# @^Infrastructure Server
+# RHEL begin
+@^infrastructure-server-environment
+# RHEL end
+vim
+git
 wget
 curl
 ntp
+tftp-server
+dnsmasq
 %end
 
 %post --nochroot
 $SNIPPET('log_ks_post_nochroot')
+# Logging is set up if needed
+exec 1>/mnt/sysimage/root/kickstart-stage1.log 2>&1
+
 %end
 
 %post
 $SNIPPET('log_ks_post')
+exec 1>/mnt/sysimage/root/kickstart-stage2.log 2>&1
 
 # Allow root login to begin with. Chef recipe will disable later in process.
 sed -i "s/#PermitRootLogin yes/PermitRootLogin yes/" /etc/ssh/sshd_config
 sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
-mkdir -p /root/.ssh
+
 <% if node['chef-bcs']['cobbler']['kickstart']['key'] %>
-wget -O /root/.ssh/authorized_keys http://$http_server:$http_port/cobbler/pub/<%= node['chef-bcs']['cobbler']['kickstart']['key'] %>
-chmod 0600 /root/.ssh/authorized_keys
+mkdir --mode=0700 -p /home/<%= node['chef-bcs']['cobbler']['kickstart']['user']['name'] %>/.ssh
+wget -O /home/<%= node['chef-bcs']['cobbler']['kickstart']['user']['name'] %>/.ssh/authorized_keys http://$http_server:$http_port/cobbler/pub/<%= node['chef-bcs']['cobbler']['kickstart']['key'] %>
+chmod 0600 /home/<%= node['chef-bcs']['cobbler']['kickstart']['user']['name'] %>/.ssh/authorized_keys
+chown <%= node['chef-bcs']['cobbler']['kickstart']['user']['name'] %>:<%= node['chef-bcs']['cobbler']['kickstart']['user']['name'] %> -R /home/<%= node['chef-bcs']['cobbler']['kickstart']['user']['name'] %>/.ssh
 <% end %>
 
 # Start yum configuration
 $yum_config_stanza
 # End yum configuration
+
 $SNIPPET('post_install_kernel_options')
 $SNIPPET('post_install_network_config')
 $SNIPPET('download_config_files')
@@ -102,11 +138,13 @@ $SNIPPET('cobbler_register')
 # Enable post-install boot notification
 $SNIPPET('post_anamon')
 # Start final steps
-# sudo
-<% if node['chef-bcs']['cobbler']['kickstart']['sudoer'] %>
-echo "%<%= node['chef-bcs']['cobbler']['kickstart']['sudoer'] %> ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/<%= node['chef-bcs']['cobbler']['kickstart']['sudoer'] %>
+
+# Setup sudoer
+<% if node['chef-bcs']['cobbler']['kickstart']['user']['name'] %>
+echo "%<%= node['chef-bcs']['cobbler']['kickstart']['user']['name'] %> ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/<%= node['chef-bcs']['cobbler']['kickstart']['user']['name'] %>
 sed -i "s/^[^#].*requiretty/#Defaults requiretty/" /etc/sudoers
 <% end %>
+
 # Sets the --netboot flag for the host on cobbler
 $SNIPPET('kickstart_done')
 # End final steps

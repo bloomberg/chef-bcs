@@ -97,11 +97,18 @@ end
 parts = node['chef-bcs']['cobbler']['partitions']
 
 # NOTE: This is for the BCS NODE kickstart and not the bootstrap kickstart.
+# Add the following in the erb file later
+# <%= node['chef-bcs']['cobbler']['partition_option'] %>
+# <% @parts.each do |part| %>
+# part <%= part['part'] %> --fstype=<%= part['fstype'] %> --size=<%= part['size'] %> <%= part['options'] %>
+# <% end %>
+
+# unless parts.is_a? Hash
 template "/var/lib/cobbler/kickstarts/#{node['chef-bcs']['cobbler']['kickstart']['file']}" do
     source "#{node['chef-bcs']['cobbler']['kickstart']['file']}.erb"
     mode 00644
     variables(
-      :parts => Hash[(0...parts.size).zip parts] unless parts.is_a? Hash
+      :parts => Hash[(0...parts.size).zip parts]
     )
 end
 

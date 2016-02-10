@@ -39,12 +39,27 @@ echo "--------------------------------------------"
 echo "Bootstrapping local VirtualBox environment..."
 echo
 
+while getopts vot opt; do
+    case $opt in
+        o)
+            BOOTSTRAP_OS=$OPTARG
+            ;;
+        t)
+            BOOTSTRAP_TYPE=$OPTARG
+            ;;
+        # verbose
+        v)
+            set -x
+            ;;
+    esac
+done
+
 source base_environment.sh
 source vbox_functions.sh
 
 # Override for other environments like production, staging etc.
 export BOOTSTRAP_CHEF_ENV=${BOOTSTRAP_CHEF_ENV:-"vm"}
-# Other type is 'bare_metal'
+# Other types are 'bare_metal, vagrant'
 export BOOTSTRAP_TYPE=${BOOTSTRAP_TYPE:-"vbox"}
 # Set environment var BOOTSTRAP_OS here - default to centos-7
 export BOOTSTRAP_OS=${BOOTSTRAP_OS:-"centos-7"}
