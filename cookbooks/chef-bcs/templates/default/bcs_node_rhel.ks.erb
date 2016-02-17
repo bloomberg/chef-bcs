@@ -8,11 +8,11 @@ eula --agreed
 # System bootloader configuration
 # Use grub2-mkpasswd-pbkdf2 to generate cryptic password for security
 # bootloader --append=" crashkernel=auto" --location=mbr --boot-drive=sda --iscrypted --password={{ bootloader_pwd }}
-<% if node['chef-bcs']['cobbler']['kickstart']['password_iscrypted'] %>
-bootloader --append=" crashkernel=auto" --location=mbr --boot-drive=sda --iscrypted --password=<%= node['chef-bcs']['cobbler']['kickstart']['bootloader_pwd'] %>
-<% else %>
+# <% if node['chef-bcs']['cobbler']['kickstart']['password_iscrypted'] %>
+# bootloader --append=" crashkernel=auto" --location=mbr --boot-drive=sda --iscrypted --password=<%= node['chef-bcs']['cobbler']['kickstart']['bootloader_pwd'] %>
+# <% else %>
 bootloader --append=" crashkernel=auto" --location=mbr --boot-drive=sda
-<% end %>
+# <% end %>
 
 # Partition clearing information
 clearpart --all --initlabel
@@ -49,7 +49,11 @@ rootpw --plaintext <%= node['chef-bcs']['cobbler']['kickstart']['rootpwd'] %>
 
 #User
 <% if !node['chef-bcs']['cobbler']['kickstart']['user']['name'].empty? %>
+<% if node['chef-bcs']['cobbler']['kickstart']['password_iscrypted'] %>
+user --iscrypted --name=<%= node['chef-bcs']['cobbler']['kickstart']['user']['name'] %> --password=<%= node['chef-bcs']['cobbler']['kickstart']['user']['passwd'] %>
+<% else %>
 user --plaintext --name=<%= node['chef-bcs']['cobbler']['kickstart']['user']['name'] %> --password=<%= node['chef-bcs']['cobbler']['kickstart']['user']['passwd'] %>
+<% end -%>
 <% end -%>
 
 # SELinux configuration
@@ -72,13 +76,12 @@ zerombr
 
 # Important: If you need other drives partitioned then change the 'partition_option' in the data and remove 'ignoredisk'
 # ignoredisk --drives=sdb,sdc
-# NOTE: Add partition automation in future - json environment file should go ahead and prepare for it.
-ignoredisk --only-use=sda
-part /boot    --fstype=xfs --size=1024   --ondisk=sda
-part /        --fstype=xfs --size=10000  --ondisk=sda
-part /var/lib --fstype=xfs --size=20000  --ondisk=sda
-part swap                  --size=8000
-part swap                  --size=32768
+# ignoredisk --only-use=sda
+<%= node['chef-bcs']['cobbler']['partition_option'] %>
+<% node['chef-bcs']['cobbler']['partitions'].each do |par| %>
+part <%= par['part'] %> --fstype=<%= par['fstype'] %> --size=<%= par['size'] %> <%= par['options'] %>
+<% end %>
+#part swap --size=32768
 
 %pre
 $SNIPPET('log_ks_pre')

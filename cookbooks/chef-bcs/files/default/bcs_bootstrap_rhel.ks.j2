@@ -23,12 +23,28 @@ network --bootproto=static --device=enp0s8 --mtu=9000 --noipv6 --activate --ip=1
 
 # Important: The bootstrap partition schema is static to the given environment
 # ignoredisk --drives=sdb,sdc
-ignoredisk --only-use=sda
-part /boot    --fstype=xfs --size=1024   --ondisk=sda
-part /        --fstype=xfs --size=10000  --ondisk=sda
-part /var/lib --fstype=xfs --size=20000  --ondisk=sda
-part swap                  --size=8000
+#ignoredisk --only-use=sda
+#part /boot    --fstype=xfs --size=1024   --ondisk=sda
+#part /        --fstype=xfs --size=10000  --ondisk=sda
+#part /var/lib --fstype=xfs --size=20000  --ondisk=sda
+#part swap                  --size=8000
 # part swap                  --size=32768
+
+part raid.01 --size=1024  --ondisk=sda
+part raid.02 --size=10000 --ondisk=sda
+part raid.03 --size=20000 --ondisk=sda
+part raid.04 --size=8000  --ondisk=sda
+
+part raid.05 --size=1024  --ondisk=sdb
+part raid.06 --size=10000 --ondisk=sdb
+part raid.07 --size=20000 --ondisk=sdb
+part raid.08 --size=8000  --ondisk=sdb
+
+raid /boot    --level=RAID1 --device=md0 --fstype=xfs  raid.01 raid.05
+raid /        --level=RAID1 --device=md1 --fstype=xfs  raid.02 raid.06
+raid /var/lib --level=RAID1 --device=md2 --fstype=xfs  raid.03 raid.07
+raid swap     --level=RAID1 --device=md3 --fstype=swap raid.04 raid.08
+
 
 ####################################
 

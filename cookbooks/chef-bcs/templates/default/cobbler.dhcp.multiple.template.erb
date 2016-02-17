@@ -1,5 +1,5 @@
 # ******************************************************************
-# Cobbler managed dhcpd.conf file
+# Cobbler managed dhcpd.conf file for MULTIPLE subnets
 #
 # generated from cobbler dhcp.conf template ($date)
 # Do NOT make changes to /etc/dhcpd.conf. Instead, make your changes
@@ -18,27 +18,31 @@ set vendorclass = option vendor-class-identifier;
 
 option pxe-system-type code 93 = unsigned integer 16;
 
-subnet <%= @subnet %> netmask <%=node['chef-bcs']['network']['public']['netmask']%> {
-     option routers             <%=node['chef-bcs']['network']['public']['gateway']%>;
-     option domain-name-servers <%=@node['chef-bcs']['dns_servers'].join(',') %>;
-     option subnet-mask         <%=node['chef-bcs']['network']['public']['netmask']%>;
-     range dynamic-bootp        <%= @range %>;
-     default-lease-time         21600;
-     max-lease-time             43200;
-     next-server                $next_server;
-     class "pxeclients" {
-          match if substring (option vendor-class-identifier, 0, 9) = "PXEClient";
-          if option pxe-system-type = 00:02 {
-                  filename "ia64/elilo.efi";
-          } else if option pxe-system-type = 00:06 {
-                  filename "grub/grub-x86.efi";
-          } else if option pxe-system-type = 00:07 {
-                  filename "grub/grub-x86_64.efi";
-          } else {
-                  filename "pxelinux.0";
-          }
-     }
-
+shared-network <%= node['chef-bcs']['cobbler']['dhcp_shared_network'] %> {
+<% node['chef-bcs']['cobbler']['dhcp_subnets'].each do |sub| %>
+  subnet <%= sub['subnet'] %> netmask <%= sub['subnet_mask']%> {
+       option routers             <%= sub['router'] %>;
+       option domain-name-servers <%= @node['chef-bcs']['dns_servers'].join(',') %>;
+       option subnet-mask         <%= sub['subnet_mask'] %>;
+       range dynamic-bootp        <%= sub['dhcp_range'].join(' ') %>;
+       default-lease-time         21600;
+       max-lease-time             43200;
+       next-server                $next_server;
+       class "pxeclients" {
+            match if substring (option vendor-class-identifier, 0, 9) = "PXEClient";
+            if option pxe-system-type = 00:02 {
+                    filename "ia64/elilo.efi";
+            } else if option pxe-system-type = 00:06 {
+                    filename "grub/grub-x86.efi";
+            } else if option pxe-system-type = 00:07 {
+                    filename "grub/grub-x86_64.efi";
+            } else {
+                    filename "pxelinux.0";
+            }
+       }
+  }
+  
+<% end -%>
 }
 
 #for dhcp_tag in $dhcp_tags.keys():

@@ -62,31 +62,50 @@ template '/etc/cobbler/users.digest' do
     mode 00600
 end
 
-template '/etc/cobbler/dhcp.template' do
-    source 'cobbler.dhcp.template.erb'
-    mode 00644
-    variables(
-        :range => node['chef-bcs']['cobbler']['dhcp_range'].join(' '),
-        :subnet => node['chef-bcs']['cobbler']['dhcp_subnet']
-    )
-end
+if node['chef-bcs']['cobbler']['dhcp_subnets'].length > 1
+  template '/etc/cobbler/dhcp.template' do
+      source 'cobbler.dhcp.multiple.template.erb'
+      mode 00644
+  end
 
-template '/etc/cobbler/dnsmasq.template' do
-    source 'cobbler.dnsmasq.template.erb'
-    mode 00644
-    variables(
-        :range => node['chef-bcs']['cobbler']['dhcp_range'].join(',')
-    )
-end
+  template '/etc/cobbler/dnsmasq.template' do
+      source 'cobbler.dnsmasq.multiple.template.erb'
+      mode 00644
+  end
 
-# NOTE: These next one aid in starting dhcp and dnsmasq *before* cobbler does a 'cobbler sync'. They will get
-# overridden on sync.
-template '/etc/dnsmasq.conf' do
-    source 'cobbler.dnsmasq.template.erb'
-    mode 00644
-    variables(
-      :range => node['chef-bcs']['cobbler']['dhcp_range'].join(',')
-    )
+  # NOTE: These next one aid in starting dhcp and dnsmasq *before* cobbler does a 'cobbler sync'. They will get
+  # overridden on sync.
+  template '/etc/dnsmasq.conf' do
+      source 'cobbler.dnsmasq.multiple.template.erb'
+      mode 00644
+  end
+else
+  template '/etc/cobbler/dhcp.template' do
+      source 'cobbler.dhcp.single.template.erb'
+      mode 00644
+      variables(
+          :range => node['chef-bcs']['cobbler']['dhcp_subnets'][0]['dhcp_range'].join(' '),
+          :subnet => node['chef-bcs']['cobbler']['dhcp_subnets'][0]['subnet']
+      )
+  end
+
+  template '/etc/cobbler/dnsmasq.template' do
+      source 'cobbler.dnsmasq.single.template.erb'
+      mode 00644
+      variables(
+          :range => node['chef-bcs']['cobbler']['dhcp_subnets'][0]['dhcp_range'].join(',')
+      )
+  end
+
+  # NOTE: These next one aid in starting dhcp and dnsmasq *before* cobbler does a 'cobbler sync'. They will get
+  # overridden on sync.
+  template '/etc/dnsmasq.conf' do
+      source 'cobbler.dnsmasq.single.template.erb'
+      mode 00644
+      variables(
+        :range => node['chef-bcs']['cobbler']['dhcp_subnets'][0]['dhcp_range'].join(',')
+      )
+  end
 end
 
 template '/etc/cobbler/modules.conf' do
@@ -94,22 +113,10 @@ template '/etc/cobbler/modules.conf' do
     mode 00644
 end
 
-parts = node['chef-bcs']['cobbler']['partitions']
-
-# NOTE: This is for the BCS NODE kickstart and not the bootstrap kickstart.
-# Add the following in the erb file later
-# <%= node['chef-bcs']['cobbler']['partition_option'] %>
-# <% @parts.each do |part| %>
-# part <%= part['part'] %> --fstype=<%= part['fstype'] %> --size=<%= part['size'] %> <%= part['options'] %>
-# <% end %>
-
-# unless parts.is_a? Hash
+# NOTE: All passwords *SHOULD* be encrypted so make sure to set up a proceedure to
 template "/var/lib/cobbler/kickstarts/#{node['chef-bcs']['cobbler']['kickstart']['file']}" do
     source "#{node['chef-bcs']['cobbler']['kickstart']['file']}.erb"
     mode 00644
-    variables(
-      :parts => Hash[(0...parts.size).zip parts]
-    )
 end
 
 # NOTE: This removes the default SSL from Apache so that Chef Server (NGINX) has no issues. However, this will not allow the web ui of Cobbler to be accessed.
