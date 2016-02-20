@@ -1,9 +1,8 @@
 #
 # Author:: Chris Jones <cjones303@bloomberg.net>
 # Cookbook Name:: chef-bcs
-# Recipe:: ceph-mon
 #
-# Copyright 2015, Bloomberg Finance L.P.
+# Copyright 2016, Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -45,6 +44,7 @@ else
   package 'syslinux'
   package 'pykickstart'
   package 'xinetd'
+  package 'createrepo'
 end
 
 package 'cobbler'
@@ -72,13 +72,6 @@ if node['chef-bcs']['cobbler']['dhcp_subnets'].length > 1
       source 'cobbler.dnsmasq.multiple.template.erb'
       mode 00644
   end
-
-  # NOTE: These next one aid in starting dhcp and dnsmasq *before* cobbler does a 'cobbler sync'. They will get
-  # overridden on sync.
-  template '/etc/dnsmasq.conf' do
-      source 'cobbler.dnsmasq.multiple.template.erb'
-      mode 00644
-  end
 else
   template '/etc/cobbler/dhcp.template' do
       source 'cobbler.dhcp.single.template.erb'
@@ -94,16 +87,6 @@ else
       mode 00644
       variables(
           :range => node['chef-bcs']['cobbler']['dhcp_subnets'][0]['dhcp_range'].join(',')
-      )
-  end
-
-  # NOTE: These next one aid in starting dhcp and dnsmasq *before* cobbler does a 'cobbler sync'. They will get
-  # overridden on sync.
-  template '/etc/dnsmasq.conf' do
-      source 'cobbler.dnsmasq.single.template.erb'
-      mode 00644
-      variables(
-        :range => node['chef-bcs']['cobbler']['dhcp_subnets'][0]['dhcp_range'].join(',')
       )
   end
 end

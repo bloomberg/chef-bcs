@@ -1,6 +1,6 @@
 #
-# Author:: Chris Jones <cjones303@bloomberg.net>
-# Cookbook Name:: chef-bcs
+# Author: Chris Jones <cjones303@bloomberg.net>
+# Cookbook: chef-bcs
 #
 # Copyright 2016, Bloomberg Finance L.P.
 #
@@ -16,14 +16,3 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-# NOTE: This recipe is
-# This recipe just controls the ceph system defaults
-if node['chef-bcs']['system']
-  # Test each /proc/system/... before overriding the defaults
-  if node['chef-bcs']['system']['pid_max']
-    node.default['ceph']['system']['pid_max'] = node['chef-bcs']['system']['pid_max']
-  end
-end
-
-include_recipe 'ceph-chef::system'

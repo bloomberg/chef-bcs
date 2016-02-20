@@ -31,6 +31,8 @@ package 'ethtool'
 package 'nmap'
 package 'iperf'
 package 'curl'
+package 'bmon'
+package 'conntrack'
 package 'tmux'
 
 # I/O troubleshooting tools
@@ -42,20 +44,26 @@ package 'iotop'
 package 'htop'
 package 'sysstat'
 package 'vim'
+package 'patch'
 
-# RHEL version...
+package 'sshpass'
+
+if node['chef-bcs']['init_style'] == 'upstart'
+  package 'python-dev'
+  package 'build-essential'
+else
+end
+
 package 'python-pip'
+package 'traceroute'
 
 # Create an operations user
 if node['chef-bcs']['users']
   users = node['chef-bcs']['users']
   users =  Hash[(0...users.size).zip users] unless users.is_a? Hash
   users.each do |index, user_value|
-    if user_value['passwd'].empty?
-      pwd = secure_password
-    else
-      pwd = user_value['passwd']
-    end
+    # Don't auto generate a password
+    pwd = user_value['passwd']
 
     user user_value['name'] do
       comment user_value['comment']
@@ -89,3 +97,6 @@ template '/etc/motd.tail' do
   source 'motd.tail.erb'
   mode 00640
 end
+
+# Set ntp servers
+node.default['ntp']['servers'] = node['chef-bcs']['ntp']['servers']

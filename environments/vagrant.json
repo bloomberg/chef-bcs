@@ -7,12 +7,17 @@
   "chef_type": "environment",
   "override_attributes": {
     "chef-bcs": {
+      "os": {
+        "name": "Red Hat",
+        "version": "7.2"
+      },
       "chef": {
         "owner": "vagrant",
         "group": "vagrant"
       },
+      "NOTE": "operations password for user is operations which is: ",
       "users": [
-        { "name": "operations", "comment": "Operations user", "passwd": "" }
+        { "name": "operations", "comment": "Operations user", "passwd": "$6$Salt$3xxLPT099nzTbWkOS3CPNcar/zSLQ8BEgZdJk/AOkOb4V80sPepbraWcvrJvEEu6PswpKUw1WodWeiqRo1bw2/" }
       ],
       "authorization": {
         "sudo": {
@@ -23,7 +28,8 @@
       },
       "ipmi": {
         "user": "vbox",
-        "passwd": "vbox"
+        "passwd": "$6$Salt$xvQkYaQ4urNWmnjpinAZSR/ZOaRy/aacKh4j18ayq/.mswLqleFZI5zaD1BCg2Fdzy1BjpBv9VIgVgt6YoA8T0",
+        "NOTE": "password of vbox is: $6$Salt$xvQkYaQ4urNWmnjpinAZSR/ZOaRy/aacKh4j18ayq/.mswLqleFZI5zaD1BCg2Fdzy1BjpBv9VIgVgt6YoA8T0"
       },
       "cobbler": {
         "key": "ceph_bootstrap.pub",
@@ -34,24 +40,28 @@
         "dhcp_subnet": "10.121.1.0",
         "dhcp_range": ["10.121.1.3", "10.121.1.254"],
         "kickstart": {
+          "NOTE": "password vagrant is: $6$Salt$6AyUczFy6SgV8A2wKAKfA9drpzrUsTGPJ3QjcWBbgS97BxBO.C7ZcBFALRiRkKfi9x8MK2SHet38BCQWS9LsR/",
           "password_iscrypted": true,
-          "rootpw": "vagrant",
+          "rootpw": "$6$Salt$6AyUczFy6SgV8A2wKAKfA9drpzrUsTGPJ3QjcWBbgS97BxBO.C7ZcBFALRiRkKfi9x8MK2SHet38BCQWS9LsR/",
           "file": "bcs_node_rhel.ks",
           "bootloader_pwd": "",
           "user": {
             "name": "vagrant",
-            "passwd": "vagrant"
+            "passwd": "$6$Salt$6AyUczFy6SgV8A2wKAKfA9drpzrUsTGPJ3QjcWBbgS97BxBO.C7ZcBFALRiRkKfi9x8MK2SHet38BCQWS9LsR/"
           }
         },
+        "systems": [
+          {}
+        ],
         "dhcp_shared_network": "bcs",
         "dhcp_subnets":[
-          {"subnet": "10.121.1.0", "tag": "rack1", "dhcp_range":["10.121.1.3", "10.121.1.30"], "subnet_mask": "255.255.255.224", "router": "10.121.1.2"},
-          {"subnet": "10.121.1.32", "tag": "rack2", "dhcp_range":["10.121.1.34", "10.121.1.62"], "subnet_mask": "255.255.255.224", "router": "10.121.1.33"},
-          {"subnet": "10.121.1.64", "tag": "rack3", "dhcp_range":["10.121.1.66", "10.121.1.94"], "subnet_mask": "255.255.255.224", "router": "10.121.1.65"}
+          {"subnet": "10.121.1.0", "tag": "rack1", "dhcp_range": ["10.121.1.3", "10.121.1.30"], "subnet_mask": "255.255.255.224", "router": "10.121.1.2"},
+          {"subnet": "10.121.1.32", "tag": "rack2", "dhcp_range": ["10.121.1.34", "10.121.1.62"], "subnet_mask": "255.255.255.224", "router": "10.121.1.33"},
+          {"subnet": "10.121.1.64", "tag": "rack3", "dhcp_range": ["10.121.1.66", "10.121.1.94"], "subnet_mask": "255.255.255.224", "router": "10.121.1.65"}
         ],
-        "dhcp_subnets_note1": "NOTE: Each subnet represents a routable rack so dhcp will need to manage each subnet with the TOR using IP-helper for dhcp requests by nodes in the given rack.",
-        "dhcp_subnets_note2": "NOTE: You could just have one subnet for a single L2 span set of racks.",
-        "dhcp_subnets_note3": "NOTE: /27 for subnet mask of each rack. DNS could be added to each subnet entry above but the global DNS entry below is good enough for this.",
+        "NOTE1": "NOTE: Each subnet represents a routable rack so dhcp will need to manage each subnet with the TOR using IP-helper for dhcp requests by nodes in the given rack.",
+        "NOTE2": "NOTE: You could just have one subnet for a single L2 span set of racks.",
+        "NOTE3": "NOTE: /27 for subnet mask of each rack. DNS could be added to each subnet entry above but the global DNS entry below is good enough for this.",
         "partition_option": "ignoredisk --only-use=sda",
         "partitions": [
           {"part": "/boot", "fstype": "xfs", "size": 1024, "options": "--ondisk=sda"},
@@ -64,16 +74,32 @@
         "xmlrpc_port": 25151,
         "distro": "centos-7-x86_64-minimal.iso",
         "os_name": "centos-7",
-        "os_version": "7.1",
+        "os_version": "7.2",
         "os_arch": "x86_64",
         "redhat_management_type": "off",
         "redhat_management_server": "xmlrpc.rhn.redhat.com",
-        "redhat_management_key": "",
+        "redhat_management_key": "cloud-object-store",
         "repo_mirror": true,
         "breed": "redhat"
       },
       "ceph": {
+        "version": "0.94.5-0.el7",
+        "version_number": "0.94.5",
+        "chooseleaf": "host",
+        "osd_niceness": -10,
+        "mon_niceness": -10,
+        "rebalance": false,
+        "journal_size": 10000,
+        "encrypted": false,
+        "config": {
+          "mon": {
+            "mon pg warn max per osd": 0,
+            "mon osd full ratio": 0.90,
+            "mon osd nearfull ratio": 0.80
+          }
+        },
         "pgp_auto_adjust" : true,
+        "pgs_per_node": 1024,
         "osd": {
             "devices": [
                 { "data": "/dev/sdb", "type": "hdd", "journal": "/dev/sdf" },
@@ -100,21 +126,28 @@
       "network": {
         "network_note1": "NOTE: Remove gateway and maybe netmask from below...",
         "public": {
-          "interface": "enp0s3",
-          "netmask": "255.255.255.0",
-          "cidr": "10.121.1.0/24",
-          "gateway": "10.121.1.2",
-          "mtu": 1500
+          "interface": "enp0s8",
+          "netmask-REMOVE": "255.255.255.0",
+          "cidr": [
+            "10.121.1.0/24"
+          ],
+          "gateway-REMOVE": "10.121.1.2",
+          "mtu": 9000
         },
         "cluster": {
-          "interface": "enp0s8",
-          "netmask": "255.255.255.0",
-          "cidr": "10.121.2.0/24",
-          "gateway": "10.121.2.2",
+          "interface": "enp0s9",
+          "netmask-REMOVE": "255.255.255.0",
+          "cidr": [
+            "10.121.2.0/24"
+          ],
+          "gateway-REMOVE": "10.121.2.2",
           "mtu": 9000
         }
       },
-      "dns_servers": [ "8.8.8.8", "8.8.4.4" ]
+      "dns_servers": [ "8.8.8.8", "8.8.4.4" ],
+      "ntp": {
+        "servers": [ "0.pool.ntp.org", "1.pool.ntp.org", "2.pool.ntp.org", "3.pool.ntp.org" ]
+      }
     },
     "chef_client": {
       "server_url": "http://10.121.1.2:4000",

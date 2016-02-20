@@ -1,5 +1,5 @@
 #
-# Copyright 2015, Bloomberg Finance L.P.
+# Copyright 2016, Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ default['chef-bcs']['libvirt-bin']['ulimit']['nofile'] = 4096
 # Region name for this cluster
 default['chef-bcs']['region_name'] = node.chef_environment
 # Domain name for this cluster (used in many configs)
-default['chef-bcs']['domain_name'] = "ceph.example.com"
+# default['chef-bcs']['domain_name'] = "ceph.example.com"
 
 ###########################################
 #
@@ -51,10 +51,10 @@ when 'debian'
     default['chef-bcs']['ceph']['version'] = '0.94.4-1trusty'
     default['chef-bcs']['ceph']['version_number'] = '0.94.4'
 when 'rhel'
-    default['chef-bcs']['os']['version'] = 'rhel7.1'  # centos-7.1 for CentOS
+    # default['chef-bcs']['os']['version'] = '7.2'
     # The default for Redhat. The default for CentOS is el7 and is overridden in the environment json file.
-    default['chef-bcs']['ceph']['version'] = '0.94.4-0.el7'
-    default['chef-bcs']['ceph']['version_number'] = '0.94.4'
+    # default['chef-bcs']['ceph']['version'] = '0.94.4-0.el7'
+    # default['chef-bcs']['ceph']['version_number'] = '0.94.4'
 end
 
 ###########################################
@@ -73,6 +73,7 @@ default['chef-bcs']['security']['sshd']['Max_Sessions'] = 10
 #  Flags firewall (firewall cookbook)
 #
 ###########################################
+# Don't remove unless you set it somewhere else since this controls the firewalld cookbook
 default['firewall']['allow_ssh'] = true
 
 ###########################################
@@ -80,17 +81,14 @@ default['firewall']['allow_ssh'] = true
 #  Flags network
 #
 ###########################################
-default['chef-bcs']['network']['public']['mtu'] = 1500
-default['chef-bcs']['network']['cluster']['mtu'] = 9000
+# default['chef-bcs']['network']['public']['mtu'] = 1500
+# default['chef-bcs']['network']['cluster']['mtu'] = 9000
 
 ###########################################
 #
 #  Flags to enable/disable ceph cluster features
 #
 ###########################################
-# This will enable the networking test scripts
-default['chef-bcs']['enabled']['network_tests'] = true
-
 # If radosgw_cache is enabled, default to 20MB max file size
 default['chef-bcs']['radosgw']['cache_max_file_size'] = 20000000
 default['chef-bcs']['radosgw']['port'] = 80
@@ -101,15 +99,13 @@ default['chef-bcs']['restapi']['port'] = 5080
 #  Ceph settings for the cluster
 #
 ###########################################
-default['chef-bcs']['ceph']['encrypted'] = false
-
-# To use apache instead of civetweb, make the following value anything but 'civetweb'
-default['chef-bcs']['ceph']['chooseleaf'] = "host"
-default['chef-bcs']['ceph']['pgp_auto_adjust'] = false
-# Need to review...
-default['chef-bcs']['ceph']['pgs_per_node'] = 1024
+# Here as an example: The given environment json file is where really data is located
+# default['chef-bcs']['ceph']['encrypted'] = false
+# default['chef-bcs']['ceph']['chooseleaf'] = "host"
+# default['chef-bcs']['ceph']['pgp_auto_adjust'] = false
+# default['chef-bcs']['ceph']['pgs_per_node'] = 1024
 # Journal size could be 10GB or higher in some cases
-default['chef-bcs']['ceph']['journal_size'] = 10000
+# default['chef-bcs']['ceph']['journal_size'] = 10000
 # The 'portion' parameters should add up to ~100 across all pools
 
 # NOTE: The default pool type is replicated. If you wish to change to Erasure Coding then override the node
@@ -119,17 +115,17 @@ default['chef-bcs']['ceph']['journal_size'] = 10000
 # setting to true will reduce the load form the resulting
 # ceph rebalance and keep things operational.
 # See wiki for further details.
-default['chef-bcs']['ceph']['rebalance'] = false
+# default['chef-bcs']['ceph']['rebalance'] = false
 
 # Set the default niceness of Ceph OSD and monitor processes
 # May only need to set these if you're running a converged cluster with OpenStack and Ceph on SAME hardware nodes
-default['chef-bcs']['ceph']['osd_niceness'] = -10
-default['chef-bcs']['ceph']['mon_niceness'] = -10
+# default['chef-bcs']['ceph']['osd_niceness'] = -10
+# default['chef-bcs']['ceph']['mon_niceness'] = -10
 
 # NOTE: See environment file for given environment to see other cobbler variables.
-default['chef-bcs']['cobbler']['server'] = nil
-default['chef-bcs']['cobbler']['http_port'] = 80
-default['chef-bcs']['cobbler']['https_port'] = 443
-default['chef-bcs']['cobbler']['xmlrpc_port'] = 25151
+# default['chef-bcs']['cobbler']['server'] = nil
+# default['chef-bcs']['cobbler']['http_port'] = 80
+# default['chef-bcs']['cobbler']['https_port'] = 443
+# default['chef-bcs']['cobbler']['xmlrpc_port'] = 25151
 # IMPORTANT: The name of this distro *MUST* match the 'prerequisite' script that downloads dependencies
-default['chef-bcs']['cobbler']['distro'] = 'centos-7-x86_64-minimal.iso'
+# default['chef-bcs']['cobbler']['distro'] = 'centos-7-x86_64-minimal.iso'

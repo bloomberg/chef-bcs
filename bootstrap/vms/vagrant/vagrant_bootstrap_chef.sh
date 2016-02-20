@@ -65,7 +65,7 @@ if [[ ! -z $COBBLER_BOOTSTRAP_ISO ]]; then
 fi
 
 # Add chef info to boostrap node.
-do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE cookbook upload -a"
+do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE cookbook upload -a -VV"
 do_on_node $CEPH_CHEF_BOOTSTRAP "cd \$HOME/chef-bcs/roles && $KNIFE role from file *.json"
 do_on_node $CEPH_CHEF_BOOTSTRAP "cd \$HOME/chef-bcs/environments && $KNIFE environment from file $BOOTSTRAP_CHEF_ENV.json"
 

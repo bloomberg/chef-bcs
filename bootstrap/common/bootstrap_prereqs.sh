@@ -79,20 +79,20 @@ mkdir -p $BOOTSTRAP_CACHE_DIR/{cookbooks,gems}
 # Most important cookbook
 #download_file cookbooks/ceph-chef-0.9.7.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/ceph-chef/versions/0.9.7/download
 
-download_file cookbooks/poise-2.5.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/poise/versions/2.5.0/download
-download_file cookbooks/chef-client-4.3.1.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/chef-client/versions/4.3.1/download
+download_file cookbooks/poise-2.6.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/poise/versions/2.6.0/download
+download_file cookbooks/chef-client-4.3.3.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/chef-client/versions/4.3.3/download
 download_file cookbooks/windows-1.38.1.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/windows/versions/1.38.1/download
-download_file cookbooks/cron-1.6.1.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/cron/versions/1.6.1/download
-download_file cookbooks/logrotate-1.6.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/logrotate/versions/1.6.0/download
-download_file cookbooks/ntp-1.8.6.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/ntp/versions/1.8.6/download
-download_file cookbooks/yum-3.8.1.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/yum/versions/3.8.1/download
-download_file cookbooks/yum-epel.0.6.3.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/yum-epel/versions/0.6.3/download
+download_file cookbooks/cron-1.7.4.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/cron/versions/1.7.4/download
+download_file cookbooks/logrotate-1.9.2.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/logrotate/versions/1.9.2/download
+download_file cookbooks/ntp-1.10.1.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/ntp/versions/1.10.1/download
+download_file cookbooks/yum-3.10.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/yum/versions/3.10.0/download
+download_file cookbooks/yum-epel.0.6.5.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/yum-epel/versions/0.6.5/download
 download_file cookbooks/apt-1.10.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/apt/versions/1.10.0/download
 download_file cookbooks/apache2-3.1.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/apache2/versions/3.1.0/download
-download_file cookbooks/chef_handler-1.2.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/chef_handler/versions/1.2.0/download
+download_file cookbooks/chef_handler-1.3.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/chef_handler/versions/1.3.0/download
 download_file cookbooks/firewall-2.4.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/firewall/versions/2.4.0/download
-download_file cookbooks/chef-sugar-3.1.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/chef-sugar/versions/3.1.0/download
-download_file cookbooks/sudo-2.7.2.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/sudo/versions/2.7.2/download
+download_file cookbooks/chef-sugar-3.3.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/chef-sugar/versions/3.3.0/download
+download_file cookbooks/sudo-2.9.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/sudo/versions/2.9.0/download
 
 # Gems
 # REQUIRED for ceph-chef cookbook - must be installed before doing 'sudo chef-client' on any node

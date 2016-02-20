@@ -9,6 +9,7 @@
 
 # Root password
 # rootpw --iscrypted {{ root_pwd }}
+# password
 rootpw --iscrypted $6$Salt$ygQwp3qFOrRhVYjIXpJ.pncgAiz/pE7KOhueH1fOZjbacHhTMYbfRW4lcU.MO9aBersBiskL9xMK.VXhCw.4a/
 
 # User
@@ -18,8 +19,9 @@ rootpw --iscrypted $6$Salt$ygQwp3qFOrRhVYjIXpJ.pncgAiz/pE7KOhueH1fOZjbacHhTMYbfR
 user --groups=wheel --name=operations --iscrypted --password=$6$Salt$3xxLPT099nzTbWkOS3CPNcar/zSLQ8BEgZdJk/AOkOb4V80sPepbraWcvrJvEEu6PswpKUw1WodWeiqRo1bw2/
 
 # Static NETWORK
-network --bootproto=static --device=enp0s3 --mtu=1500 --noipv6 --activate --ip=10.0.101.10 --netmask=255.255.255.0 --gateway=10.0.101.10 --nameserver=8.8.8.8 --hostname=vbox-ceph-bootstrap --onboot=off
-network --bootproto=static --device=enp0s8 --mtu=9000 --noipv6 --activate --ip=192.168.101.10 --netmask=255.255.255.0 --gateway=192.168.101.10 --nameserver=8.8.8.8 --hostname=vbox-ceph-bootstrap --onboot=off
+# network --bootproto=static --device={{ device }} --mtu={{ mtu }} --noipv6 --activate --ip={{ ip }} --netmask={{ net_mask }} --gateway={{ gateway }} --nameserver={{ name_servers }} --hostname={{ fqdn }} --onboot=off
+network --bootproto=static --device=enp0s3 --mtu=9000 --noipv6 --activate --ip=10.121.1.2 --netmask=255.255.255.224 --gateway=10.121.1.2 --nameserver=8.8.8.8 --hostname=vbox-ceph-bootstrap --onboot=off
+network --bootproto=static --device=enp0s8 --mtu=9000 --noipv6 --activate --ip=10.121.2.2 --netmask=255.255.255.224 --gateway=10.121.2.2 --nameserver=8.8.8.8 --hostname=vbox-ceph-bootstrap --onboot=off
 
 # Important: The bootstrap partition schema is static to the given environment
 # ignoredisk --drives=sdb,sdc
@@ -44,7 +46,6 @@ raid /boot    --level=RAID1 --device=md0 --fstype=xfs  raid.01 raid.05
 raid /        --level=RAID1 --device=md1 --fstype=xfs  raid.02 raid.06
 raid /var/lib --level=RAID1 --device=md2 --fstype=xfs  raid.03 raid.07
 raid swap     --level=RAID1 --device=md3 --fstype=swap raid.04 raid.08
-
 
 ####################################
 
@@ -140,8 +141,9 @@ $yum_config_stanza
 sed -i "s/#PermitRootLogin yes/PermitRootLogin yes/" /etc/ssh/sshd_config
 sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
 
-# Add a public key here if you like to authorized_keys but make sure to set permission to 0600
+# Add a public key here to authorized_keys but make sure to set permission to 0600
 mkdir --mode=0700 -p /home/operations/.ssh
+# echo "{{ operations_pub_key }}" >> /home/operations/.ssh/authorized_keys
 echo "<whatever your .pub key>" >> /home/operations/.ssh/authorized_keys
 chmod 0600 /home/operations/.ssh/authorized_keys
 chown operations:operations -R /home/operations/.ssh

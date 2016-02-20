@@ -1,4 +1,5 @@
-# kickstart template for Chef-BCS Nodes
+# kickstart template for Chef-BCS Nodes of OSD nodes. If a given node has an OSD role then it must use this kickstart.
+# Whatever is not found below then Cobbler 'fills in' the missing pieces such as networking.
 
 # System authorization information
 auth  --enableshadow  --passalgo=sha512
@@ -40,6 +41,8 @@ $SNIPPET('network_config')
 # Reboot after installation
 reboot
 
+# To create encrypted pwd: python -c 'import crypt; print(crypt.crypt("password", "$6$Salt"))' - Make 'password' whatever password you want and then run the python script
+# For example: vagrant password would be $6$Salt$6AyUczFy6SgV8A2wKAKfA9drpzrUsTGPJ3QjcWBbgS97BxBO.C7ZcBFALRiRkKfi9x8MK2SHet38BCQWS9LsR/
 #Root password
 <% if node['chef-bcs']['cobbler']['kickstart']['password_iscrypted'] %>
 rootpw --iscrypted <%= node['chef-bcs']['cobbler']['kickstart']['rootpwd'] %>

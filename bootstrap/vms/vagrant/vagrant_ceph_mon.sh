@@ -22,21 +22,21 @@ source vagrant_base.sh
 # Step 1
 #for vm in ${ceph_vms[@]}; do
 for vm in ${CEPH_MON_HOSTS[@]}; do
-  do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE node run_list add $vm.$BOOTSTRAP_DOMAIN 'role[ceph-mon-install]'"
-  do_on_node $vm "sudo chef-client"
+  do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE node run_list add $vm.$BOOTSTRAP_DOMAIN 'role[ceph-mon-install]' $CHEF_KNIFE_DEBUG"
+  do_on_node $vm "sudo chef-client $CHEF_CLIENT_DEBUG"
 done
 
 # Step 2
 #for vm in ${ceph_vms[@]}; do
 for vm in ${CEPH_MON_HOSTS[@]}; do
-  do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE node run_list add $vm.$BOOTSTRAP_DOMAIN 'role[ceph-mon-start]'"
-  do_on_node $vm "sudo chef-client -o 'role[ceph-mon-start]'"
+  do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE node run_list add $vm.$BOOTSTRAP_DOMAIN 'role[ceph-mon-start]' $CHEF_KNIFE_DEBUG"
+  do_on_node $vm "sudo chef-client $CHEF_CLIENT_DEBUG -o 'role[ceph-mon-start]'"
 done
 
 # Step 3
 #for vm in ${ceph_vms[@]}; do
 for vm in ${CEPH_MON_HOSTS[@]}; do
   sleep 3 # Let things settle down from the mon-start
-  do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE node run_list add $vm.$BOOTSTRAP_DOMAIN 'role[ceph-mon-keys]'"
-  do_on_node $vm "sudo chef-client -o 'role[ceph-mon-keys]'"
+  do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE node run_list add $vm.$BOOTSTRAP_DOMAIN 'role[ceph-mon-keys]' $CHEF_KNIFE_DEBUG"
+  do_on_node $vm "sudo chef-client $CHEF_CLIENT_DEBUG -o 'role[ceph-mon-keys]'"
 done

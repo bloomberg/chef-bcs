@@ -43,6 +43,15 @@
             "passwd": "vbox"
           }
         },
+        "dhcp_shared_network": "bcs",
+        "dhcp_subnets":[
+          {"subnet": "10.121.1.0", "tag": "rack1", "dhcp_range": ["10.121.1.3", "10.121.1.30"], "subnet_mask": "255.255.255.224", "router": "10.121.1.2"},
+          {"subnet": "10.121.1.32", "tag": "rack2", "dhcp_range": ["10.121.1.34", "10.121.1.62"], "subnet_mask": "255.255.255.224", "router": "10.121.1.33"},
+          {"subnet": "10.121.1.64", "tag": "rack3", "dhcp_range": ["10.121.1.66", "10.121.1.94"], "subnet_mask": "255.255.255.224", "router": "10.121.1.65"}
+        ],
+        "dhcp_subnets_note1": "NOTE: Each subnet represents a routable rack so dhcp will need to manage each subnet with the TOR using IP-helper for dhcp requests by nodes in the given rack.",
+        "dhcp_subnets_note2": "NOTE: You could just have one subnet for a single L2 span set of racks.",
+        "dhcp_subnets_note3": "NOTE: /27 for subnet mask of each rack. DNS could be added to each subnet entry above but the global DNS entry below is good enough for this.",
         "partition_option": "ignoredisk --only-use=sda",
         "partitions": [
           {"part": "/boot", "fstype": "xfs", "size": 1024, "options": "--ondisk=sda"},
@@ -59,7 +68,8 @@
         "os_arch": "x86_64",
         "redhat_management_type": "off",
         "redhat_management_server": "xmlrpc.rhn.redhat.com",
-        "redhat_management_key": "",
+        "redhat_management_key": "cloud-object-store",
+        "repo_mirror": true,
         "breed": "redhat"
       },
       "ceph": {
@@ -88,6 +98,7 @@
       },
       "domain_name" : "ceph.example.com",
       "network": {
+        "network_note1": "NOTE: Remove gateway and maybe netmask from below...",
         "public": {
           "interface": "enp0s3",
           "netmask": "255.255.255.0",

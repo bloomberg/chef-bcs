@@ -20,5 +20,5 @@ source vagrant_base.sh
 
 # Setup Ceph tunables
 # NOTE: Only needs to be done on first mon node
-do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE node run_list add ${CEPH_MON_HOSTS[@]:1:1}.$BOOTSTRAP_DOMAIN 'role[ceph-tunables]'"
-do_on_node ${CEPH_MON_HOSTS[@]:1:1} "sudo chef-client -o 'role[ceph-tunables]'"
+do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE node run_list add ${CEPH_MON_HOSTS[@]:1:1}.$BOOTSTRAP_DOMAIN 'role[ceph-tunables]' $CHEF_KNIFE_DEBUG"
+do_on_node ${CEPH_MON_HOSTS[@]:1:1} "sudo chef-client $CHEF_CLIENT_DEBUG -o 'role[ceph-tunables]'"

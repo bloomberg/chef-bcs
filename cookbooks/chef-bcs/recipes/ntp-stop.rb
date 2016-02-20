@@ -34,6 +34,6 @@ else
     provider Chef::Provider::Service::Redhat
     action [:stop]
     # opposite
-    not_if "which ntp"
+    not_if "which ntpd"
   end
 end

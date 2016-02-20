@@ -20,6 +20,7 @@ option pxe-system-type code 93 = unsigned integer 16;
 
 shared-network <%= node['chef-bcs']['cobbler']['dhcp_shared_network'] %> {
 <% node['chef-bcs']['cobbler']['dhcp_subnets'].each do |sub| %>
+
   subnet <%= sub['subnet'] %> netmask <%= sub['subnet_mask']%> {
        option routers             <%= sub['router'] %>;
        option domain-name-servers <%= @node['chef-bcs']['dns_servers'].join(',') %>;
@@ -41,7 +42,7 @@ shared-network <%= node['chef-bcs']['cobbler']['dhcp_shared_network'] %> {
             }
        }
   }
-  
+
 <% end -%>
 }
 

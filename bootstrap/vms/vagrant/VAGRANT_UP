@@ -37,10 +37,14 @@ echo "--------------------------------------------"
 echo "Bootstrapping local Vagrant environment..."
 echo
 
-while getopts bsvdot opt; do
+while getopts cbsvdot opt; do
     case $opt in
         b)
             BUILD_VMS_ONLY=1
+            ;;
+        c)
+            CHEF_KNIFE_DEBUG="-VV"
+            CHEF_CLIENT_DEBUG="-l debug"
             ;;
         d)
             BOOTSTRAP_VAGRANT_DEBUG=1
@@ -62,6 +66,9 @@ while getopts bsvdot opt; do
 done
 
 source ../base_environment.sh
+
+export CHEF_KNIFE_DEBUG=${CHEF_KNIFE_DEBUG:-""}
+export CHEF_CLIENT_DEBUG=${CHEF_CLIENT_DEBUG:-""}
 
 # Override for other environments like production, staging etc.
 export BOOTSTRAP_CHEF_ENV=${BOOTSTRAP_CHEF_ENV:-"vagrant"}

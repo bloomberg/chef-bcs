@@ -16,6 +16,8 @@
 # limitations under the License.
 #
 
+### OLD
+
 set -e
 
 # Clone VMs to make working on Chef portion faster. No need to rebuild. Instead, run vbox_reverse_cloning_vms.sh

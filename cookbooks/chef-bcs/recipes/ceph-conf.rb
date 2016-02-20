@@ -17,13 +17,7 @@
 # limitations under the License.
 #
 
-# NOTE: This recipe is
-# This recipe just controls the ceph system defaults
-if node['chef-bcs']['system']
-  # Test each /proc/system/... before overriding the defaults
-  if node['chef-bcs']['system']['pid_max']
-    node.default['ceph']['system']['pid_max'] = node['chef-bcs']['system']['pid_max']
-  end
-end
+# This recipe allows to specify overrides to the ceph.conf settings in ceph-chef cookbook.
 
-include_recipe 'ceph-chef::system'
+node.default['ceph']['network']['public']['cidr'] = node['chef-bcs']['network']['public']['cidr']
+node.default['ceph']['network']['cluster']['cidr'] = node['chef-bcs']['network']['cluster']['cidr']

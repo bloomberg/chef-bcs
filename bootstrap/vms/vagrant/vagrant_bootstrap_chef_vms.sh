@@ -35,7 +35,7 @@ for vm in ${ceph_vms[@]}; do
 
   # NOTE: If this command seems to stall then the network needs to be reset. Run ./vagrant_reset_network.sh from the
   # directory this script is located in. This will clean any network issues. Same holds true for other VMs.
-  do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE bootstrap -x vagrant --bootstrap-no-proxy '$CEPH_CHEF_BOOTSTRAP.$BOOTSTRAP_DOMAIN,$vm.$BOOTSTRAP_DOMAIN' $KNIFE_HTTP_PROXY_PARAM -P vagrant --sudo $vm.$BOOTSTRAP_DOMAIN"
+  do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE bootstrap -x vagrant --bootstrap-no-proxy '$CEPH_CHEF_BOOTSTRAP.$BOOTSTRAP_DOMAIN,$vm.$BOOTSTRAP_DOMAIN' $KNIFE_HTTP_PROXY_PARAM -P vagrant --sudo $vm.$BOOTSTRAP_DOMAIN $CHEF_KNIFE_DEBUG"
 
   # REQUIRED gems: netaddr-1.5.0 for ceph-chef Cookbook
   do_on_node $vm "sudo cp /ceph-files/gems/netaddr-1.5.0.gem /tmp/."
@@ -43,10 +43,10 @@ done
 
 # augment the previously configured nodes with our newly uploaded environments and roles
 for vm in ${CEPH_CHEF_HOSTS[@]}; do
-  do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE node environment set $vm.$BOOTSTRAP_DOMAIN $BOOTSTRAP_CHEF_ENV"
+  do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE node environment set $vm.$BOOTSTRAP_DOMAIN $BOOTSTRAP_CHEF_ENV $CHEF_KNIFE_DEBUG"
 done
 
-do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE node run_list set $CEPH_CHEF_BOOTSTRAP.$BOOTSTRAP_DOMAIN 'role[ceph-bootstrap]'"
+do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE node run_list set $CEPH_CHEF_BOOTSTRAP.$BOOTSTRAP_DOMAIN 'role[ceph-bootstrap]' $CHEF_KNIFE_DEBUG"
 
 ##### TEST
 # generate actor map

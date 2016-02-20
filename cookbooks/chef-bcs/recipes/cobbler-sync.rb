@@ -2,7 +2,7 @@
 # Author:: Chris Jones <cjones303@bloomberg.net>
 # Cookbook Name:: chef-bcs
 #
-# Copyright 2015, Bloomberg Finance L.P.
+# Copyright 2016, Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -49,6 +49,14 @@ bash 'add-system-to-cobbler' do
     EOH
     not_if "cobbler system list | grep ceph_node"
     only_if "test -f /tmp/#{node['chef-bcs']['cobbler']['distro']}"
+end
+
+bash 'edit-system-to-cobbler' do
+    user 'root'
+    code <<-EOH
+        cobbler system edit --name=ceph_node --profile=#{node['chef-bcs']['cobbler']['os_name']}-#{node['chef-bcs']['cobbler']['os_arch']}
+    EOH
+    only_if "cobbler system list | grep ceph_node"
 end
 
 # Cobbler will create the base pxe boot files needed. Every time you modify profile/system/distro you will need to do a cobbler sync

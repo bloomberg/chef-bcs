@@ -1,7 +1,6 @@
 #
 # Author:: Chris Jones <cjones303@bloomberg.net>
 # Cookbook Name:: chef-bcs
-# Recipe:: ceph-mon
 #
 # Copyright 2015, Bloomberg Finance L.P.
 #
@@ -39,6 +38,8 @@ else
   # Normally tftp will start with xinetd.
   service 'xinetd' do
     action [:enable, :start]
+    provider Chef::Provider::Service::Init::Redhat
+    supports :status => true, :restart => true
   end
   # xinetd - tftp is managed by it but there can be an issue on some systemd systems so try to start it again.
   # NOTE: tftp.socket gets enabled on some systems but tftp.service does not thus on reboot tftp may not start. If

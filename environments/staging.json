@@ -1,11 +1,16 @@
 {
   "name": "staging",
   "json_class": "Chef::Environment",
-  "description": "Staging/QA *EXAMPLE* environment",
+  "description": "Staging environment",
+  "NOTE": "NOTE key is ONLY for documenting this json data since json does not allow for comments. This data file is for PXE booting via bare-metal.",
   "cookbook_versions": {},
   "chef_type": "environment",
   "override_attributes": {
     "chef-bcs": {
+      "chef": {
+        "owner": "vbox",
+        "group": "vbox"
+      },
       "users": [
         { "name": "operations", "comment": "Operations user", "passwd": "" }
       ],
@@ -16,26 +21,55 @@
           "passwordless": "true"
         }
       },
+      "ipmi": {
+        "user": "vbox",
+        "passwd": "vbox"
+      },
       "cobbler": {
+        "key": "ceph_bootstrap.pub",
+        "web_user": "cobbler",
         "interface": "enp0s3",
-        "pxe_interface": "enp0s8",
-        "server": "10.0.101.10",
-        "dhcp_subnet": "10.0.101.0",
-        "dhcp_range": "10.0.101.11 10.0.101.250",
+        "pxe_interface": "enp0s3",
+        "server": "10.121.1.2",
+        "dhcp_subnet": "10.121.1.0",
+        "dhcp_range": ["10.121.1.3", "10.121.1.254"],
         "kickstart": {
-          "rootpw": "vagrant",
-          "file": "rhel.ks",
-          "sudoer": "vagrant",
-          "user": { "name": "vagrant", "passwd": "vagrant" }
+          "password_iscrypted": true,
+          "rootpw": "vbox",
+          "file": "bcs_node_rhel.ks",
+          "bootloader_pwd": "",
+          "user": {
+            "name": "vbox",
+            "passwd": "vbox"
+          }
         },
+        "dhcp_shared_network": "bcs",
+        "dhcp_subnets":[
+          {"subnet": "10.121.1.0", "tag": "rack1", "dhcp_range": ["10.121.1.3", "10.121.1.30"], "subnet_mask": "255.255.255.224", "router": "10.121.1.2"},
+          {"subnet": "10.121.1.32", "tag": "rack2", "dhcp_range": ["10.121.1.34", "10.121.1.62"], "subnet_mask": "255.255.255.224", "router": "10.121.1.33"},
+          {"subnet": "10.121.1.64", "tag": "rack3", "dhcp_range": ["10.121.1.66", "10.121.1.94"], "subnet_mask": "255.255.255.224", "router": "10.121.1.65"}
+        ],
+        "dhcp_subnets_note1": "NOTE: Each subnet represents a routable rack so dhcp will need to manage each subnet with the TOR using IP-helper for dhcp requests by nodes in the given rack.",
+        "dhcp_subnets_note2": "NOTE: You could just have one subnet for a single L2 span set of racks.",
+        "dhcp_subnets_note3": "NOTE: /27 for subnet mask of each rack. DNS could be added to each subnet entry above but the global DNS entry below is good enough for this.",
+        "partition_option": "ignoredisk --only-use=sda",
+        "partitions": [
+          {"part": "/boot", "fstype": "xfs", "size": 1024, "options": "--ondisk=sda"},
+          {"part": "/", "fstype": "xfs", "size": 10000, "options": "--ondisk=sda"},
+          {"part": "/var/lib", "fstype": "xfs", "size": 20000, "options": "--ondisk=sda"},
+          {"part": "swap", "fstype": "swap", "size": 8000, "options": ""}
+        ],
         "http_port": 80,
         "https_port": 443,
         "xmlrpc_port": 25151,
-        "distro": "CentOS-7-x86_64-Minimal-1511.iso",
+        "distro": "centos-7-x86_64-minimal.iso",
         "os_name": "centos-7",
         "os_version": "7.1",
         "os_arch": "x86_64",
         "redhat_management_type": "off",
+        "redhat_management_server": "xmlrpc.rhn.redhat.com",
+        "redhat_management_key": "cloud-object-store",
+        "repo_mirror": true,
         "breed": "redhat"
       },
       "ceph": {
@@ -64,25 +98,26 @@
       },
       "domain_name" : "ceph.example.com",
       "network": {
+        "network_note1": "NOTE: Remove gateway and maybe netmask from below...",
         "public": {
-          "interface": "enp0s8",
+          "interface": "enp0s3",
           "netmask": "255.255.255.0",
-          "cidr": "10.0.101.0/24",
-          "gateway": "10.0.101.10",
+          "cidr": "10.121.1.0/24",
+          "gateway": "10.121.1.2",
           "mtu": 1500
         },
         "cluster": {
-          "interface": "enp0s9",
+          "interface": "enp0s8",
           "netmask": "255.255.255.0",
-          "cidr": "192.168.101.0/24",
-          "gateway": "192.168.101.10",
+          "cidr": "10.121.17.0/24",
+          "gateway": "10.121.17.2",
           "mtu": 9000
         }
       },
       "dns_servers": [ "8.8.8.8", "8.8.4.4" ]
     },
     "chef_client": {
-      "server_url": "http://10.0.101.10:4000",
+      "server_url": "http://10.121.1.2:4000",
       "cache_path": "/var/chef/cache",
       "backup_path": "/var/chef/backup",
       "validation_client_name": "chef-validator",
