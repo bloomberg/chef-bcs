@@ -239,7 +239,6 @@ function create_network_interfaces {
 function config_networks {
     # Force a pause to allow all of the vms to settle
     echo "Preparing to shutdown VMs. Please wait..."
-    sleep 5
 
     source $REPO_ROOT/bootstrap/vms/ceph_chef_hosts.env
     source $REPO_ROOT/bootstrap/vms/ceph_chef_adapters.env
@@ -250,7 +249,7 @@ function config_networks {
 
     # If you don't give VB enough time to close things down it will corrupt
     echo "Creating network interfaces..."
-    sleep 3
+    sleep 20
 
     # Build interfaces...
     create_network_interfaces

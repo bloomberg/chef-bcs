@@ -1,4 +1,7 @@
 #
+# Author:: Chris Jones <cjones303@bloomberg.net>
+# Cookbook Name:: chef-bcs
+#
 # Copyright 2016, Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,18 +17,7 @@
 # limitations under the License.
 #
 
-# Change these to fit your organization
-default['chef-bcs']['country'] = "US"
-default['chef-bcs']['state'] = "NY"
-default['chef-bcs']['location'] = "New York"
-default['chef-bcs']['organization'] = "Bloomberg"
-
-case node['platform']
-when 'ubuntu'
-  default['chef-bcs']['init_style'] = 'upstart'
-else
-  default['chef-bcs']['init_style'] = 'sysvinit'
+# Stop the firewall
+firewall 'default' do
+  action :disable
 end
-
-# Don't remove unless you set it somewhere else since this controls the firewalld cookbook
-default['firewall']['allow_ssh'] = true

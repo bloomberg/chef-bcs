@@ -29,7 +29,7 @@ export BOOTSTRAP_REPO_MIRROR=${BOOTSTRAP_REPO_MIRROR:-}
 export VBOX_SATA_CONTROLLER=${VBOX_SATA_CONTROLLER:-"SATA Controller"}
 # Set environment var BOOTSTRAP_OS here - default to centos-7
 export BOOTSTRAP_OS=${BOOTSTRAP_OS:-"centos-7"}
-# IMPORTANT: The name of the cobbler distro that must match node['chef-bcs']['cobbler']['distro']
+# IMPORTANT: The name of the cobbler distro that must match node['chef-bcs']['cobbler']['os']['distro']
 export COBBLER_BOOTSTRAP_ISO=${COBBLER_BOOTSTRAP_ISO:-"centos-7-x86_64-minimal.iso"}
 # IMPORTANT: The remote url of where to download the iso from.
 export COBBLER_REMOTE_URL_ISO=${COBBLER_REMOTE_URL_ISO:-"http://mirror.umd.edu/centos/7.2.1511/isos/x86_64/CentOS-7-x86_64-Minimal-1511.iso"}

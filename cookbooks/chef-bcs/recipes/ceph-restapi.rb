@@ -22,4 +22,4 @@
 # attribute values are normally a better choice but in this case we want to set the 'rgw dns name' from
 # another node attribute value.
 
-node.default['ceph']['restapi']['port'] = node['chef-bcs']['restapi']['port']
+node.default['ceph']['restapi']['port'] = node['chef-bcs']['ceph']['restapi']['port']

@@ -26,6 +26,8 @@ for vm in ${ceph_vms[@]}; do
 done
 
 # Now just set the specific nodes...
+# Set bootstrap too
+do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE tag create $CEPH_CHEF_BOOTSTRAP.$BOOTSTRAP_DOMAIN 'ceph-bootstrap' $CHEF_KNIFE_DEBUG"
 
 for vm in ${CEPH_MON_HOSTS[@]}; do
   do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE tag create $vm.$BOOTSTRAP_DOMAIN 'ceph-mon' $CHEF_KNIFE_DEBUG"

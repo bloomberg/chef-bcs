@@ -62,44 +62,57 @@ template '/etc/cobbler/users.digest' do
     mode 00600
 end
 
-if node['chef-bcs']['cobbler']['dhcp_subnets'].length > 1
+# These would go in the environment json file in dhcp subnets section.
+# Single subnet
+#             {"subnet": "10.121.1.0", "tag": "rack1", "dhcp_range": ["10.121.1.3", "10.121.1.254"], "netmask": "255.255.255.0", "router": "10.121.1.2"}
+
+# Multiple subnets
+#            {"subnet": "10.121.1.0", "tag": "rack1", "dhcp_range": ["10.121.1.3", "10.121.1.30"], "netmask": "255.255.255.224", "router": "10.121.1.2"},
+#            {"subnet": "10.121.1.32", "tag": "rack2", "dhcp_range": ["10.121.1.34", "10.121.1.62"], "netmask": "255.255.255.224", "router": "10.121.1.33"},
+#            {"subnet": "10.121.1.64", "tag": "rack3", "dhcp_range": ["10.121.1.66", "10.121.1.94"], "netmask": "255.255.255.224", "router": "10.121.1.65"}
+
+if node['chef-bcs']['cobbler']['dhcp']['subnets'].length > 1
   template '/etc/cobbler/dhcp.template' do
-      source 'cobbler.dhcp.multiple.template.erb'
-      mode 00644
+    source 'cobbler.dhcp.multiple.template.erb'
+    mode 00644
   end
 
   template '/etc/cobbler/dnsmasq.template' do
-      source 'cobbler.dnsmasq.multiple.template.erb'
-      mode 00644
+    source 'cobbler.dnsmasq.multiple.template.erb'
+    mode 00644
   end
 else
   template '/etc/cobbler/dhcp.template' do
-      source 'cobbler.dhcp.single.template.erb'
-      mode 00644
-      variables(
-          :range => node['chef-bcs']['cobbler']['dhcp_subnets'][0]['dhcp_range'].join(' '),
-          :subnet => node['chef-bcs']['cobbler']['dhcp_subnets'][0]['subnet']
-      )
+    source 'cobbler.dhcp.single.template.erb'
+    mode 00644
+    variables(
+        :range => node['chef-bcs']['cobbler']['dhcp']['subnets'][0]['dhcp_range'].join(' '),
+        :subnet => node['chef-bcs']['cobbler']['dhcp']['subnets'][0]['subnet']
+    )
   end
 
   template '/etc/cobbler/dnsmasq.template' do
-      source 'cobbler.dnsmasq.single.template.erb'
-      mode 00644
-      variables(
-          :range => node['chef-bcs']['cobbler']['dhcp_subnets'][0]['dhcp_range'].join(',')
-      )
+    source 'cobbler.dnsmasq.single.template.erb'
+    mode 00644
+    variables(
+        :range => node['chef-bcs']['cobbler']['dhcp']['subnets'][0]['dhcp_range'].join(',')
+    )
   end
 end
 
 template '/etc/cobbler/modules.conf' do
-    source 'cobbler.modules.conf.erb'
-    mode 00644
+  source 'cobbler.modules.conf.erb'
+  mode 00644
 end
 
-# NOTE: All passwords *SHOULD* be encrypted so make sure to set up a proceedure to
-template "/var/lib/cobbler/kickstarts/#{node['chef-bcs']['cobbler']['kickstart']['file']}" do
-    source "#{node['chef-bcs']['cobbler']['kickstart']['file']}.erb"
-    mode 00644
+template "/var/lib/cobbler/kickstarts/#{node['chef-bcs']['cobbler']['kickstart']['file']['osd']}" do
+  source "#{node['chef-bcs']['cobbler']['kickstart']['file']['osd']}.erb"
+  mode 00644
+end
+
+template "/var/lib/cobbler/kickstarts/#{node['chef-bcs']['cobbler']['kickstart']['file']['nonosd']}" do
+  source "#{node['chef-bcs']['cobbler']['kickstart']['file']['nonosd']}.erb"
+  mode 00644
 end
 
 # NOTE: This removes the default SSL from Apache so that Chef Server (NGINX) has no issues. However, this will not allow the web ui of Cobbler to be accessed.
@@ -114,8 +127,8 @@ end
 
 # NOTE: *.iso are blocked from github push/pull via .gitignore so download desired ISO and put it into files directory.
 if ENV.has_key?('COBBLER_BOOTSTRAP_ISO')
-  cookbook_file "/tmp/#{node['chef-bcs']['cobbler']['distro']}" do
-    source "#{node['chef-bcs']['cobbler']['distro']}"
+  cookbook_file "/tmp/#{node['chef-bcs']['cobbler']['os']['distro']}" do
+    source "#{node['chef-bcs']['cobbler']['os']['distro']}"
     owner 'root'
     group 'root'
     mode 00444

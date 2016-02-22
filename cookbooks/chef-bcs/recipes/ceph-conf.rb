@@ -18,6 +18,12 @@
 #
 
 # This recipe allows to specify overrides to the ceph.conf settings in ceph-chef cookbook.
+# Some values are part of 'ceph''config''global' which will create a k,v pair as is.
+# Some values are specific variables that need to be set instead.
 
 node.default['ceph']['network']['public']['cidr'] = node['chef-bcs']['network']['public']['cidr']
 node.default['ceph']['network']['cluster']['cidr'] = node['chef-bcs']['network']['cluster']['cidr']
+
+# An example of using sharding for RGW (small value for testing...). Putting it in the 'global' section.
+# Default is 0 - no sharding index. Anything > 0 will initiate index sharding.
+node.default['ceph']['config'] = node['chef-bcs']['ceph']['config']

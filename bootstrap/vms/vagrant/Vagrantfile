@@ -138,7 +138,7 @@ end
 # NOTE: Now build *ALL* of the environment related files that drive the bash scripts and Chef...
 
 # Last value in adapters_string array is net_mask
-$dns_servers = "export CEPH_CHEF_DNS=( #{environment['vagrant']['dns'][0]} #{environment['vagrant']['dns'][1]} )"
+$dns_servers = "export CEPH_CHEF_DNS=( #{environment['vagrant']['dns'].first} #{environment['vagrant']['dns'].last} )"
 $adapters_string = "export CEPH_CHEF_ADAPTERS=( #{environment['vagrant']['front_end_adapter_ip']} #{environment['vagrant']['back_end_adapter_ip']} #{environment['vagrant']['net_mask'][0]} )"
 $bootstrap_name = "export CEPH_CHEF_BOOTSTRAP="
 $host_file_entries = ""

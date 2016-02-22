@@ -20,3 +20,6 @@
 # Comment out the two lines below to go back to the latest hammer point release
 # node.default['ceph']['branch'] = 'testing'
 # node.default['ceph']['version'] = 'infernalis'
+
+node.default['ceph']['version'] = node['chef-bcs']['ceph']['repo']['version']['name']
+node.default['ceph']['branch'] = node['chef-bcs']['ceph']['repo']['version']['branch']

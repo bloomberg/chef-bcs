@@ -20,9 +20,9 @@
 # PURPOSE:
 # This recipe registers the rhel subscription with a Satellite/Capsule server.
 
-if node['chef-bcs']['cobbler']['breed'] == 'redhat' && !node['chef-bcs']['cobbler']['repo_mirror'] && node['chef-bcs']['cobbler']['redhat_management_type'] != "off"
+if node['chef-bcs']['cobbler']['os']['breed'] == 'redhat' && !node['chef-bcs']['cobbler']['repo_mirror'] && node['chef-bcs']['cobbler']['redhat']['management']['type'] != "off"
   execute 'rhel-enable-repo' do
-    command "subscription-manager register --activationkey #{node['chef-bcs']['cobbler']['redhat_management_key']} --org \"Default_Organization\" --force"
+    command "subscription-manager register --activationkey #{node['chef-bcs']['cobbler']['redhat']['management']['key']} --org \"Default_Organization\" --force"
   end
 end
 

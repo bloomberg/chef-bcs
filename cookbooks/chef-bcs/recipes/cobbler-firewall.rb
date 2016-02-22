@@ -27,25 +27,25 @@
 # Can also tighten even further by only allowing traffic from upstream load balancer etc...
 
 firewall_rule 'http' do
-  port node['chef-bcs']['cobbler']['http_port']
+  port node['chef-bcs']['cobbler']['ports']['http']
   command :allow
   permanent true
 end
 
 firewall_rule 'https' do
-  port node['chef-bcs']['cobbler']['https_port']
+  port node['chef-bcs']['cobbler']['ports']['https']
   command :allow
   permanent true
 end
 
 firewall_rule 'xmlrpc' do
-  port node['chef-bcs']['cobbler']['xmlrpc_port']
+  port node['chef-bcs']['cobbler']['ports']['xmlrpc']
   command :allow
   permanent true
 end
 
 firewall_rule 'cobbler-api' do
-  port 25150
+  port [25150,25151]
   command :allow
   permanent true
 end

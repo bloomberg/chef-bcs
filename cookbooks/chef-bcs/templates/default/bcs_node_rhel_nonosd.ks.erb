@@ -30,11 +30,7 @@ eula --agreed
 # System bootloader configuration
 # Use grub2-mkpasswd-pbkdf2 to generate cryptic password for security
 # bootloader --append=" crashkernel=auto" --location=mbr --boot-drive=sda --iscrypted --password={{ bootloader_pwd }}
-# <% if node['chef-bcs']['cobbler']['kickstart']['password_iscrypted'] %>
-# bootloader --append=" crashkernel=auto" --location=mbr --boot-drive=sda --iscrypted --password=<%= node['chef-bcs']['cobbler']['kickstart']['bootloader_pwd'] %>
-# <% else %>
-bootloader --append=" crashkernel=auto" --location=mbr --boot-drive=sda
-# <% end %>
+bootloader --append=" crashkernel=auto" --location=mbr --boot-drive=sda <%= node['chef-bcs']['cobbler']['kickstart']['bootloader']['passwd_type'] %> <%= node['chef-bcs']['cobbler']['kickstart']['bootloader']['passwd'] %>
 
 # Partition clearing information
 clearpart --all --initlabel
@@ -65,19 +61,11 @@ reboot
 # To create encrypted pwd: python -c 'import crypt; print(crypt.crypt("password", "$6$Salt"))' - Make 'password' whatever password you want and then run the python script
 # For example: vagrant password would be $6$Salt$6AyUczFy6SgV8A2wKAKfA9drpzrUsTGPJ3QjcWBbgS97BxBO.C7ZcBFALRiRkKfi9x8MK2SHet38BCQWS9LsR/
 #Root password
-<% if node['chef-bcs']['cobbler']['kickstart']['password_iscrypted'] %>
-rootpw --iscrypted <%= node['chef-bcs']['cobbler']['kickstart']['rootpwd'] %>
-<% else %>
-rootpw --plaintext <%= node['chef-bcs']['cobbler']['kickstart']['rootpwd'] %>
-<% end -%>
+rootpw <%= node['chef-bcs']['cobbler']['kickstart']['root']['passwd_type'] %> <%= node['chef-bcs']['cobbler']['kickstart']['root']['passwd'] %>
 
-# User - Only adds one but you can add a loop here but make sure to change node var to []
-<% if !node['chef-bcs']['cobbler']['kickstart']['user']['name'].empty? %>
-<% if node['chef-bcs']['cobbler']['kickstart']['password_iscrypted'] %>
-user --iscrypted --name=<%= node['chef-bcs']['cobbler']['kickstart']['user']['name'] %> --password=<%= node['chef-bcs']['cobbler']['kickstart']['user']['passwd'] %>
-<% else %>
-user --plaintext --name=<%= node['chef-bcs']['cobbler']['kickstart']['user']['name'] %> --password=<%= node['chef-bcs']['cobbler']['kickstart']['user']['passwd'] %>
-<% end -%>
+#User(s)
+<% node['chef-bcs']['cobbler']['kickstart']['users'].each do | usr | %>
+user --name=<%= usr['name'] %> <%= usr['passwd_type'] %> --password=<%= usr['passwd'] %> --shell=<%= usr['shell'] %> --gecos="<%= usr['comment'] %>" --groups=<%= usr['groups'] %>
 <% end -%>
 
 # SELinux configuration
@@ -107,11 +95,16 @@ $SNIPPET('pre_anamon')
 %end
 
 %packages
+<% if node['chef-bcs']['cobbler']['os']['name'] == 'centos-7' %>
 # CentOS
-# @^Infrastructure Server
+@^Infrastructure Server
+# CentOS end
+<% else %>
 # RHEL begin
 @^infrastructure-server-environment
 # RHEL end
+<% end -%>
+kexec-tools
 vim
 git
 wget
@@ -136,13 +129,6 @@ exec 1>/mnt/sysimage/root/kickstart-stage2.log 2>&1
 sed -i "s/#PermitRootLogin yes/PermitRootLogin yes/" /etc/ssh/sshd_config
 sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
 
-<% if node['chef-bcs']['cobbler']['kickstart']['key'] %>
-mkdir --mode=0700 -p /home/<%= node['chef-bcs']['cobbler']['kickstart']['user']['name'] %>/.ssh
-wget -O /home/<%= node['chef-bcs']['cobbler']['kickstart']['user']['name'] %>/.ssh/authorized_keys http://$http_server:$http_port/cobbler/pub/<%= node['chef-bcs']['cobbler']['kickstart']['key'] %>
-chmod 0600 /home/<%= node['chef-bcs']['cobbler']['kickstart']['user']['name'] %>/.ssh/authorized_keys
-chown <%= node['chef-bcs']['cobbler']['kickstart']['user']['name'] %>:<%= node['chef-bcs']['cobbler']['kickstart']['user']['name'] %> -R /home/<%= node['chef-bcs']['cobbler']['kickstart']['user']['name'] %>/.ssh
-<% end %>
-
 # Start yum configuration
 $yum_config_stanza
 # End yum configuration
@@ -157,11 +143,19 @@ $SNIPPET('cobbler_register')
 $SNIPPET('post_anamon')
 # Start final steps
 
-# Setup sudoer
-<% if node['chef-bcs']['cobbler']['kickstart']['user']['name'] %>
-echo "%<%= node['chef-bcs']['cobbler']['kickstart']['user']['name'] %> ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/<%= node['chef-bcs']['cobbler']['kickstart']['user']['name'] %>
+<% node['chef-bcs']['cobbler']['kickstart']['users'].each do | usr | %>
+<% if usr['key'] %>
+mkdir --mode=0700 -p /home/<%= usr['name'] %>/.ssh
+wget -O /home/<%= usr['name'] %>/.ssh/authorized_keys http://$http_server:$http_port/cobbler/pub/<%= usr['key'] %>
+chmod 0600 /home/<%= usr['name'] %>/.ssh/authorized_keys
+chown <%= usr['name'] %>:<%= usr['name'] %> -R /home/<%= usr['name'] %>/.ssh
+<% end %>
+
+<% if usr['sudo'] %>
+echo "%<%= usr['name'] %> ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/<%= usr['name'] %>
 sed -i "s/^[^#].*requiretty/#Defaults requiretty/" /etc/sudoers
 <% end %>
+<% end -%>
 
 # Sets the --netboot flag for the host on cobbler
 $SNIPPET('kickstart_done')

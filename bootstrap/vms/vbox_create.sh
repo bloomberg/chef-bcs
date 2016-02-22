@@ -21,32 +21,30 @@ set -e
 # Important
 source vbox_functions.sh
 
-function update_network_interfaces {
-  echo ${CEPH_CHEF_HOSTS[@]}
-  echo '---------------------------------------------'
-
-  for vm in ${CEPH_CHEF_HOSTS[@]}; do
-      node_update_network_interfaces $vm
-  done
-}
-
-# This function calls a function by the same name on the given node to update the interfaces
-function node_update_network_interfaces {
-  local node=$1
-  vagrant ssh $node -c ". network.sh && node_update_network_interfaces"
-  vagrant ssh $node -c ". network.sh && . network_setup.sh && node_update_network_ips"
-}
+# Did not call the remove_array_element from bash_functions.sh here because we don't want to modify the CEPH_CHEF_HOSTS
+delete=($CEPH_CHEF_BOOTSTRAP)
+# All of the VMs for Ceph with the bootstrap node removed.
+ceph_vms=("${CEPH_CHEF_HOSTS[@]/$delete}")
 
 ###################################################################
 # Function to create all VMs
 function create_vbox_vms {
-  echo "Shutting down and unregistering VMs from VirtualBox..."
+  echo "Generating key and building VMs for PXE ..."
   $REPO_ROOT/bootstrap/vms/vbox_clean.sh
   ssh-keygen -b 2048 -t rsa -f $REPO_ROOT/bootstrap/vms/chef-bcs -q -N ""
 
   # Create the nodes (not bootstrap - it should have already been created before calling this function)
+  # Don't start the nodes here. These nodes are setup for pxe booting so when they start they will begin
+  # pxe booting. Also, will run the boot sequentially because of memory on the host.
+  for vm in ${ceph_vms[@]}; do
 
+  done
+}
 
+function boot_vbox_vms {
+  for vm in ${ceph_vms[@]}; do
+
+  done
 }
 
 # Only execute functions if being run and not sourced
@@ -55,10 +53,5 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
 
   create_vbox_vms
 
-  # These files are created during the vagrant build 'create_vagrant_vms' and reside in the vagrant_scripts directory
-  source $REPO_ROOT/bootstrap/vms/ceph_chef_hosts.env
-  source $REPO_ROOT/bootstrap/vms/ceph_chef_adapters.env
-  source $REPO_ROOT/bootstrap/vms/ceph_chef_bootstrap.env
-
-  config_networks
+  boot_vbox_vms
 fi

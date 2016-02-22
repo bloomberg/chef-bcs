@@ -23,6 +23,8 @@
 # Note: This setting is only valid until something downstream (another script) overrides it.
 ERR=$1
 
+export BOOTSTRAP_CHEF_ENV=${BOOTSTRAP_CHEF_ENV:-"vagrant"}
+
 source ../base_environment.sh
 
 source $REPO_ROOT/bootstrap/vms/ceph_chef_bootstrap.env

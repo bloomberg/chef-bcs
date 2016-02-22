@@ -66,7 +66,7 @@ export BOOTSTRAP_OS=${BOOTSTRAP_OS:-"centos-7"}
 # IMPORTANT: *MUST* match environment with 'chef owner' NOTE: This is also the Chef user
 export CHEF_BCS_OWNER=${CHEF_BCS_OWNER:-"vbox"}
 export CHEF_BCS_GROUP=${CHEF_BCS_GROUP:-"vbox"}
-# IMPORTANT: The name of the cobbler distro that must match node['chef-bcs']['cobbler']['distro']
+# IMPORTANT: The name of the cobbler distro that must match node['chef-bcs']['cobbler']['os']['distro']
 export COBBLER_BOOTSTRAP_ISO=${COBBLER_BOOTSTRAP_ISO:-"centos-7-x86_64-minimal.iso"}
 # IMPORTANT: The remote url of where to download the iso from. For RHEL this is a timed url.
 # You can also set COBBLER_REMOTE_URL_ISO to the path where the iso is location on the node and it will copy instead of downloading.

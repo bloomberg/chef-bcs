@@ -1,7 +1,6 @@
 #
 # Author:: Chris Jones <cjones303@bloomberg.net>
 # Cookbook Name:: chef-bcs
-# Recipe:: default
 #
 # Copyright 2016, Bloomberg Finance L.P.
 #
@@ -19,6 +18,8 @@
 #
 
 # Recipe sets up basic network settings such as MTU
+# NOTE: If using VirtualBox then keep the mtu at 1500. There seems to be odd behavior on the cluster adapter if set to 9000.
+# This does not apply to real nics.
 
 execute 'network-public' do
   command lazy { "ip link set dev #{node['chef-bcs']['network']['public']['interface']} mtu #{node['chef-bcs']['network']['public']['mtu']}" }

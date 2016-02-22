@@ -26,7 +26,7 @@
 # Proxy like NGINX or something that can terminate SSL and then proxy on to rgw
 # Can also tighten even further by only allowing traffic from upstream load balancer etc...
 firewall_rule 'http' do
-  port node['chef-bcs']['restapi']['port']
+  port node['chef-bcs']['ceph']['restapi']['port']
   protocol :tcp
   command :allow
 end

@@ -3,7 +3,7 @@
 # Cookbook Name:: chef-bcs
 # Recipe:: default
 #
-# Copyright 2015, Bloomberg Finance L.P.
+# Copyright 2016, Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ package 'nmap'
 package 'iperf'
 package 'curl'
 package 'bmon'
-package 'conntrack'
+# package 'conntrack'
 package 'tmux'
 
 # I/O troubleshooting tools
@@ -52,51 +52,34 @@ if node['chef-bcs']['init_style'] == 'upstart'
   package 'python-dev'
   package 'build-essential'
 else
+  package 'kexec-tools'
 end
 
 package 'python-pip'
-package 'traceroute'
+# package 'traceroute'
 
-# Create an operations user
-if node['chef-bcs']['users']
-  users = node['chef-bcs']['users']
-  users =  Hash[(0...users.size).zip users] unless users.is_a? Hash
-  users.each do |index, user_value|
-    # Don't auto generate a password
-    pwd = user_value['passwd']
-
-    user user_value['name'] do
-      comment user_value['comment']
-      shell '/bin/bash'
-      password pwd
-    end
-
-    template "/home/#{user_value['name']}/.bashrc" do
-      source 'operations.bashrc.erb'
-      mode 00770
-    end
-
-    # Save the pwd to use it later for reference info.
-    node.normal['chef-bcs']['users'][index]['passwd'] = pwd
-    node.save
+# Create user(s) if not already existing
+node['chef-bcs']['cobbler']['kickstart']['users'].each do | user_value |
+  user user_value['name'] do
+    comment user_value['comment']
+    shell user_value['shell']
+    password user_value['passwd']
+    ignore_failure true
   end
 end
 
-# Set initial sudoers
-# NOTE: If you add the same user as is in the kickstart then it's removed from the list
-if node['chef-bcs']['authorization']
-  node.normal['authorization']['sudo']['include_sudoers_d'] = node['chef-bcs']['authorization']['sudo']['include_sudoers_d'] if node['chef-bcs']['authorization']['sudo']['include_sudoers_d']
-  node.normal['authorization']['sudo']['passwordless'] = node['chef-bcs']['authorization']['sudo']['passwordless'] if node['chef-bcs']['authorization']['sudo']['passwordless']
-  node.normal['authorization']['sudo']['users'] = node['chef-bcs']['authorization']['sudo']['users'] if node['chef-bcs']['authorization']['sudo']['users']
-  node.save
-  # Add more metadata if needed
+template "/etc/profile.d/chef-bcs.sh" do
+  source 'chef-bcs.sh.erb'
+  ignore_failure true
 end
 
 # Add the scary MOTD to let people know it's production!!
-template '/etc/motd.tail' do
+template '/etc/motd' do
   source 'motd.tail.erb'
-  mode 00640
+  mode 00644
 end
 
 # Set ntp servers
 node.default['ntp']['servers'] = node['chef-bcs']['ntp']['servers']
+
+node.default['ceph']['cluster'] = node['chef-bcs']['ceph']['cluster']
