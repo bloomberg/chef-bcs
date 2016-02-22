@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Author: Chris Jones <cjones303@bloomberg.net>
-# Copyright 2015, Bloomberg Finance L.P.
+# Copyright 2016, Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,6 +29,6 @@ source vagrant_base.sh
 # Then do the mon, osd, rgw etc.
 
 # TODO: Make OS check here to do for Ubuntu or RHEL based...
-do_on_node $CEPH_CHEF_BOOTSTRAP "sudo cp /ceph-files/centos-7-x86_64-minimal.iso /tmp"
+do_on_node $CEPH_CHEF_BOOTSTRAP "sudo cp /ceph-files/cobbler/isos/centos-7-x86_64-minimal.iso /tmp"
 
 do_on_node $CEPH_CHEF_BOOTSTRAP "sudo chef-client"

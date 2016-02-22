@@ -22,31 +22,33 @@ source vagrant_base.sh
 
 # Set the environment for all of the nodes
 for vm in ${ceph_vms[@]}; do
-  do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE node environment set $vm.$BOOTSTRAP_DOMAIN $BOOTSTRAP_CHEF_ENV"
+  do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE node environment set $vm.$BOOTSTRAP_DOMAIN $BOOTSTRAP_CHEF_ENV $CHEF_KNIFE_DEBUG"
 done
 
 # Now just set the specific nodes...
+# Set bootstrap too
+do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE tag create $CEPH_CHEF_BOOTSTRAP.$BOOTSTRAP_DOMAIN 'ceph-bootstrap' $CHEF_KNIFE_DEBUG"
 
 for vm in ${CEPH_MON_HOSTS[@]}; do
-  do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE tag create $vm.$BOOTSTRAP_DOMAIN 'ceph-mon'"
+  do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE tag create $vm.$BOOTSTRAP_DOMAIN 'ceph-mon' $CHEF_KNIFE_DEBUG"
 done
 
 for vm in ${CEPH_OSD_HOSTS[@]}; do
-  do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE tag create $vm.$BOOTSTRAP_DOMAIN 'ceph-osd'"
+  do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE tag create $vm.$BOOTSTRAP_DOMAIN 'ceph-osd' $CHEF_KNIFE_DEBUG"
 done
 
 for vm in ${CEPH_RGW_HOSTS[@]}; do
-  do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE tag create $vm.$BOOTSTRAP_DOMAIN 'ceph-rgw'"
+  do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE tag create $vm.$BOOTSTRAP_DOMAIN 'ceph-rgw' $CHEF_KNIFE_DEBUG"
 done
 
 for vm in ${CEPH_MDS_HOSTS[@]}; do
-  do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE tag create $vm.$BOOTSTRAP_DOMAIN 'ceph-mds'"
+  do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE tag create $vm.$BOOTSTRAP_DOMAIN 'ceph-mds' $CHEF_KNIFE_DEBUG"
 done
 
 for vm in ${CEPH_ADMIN_HOSTS[@]}; do
-  do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE tag create $vm.$BOOTSTRAP_DOMAIN 'ceph-admin'"
+  do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE tag create $vm.$BOOTSTRAP_DOMAIN 'ceph-admin' $CHEF_KNIFE_DEBUG"
   # NOTE: ceph-restapi can be split out later if desired
-  do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE tag create $vm.$BOOTSTRAP_DOMAIN 'ceph-restapi'"
+  do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE tag create $vm.$BOOTSTRAP_DOMAIN 'ceph-restapi' $CHEF_KNIFE_DEBUG"
 done
 
 # Just use the first VM as a radosgw node

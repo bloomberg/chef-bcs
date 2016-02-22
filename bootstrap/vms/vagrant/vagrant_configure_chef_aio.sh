@@ -23,7 +23,7 @@ set -e
 #################
 
 # NOTE: vagrant_base MUST be first! Actually, everything below should be in the order shown for Object Store.
-source vagrant_base.sh
+#source vagrant_base.sh
 
 source vagrant_bootstrap_chef.sh
 
@@ -43,7 +43,7 @@ source vagrant_ceph_pools.sh
 
 source vagrant_ceph_rgw.sh
 
-source vagrant_ceph_rgw_users.sh
+# source vagrant_ceph_rgw_users.sh
 
 source vagrant_ceph_restapi.sh
 

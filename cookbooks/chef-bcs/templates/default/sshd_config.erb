@@ -49,11 +49,11 @@ SyslogFacility AUTHPRIV
 
 # Authentication:
 
-LoginGraceTime <%= node['chef-bcs']['security']['sshd']['Login_Grace_Time'] %>
-PermitRootLogin <%= node['chef-bcs']['security']['sshd']['Permit_Root_Login'] %>
+LoginGraceTime <%= node['chef-bcs']['security']['sshd']['login_grace_time'] %>
+PermitRootLogin <%= node['chef-bcs']['security']['sshd']['permit_root_login'] %>
 #StrictModes yes
-MaxAuthTries <%= node['chef-bcs']['security']['sshd']['Max_Auth_Tries'] %>
-MaxSessions <%= node['chef-bcs']['security']['sshd']['Max_Sessions'] %>
+MaxAuthTries <%= node['chef-bcs']['security']['sshd']['max_auth_tries'] %>
+MaxSessions <%= node['chef-bcs']['security']['sshd']['max_sessions'] %>
 
 #RSAAuthentication yes
 #PubkeyAuthentication yes
@@ -138,7 +138,7 @@ UsePrivilegeSeparation sandbox		# Default for new installations.
 #VersionAddendum none
 
 # no default banner path
-#Banner none
+Banner <%= node['chef-bcs']['security']['sshd']['banner'] %>
 
 # Accept locale-related environment variables
 AcceptEnv LANG LC_CTYPE LC_NUMERIC LC_TIME LC_COLLATE LC_MONETARY LC_MESSAGES

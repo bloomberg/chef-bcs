@@ -2,19 +2,10 @@
   "name": "ceph-mon-install",
   "json_class": "Chef::Role",
   "description": "Ceph Monitor Install",
-  "override_attributes": {
-    "ceph": {
-      "config": {
-        "mon": {
-          "mon pg warn max per osd": 0,
-          "mon osd full ratio": 0.85,
-          "mon osd nearfull ratio": 0.75
-        }
-      }
-    }
-  },
+  "override_attributes": {},
   "run_list": [
     "role[common]",
+    "recipe[chef-bcs::ceph-conf]",
     "recipe[chef-bcs::repo]",
     "recipe[ceph-chef::repo]",
     "recipe[chef-bcs::ceph-mon]",

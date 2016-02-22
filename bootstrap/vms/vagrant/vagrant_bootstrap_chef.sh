@@ -48,17 +48,29 @@ fi
 do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE bootstrap -x vagrant --bootstrap-no-proxy '$CEPH_CHEF_BOOTSTRAP.$BOOTSTRAP_DOMAIN' $KNIFE_HTTP_PROXY_PARAM -P vagrant --sudo $CEPH_CHEF_BOOTSTRAP_IP"
 
 # install the knife-acl plugin into embedded knife
-do_on_node $CEPH_CHEF_BOOTSTRAP "sudo /opt/opscode/embedded/bin/gem install /ceph-files/knife-acl-0.0.12.gem"
+do_on_node $CEPH_CHEF_BOOTSTRAP "sudo /opt/opscode/embedded/bin/gem install /ceph-files/gems/knife-acl-0.0.12.gem"
 
 do_on_node $CEPH_CHEF_BOOTSTRAP "cd \$HOME && rsync -a /ceph-host/* ./chef-bcs"
 
 # add the dependency cookbooks from the file cache
 echo "Checking on dependency for cookbooks..."
-do_on_node $CEPH_CHEF_BOOTSTRAP "cp /ceph-files/cookbooks/*.tar.gz /home/vagrant/chef-bcs/cookbooks"
+do_on_node $CEPH_CHEF_BOOTSTRAP "cp /ceph-files/cookbooks/*.tar.gz \$HOME/chef-bcs/cookbooks"
 do_on_node $CEPH_CHEF_BOOTSTRAP "cd \$HOME/chef-bcs/cookbooks && ls -1 *.tar.gz | xargs -I% tar xvzf %"
 do_on_node $CEPH_CHEF_BOOTSTRAP "cd \$HOME/chef-bcs/cookbooks && rm -f *.tar.gz"
+
+# NOTE: *HAVE* to load the files into files/ before cookbook upload
+if [[ ! -z $COBBLER_BOOTSTRAP_ISO ]]; then
+  do_on_node $CEPH_CHEF_BOOTSTRAP "sudo cp /ceph-files/cobbler/loaders/* \$HOME/chef-bcs/cookbooks/chef-bcs/files/loaders"
+  do_on_node $CEPH_CHEF_BOOTSTRAP "sudo rm -f \$HOME/chef-bcs/cookbooks/chef-bcs/files/loaders/*_downloaded"
+fi
 
 # Add chef info to boostrap node.
 do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE cookbook upload -a"
 do_on_node $CEPH_CHEF_BOOTSTRAP "cd \$HOME/chef-bcs/roles && $KNIFE role from file *.json"
 do_on_node $CEPH_CHEF_BOOTSTRAP "cd \$HOME/chef-bcs/environments && $KNIFE environment from file $BOOTSTRAP_CHEF_ENV.json"
+
+# Setup ISO for bootstrapping now that chef-bcs cookbook has been copied to right place.
+# This file is too large for Chef to upload so do it after the cookbook upload above.
+if [[ ! -z $COBBLER_BOOTSTRAP_ISO ]]; then
+  do_on_node $CEPH_CHEF_BOOTSTRAP "sudo cp /ceph-files/cobbler/isos/*.iso \$HOME/chef-bcs/cookbooks/chef-bcs/files/default"
+fi

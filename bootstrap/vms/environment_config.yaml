@@ -12,8 +12,12 @@ vagrant:
     net_mask:
         - 255.255.255.0
         - 24
-    front_end_adapter_ip: 10.0.101.2
-    back_end_adapter_ip: 192.168.101.2
+    # Must be two DNS entries. If you change this then make sure to change the Vagrantfile where it builds the dns info
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    front_end_adapter_ip: 10.121.1.1
+    back_end_adapter_ip: 10.121.2.1
     memory: 2560
     cpus: 2
     vram: 16

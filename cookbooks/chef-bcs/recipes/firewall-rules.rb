@@ -1,9 +1,8 @@
 #
 # Author:: Chris Jones <cjones303@bloomberg.net>
 # Cookbook Name:: chef-bcs
-# Recipe:: default
 #
-# Copyright 2015, Bloomberg Finance L.P.
+# Copyright 2016, Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,29 +19,20 @@
 
 # FirewallD is setup for rhel and iptables are used for ubuntu
 
-# Will override the sshd_config that is present for better practices on security.
-template "/etc/ssh/sshd_config" do
-  source 'sshd_config.erb'
-  group 'root'
-  user 'root'
-  mode '0600'
-end
-
 # firewall coobook...
 # all defaults - enable firewall on all nodes with ssh access
 # firewall 'default'
 
-# enable platform default firewall
-firewall 'default' do
-  action :install
-  enabled_zone :public
-end
-
 # rules
-# By default there are no icmp blocks. If you want to enable icmp blocks (pings...) then add.
+# By default there are no icmp blocks. If you want to enable icmp blocks (pings...) then add the block here.
 
+# NOTE: These rules should ALWAYS be present.
 firewall_rule 'ssh' do
   port     22
+  command  :allow
+end
+
+firewall_rule 'ntp' do
   command  :allow
 end
 
@@ -50,12 +40,52 @@ end
 # example. You can change this to fit your needs.
 firewall_rule 'public' do
   interface "#{node['chef-bcs']['network']['public']['interface']}"
-  command  :allow
+  permanent true
 end
 
 firewall_rule 'cluster' do
   interface "#{node['chef-bcs']['network']['cluster']['interface']}"
   command  :allow
+end
+
+# Set the firewall rules for whatever tags are associated for the given node.
+
+node['chef-bcs']['security']['firewall']['interfaces'].each do | interface |
+  # Build port list
+  ports = []
+  ranges = []
+
+  interface['ports'].each do | port |
+    if node.tags.include? port['role']
+      if port['open'].any?
+        ports << port['open']
+      end
+
+      port['ranges'].each do | range |
+        if range['start'] > 0
+          start_range = range['start']
+          end_range = range['end']
+          ranges << (start_range..end_range)
+        end
+      end
+    end
+  end
+
+  if ports.any?
+    firewall_rule interface['name'] do
+      interface "#{node['chef-bcs']['network'][interface['name']]['interface']}"
+      port ports.uniq.flatten
+      command :allow
+    end
+  end
+
+  ranges.each do | range |
+    firewall_rule interface['name'] do
+      interface "#{node['chef-bcs']['network'][interface['name']]['interface']}"
+      port range
+      command :allow
+    end
+  end
 end
 
 # Force the rules etc to be saved

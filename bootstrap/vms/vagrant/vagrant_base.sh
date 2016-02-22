@@ -1,6 +1,5 @@
 #!/bin/bash
 #
-# Author: Chris Jones <cjones303@bloomberg.net>
 # Copyright 2015, Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,9 +23,12 @@
 # Note: This setting is only valid until something downstream (another script) overrides it.
 ERR=$1
 
+export BOOTSTRAP_CHEF_ENV=${BOOTSTRAP_CHEF_ENV:-"vagrant"}
+
 source ../base_environment.sh
 
 source $REPO_ROOT/bootstrap/vms/ceph_chef_bootstrap.env
+source $REPO_ROOT/bootstrap/vms/ceph_chef_dns.env
 source $REPO_ROOT/bootstrap/vms/ceph_chef_hosts.env
 source $REPO_ROOT/bootstrap/vms/ceph_chef_adapters.env
 source $REPO_ROOT/bootstrap/vms/ceph_chef_proxy.env

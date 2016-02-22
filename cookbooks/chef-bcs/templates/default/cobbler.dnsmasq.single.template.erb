@@ -5,12 +5,16 @@
 # $date
 #
 
-# resolve.conf .. ?
-#no-poll
+# disable lookup via resolve.conf
+no-poll
+no-resolv
+
 #enable-dbus
 read-ethers
 addn-hosts = /var/lib/cobbler/cobbler_hosts
-
+#domain=<%= node['chef-bcs']['domain_name'] %>
+listen-address=<%= node['chef-bcs']['cobbler']['server'] %>
+interface=<%= node['chef-bcs']['cobbler']['pxe_interface'] %>
 dhcp-range=<%= @range %>
 dhcp-option=3,$next_server
 dhcp-lease-max=1000

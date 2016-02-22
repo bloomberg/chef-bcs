@@ -19,5 +19,5 @@
 source vagrant_base.sh
 
 for vm in ${ceph_vms[@]}; do
-  do_on_node $vm "sudo chef-client -o 'recipe[ceph-chef::finish]'"
+  do_on_node $vm "sudo chef-client $CHEF_CLIENT_DEBUG -o 'recipe[ceph-chef::finish]'"
 done

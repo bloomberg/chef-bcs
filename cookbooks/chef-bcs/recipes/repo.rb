@@ -1,9 +1,8 @@
 #
 # Author:: Chris Jones <cjones303@bloomberg.net>
 # Cookbook Name:: chef-bcs
-# Recipe:: ceph-admin
 #
-# Copyright 2015, Bloomberg Finance L.P.
+# Copyright 2016, Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,3 +20,6 @@
 # Comment out the two lines below to go back to the latest hammer point release
 # node.default['ceph']['branch'] = 'testing'
 # node.default['ceph']['version'] = 'infernalis'
+
+node.default['ceph']['version'] = node['chef-bcs']['ceph']['repo']['version']['name']
+node.default['ceph']['branch'] = node['chef-bcs']['ceph']['repo']['version']['branch']

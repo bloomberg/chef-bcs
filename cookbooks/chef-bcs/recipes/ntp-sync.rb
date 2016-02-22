@@ -27,21 +27,9 @@ include_recipe 'chef-bcs::ntp-stop'
 service_type = node['chef-bcs']['init_style']
 
 execute 'NTP resync' do
-  command "ntpdate pool.ntp.org"
+  command "ntpdate -u #{node['chef-bcs']['ntp']['servers'].first}"
   not_if "which ntp" if service_type == 'upstart'
   not_if "which ntpd" if service_type != 'updstart'
 end
-=begin
-if service_type == 'upstart'
-  execute 'NTP resync' do
-    command "ntpdate pool.ntp.org"
-    only_if "which ntp"
-  end
-else
-  execute 'NTP resync' do
-    command "ntpdate pool.ntp.org"
-    only_if "which ntpd"
-  end
-end
-=end
+
 include_recipe 'chef-bcs::ntp-start'

@@ -16,6 +16,10 @@
 #
 
 # Exit immediately if anything goes wrong, instead of making things worse.
+
+# IMPORTANT: Cobbler system ... are configured with network info so no need for this file except for vagrant and
+# to build the bootstrap node for vbox.
+
 set -e
 
 function node_update_network_interfaces {
@@ -60,11 +64,11 @@ function node_update_network_ips {
 
   sudo nmcli c mod cfe-enp0s8 ipv4.addresses ${CEPH_ADAPTER_IPS[0]}/${CEPH_ADAPTER_IPS[2]} ipv4.gateway ${CEPH_ADAPTER_IPS[3]}
   sudo nmcli c mod cfe-enp0s8 ipv4.method manual
-  sudo nmcli c mod cfe-enp0s8 ipv4.dns "8.8.8.8 8.8.4.4"
+  sudo nmcli c mod cfe-enp0s8 ipv4.dns "${CEPH_CHEF_DNS[0]} ${CEPH_CHEF_DNS[1]}"
 
   sudo nmcli c mod cbe-enp0s9 ipv4.addresses ${CEPH_ADAPTER_IPS[1]}/${CEPH_ADAPTER_IPS[2]} ipv4.gateway ${CEPH_ADAPTER_IPS[4]}
   sudo nmcli c mod cbe-enp0s9 ipv4.method manual
-  sudo nmcli c mod cbe-enp0s9 ipv4.dns "8.8.8.8 8.8.4.4"
+  sudo nmcli c mod cbe-enp0s9 ipv4.dns "${CEPH_CHEF_DNS[0]} ${CEPH_CHEF_DNS[1]}"
 
   # sudo nmcli c up mgt-enp0s8
   sudo nmcli c up cfe-enp0s8

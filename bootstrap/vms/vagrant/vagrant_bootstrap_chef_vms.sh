@@ -35,27 +35,26 @@ for vm in ${ceph_vms[@]}; do
 
   # NOTE: If this command seems to stall then the network needs to be reset. Run ./vagrant_reset_network.sh from the
   # directory this script is located in. This will clean any network issues. Same holds true for other VMs.
-  do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE bootstrap -x vagrant --bootstrap-no-proxy '$CEPH_CHEF_BOOTSTRAP.$BOOTSTRAP_DOMAIN,$vm.$BOOTSTRAP_DOMAIN' $KNIFE_HTTP_PROXY_PARAM -P vagrant --sudo $vm.$BOOTSTRAP_DOMAIN"
+  do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE bootstrap -x vagrant --bootstrap-no-proxy '$CEPH_CHEF_BOOTSTRAP.$BOOTSTRAP_DOMAIN,$vm.$BOOTSTRAP_DOMAIN' $KNIFE_HTTP_PROXY_PARAM -P vagrant --sudo $vm.$BOOTSTRAP_DOMAIN $CHEF_KNIFE_DEBUG"
 
   # REQUIRED gems: netaddr-1.5.0 for ceph-chef Cookbook
-  #do_on_node $vm "sudo yum install gem -y"
   do_on_node $vm "sudo cp /ceph-files/gems/netaddr-1.5.0.gem /tmp/."
-  #do_on_node $vm "sudo gem install --local /tmp/netaddr-1.5.0.gem"
 done
 
 # augment the previously configured nodes with our newly uploaded environments and roles
 for vm in ${CEPH_CHEF_HOSTS[@]}; do
-  do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE node environment set $vm.$BOOTSTRAP_DOMAIN $BOOTSTRAP_CHEF_ENV"
+  do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE node environment set $vm.$BOOTSTRAP_DOMAIN $BOOTSTRAP_CHEF_ENV $CHEF_KNIFE_DEBUG"
 done
 
-do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE node run_list set $CEPH_CHEF_BOOTSTRAP.$BOOTSTRAP_DOMAIN 'role[ceph-bootstrap]'"
+do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE node run_list set $CEPH_CHEF_BOOTSTRAP.$BOOTSTRAP_DOMAIN 'role[ceph-bootstrap]' $CHEF_KNIFE_DEBUG"
 
+##### TEST
 # generate actor map
-do_on_node $CEPH_CHEF_BOOTSTRAP "cd \$HOME && $KNIFE actor map"
+##### do_on_node $CEPH_CHEF_BOOTSTRAP "cd \$HOME && $KNIFE actor map"
 # using the actor map, set ceph-bootstrap, ceph-*-vms (if any) as admins so that they can write into the data bag
-#do_on_node ceph-bootstrap "cd \$HOME && $KNIFE group add actor admins ceph-bootstrap.$BOOTSTRAP_DOMAIN"  # && $KNIFE group add actor admins cos-vm1.$BOOTSTRAP_DOMAIN"
+# do_on_node ceph-bootstrap "cd \$HOME && $KNIFE group add actor admins ceph-bootstrap.$BOOTSTRAP_DOMAIN"  # && $KNIFE group add actor admins cos-vm1.$BOOTSTRAP_DOMAIN"
 
 # Add each node to the bootstrap actor map
-for vm in ${CEPH_CHEF_HOSTS[@]}; do
-  do_on_node $CEPH_CHEF_BOOTSTRAP "cd \$HOME && $KNIFE group add actor admins $vm.$BOOTSTRAP_DOMAIN"
-done
+#####for vm in ${CEPH_CHEF_HOSTS[@]}; do
+#####  do_on_node $CEPH_CHEF_BOOTSTRAP "cd \$HOME && $KNIFE group add actor admins $vm.$BOOTSTRAP_DOMAIN"
+#####done

@@ -2,85 +2,296 @@
   "name": "vagrant",
   "json_class": "Chef::Environment",
   "description": "Vagrant test environment",
+  "NOTE": "NOTE key is ONLY for documenting this json data since json does not allow for comments. This data file is for using Vagrant instead of PXE booting like in production on bare-metal nodes.",
   "cookbook_versions": {},
   "chef_type": "environment",
   "override_attributes": {
     "chef-bcs": {
-      "users": [
-        { "name": "operations", "comment": "Operations user", "passwd": "" }
-      ],
-      "authorization": {
-        "sudo": {
-          "include_sudoers_d": true,
-          "users": ["operations"],
-          "passwordless": "true"
-        }
+      "chef": {
+        "owner": "vagrant",
+        "group": "vagrant"
       },
-      "kickstart": {
-        "rootpw": "vagrant",
-        "file": "rhel.ks",
-        "sudoer": "vagrant",
-        "user": { "name": "vagrant", "passwd": "vagrant" }
-      },
-      "cobbler": {
-        "interface": "enp0s3",
-        "pxe_interface": "enp0s8",
-        "server": "10.0.101.10",
-        "dhcp_subnet": "10.0.101.0",
-        "dhcp_range": "10.0.101.11 10.0.101.250",
-        "port": 80,
-        "distro": "centos-7-x86_64-minimal",
-        "os_name": "centos-7",
-        "os_version": "7.1",
-        "os_arch": "x86_64",
-        "redhat_management_type": "off",
-        "breed": "redhat"
-      },
-      "ceph": {
-        "pgp_auto_adjust" : true,
-        "osd": {
-            "devices": [
-                { "device": "/dev/sdb", "type": "hdd", "journal": "/dev/sdf" },
-                { "device": "/dev/sdc", "type": "hdd", "journal": "/dev/sdf" },
-                { "device": "/dev/sdd", "type": "hdd", "journal": "/dev/sdf" },
-                { "device": "/dev/sde", "type": "hdd", "journal": "/dev/sdf" }
-            ],
-            "remove": {
-              "devices": [
-                { "node": "ceph-vm1", "osd": 0, "zap": true, "partition": 1, "device": "/dev/sdb", "journal": "/dev/sdf" }
+      "security": {
+        "sshd": {
+          "permit_root_login": "no",
+          "login_grace_time": "2m",
+          "max_auth_tries": 6,
+          "max_sessions": 10,
+          "banner": "/etc/banner"
+        },
+        "firewall": {
+          "interfaces": [
+            {
+              "name": "public",
+              "ports": [
+                {"role": "ceph-bootstrap", "open": [80, 443, 69, 53], "ranges": [{"start": 25150, "end": 25152}]},
+                {"role": "ceph-mon", "open": [6789], "ranges": [{"start": 0, "end": 0}]},
+                {"role": "ceph-osd", "open": [], "ranges": [{"start": 6800, "end": 6872}]},
+                {"role": "ceph-rgw", "open": [80, 443], "ranges": [{"start": 8080, "end": 8084}]},
+                {"role": "ceph-restapi", "open": [5000, 5080], "ranges": [{"start": 0, "end": 0}]},
+                {"role": "ceph-admin", "open": [], "ranges": [{"start": 0, "end": 0}]},
+                {"role": "ceph-mds", "open": [6800], "ranges": [{"start": 6800, "end": 6872}]},
+                {"role": "ceph-rbd", "open": [], "ranges": [{"start": 0, "end": 0}]}
               ]
             },
-            "add": {
-              "devices": [
-                { "node": "ceph-vm3", "device": "/dev/sde", "type": "hdd", "journal": "/dev/sde" }
+            {
+              "name": "cluster",
+              "ports": [
+                {"role": "ceph-osd", "open": [], "ranges": [{"start": 6800, "end": 6872}]}
               ]
             }
+          ],
+        "NOTE1": "NOTE: Firewall open ports are accumulative for each node based on it's role. Role must match ceph-chef tags.",
+        "NOTE2": "NOTE: Range start = 0 then range is skipped else put in exact ranges.",
+        "NOTE3": "NOTE: OSDs start at 6800 and each OSD uses at least 3 ports. The end number should be high enough to account for this. MDS should match OSD.",
+        "NOTE4": "NOTE: If you run multiple instances of RGW then keep the port count in mind."
+        }
+      },
+      "system": {
+        "pid_max": 4194303
+      },
+      "ipmi": {
+        "user": "vbox",
+        "passwd": "$6$Salt$xvQkYaQ4urNWmnjpinAZSR/ZOaRy/aacKh4j18ayq/.mswLqleFZI5zaD1BCg2Fdzy1BjpBv9VIgVgt6YoA8T0",
+        "NOTE": "password of vbox is: $6$Salt$xvQkYaQ4urNWmnjpinAZSR/ZOaRy/aacKh4j18ayq/.mswLqleFZI5zaD1BCg2Fdzy1BjpBv9VIgVgt6YoA8T0"
+      },
+      "cobbler": {
+        "web_user": "cobbler",
+        "pxe_interface": "enp0s3",
+        "server": "10.121.1.2",
+        "kickstart": {
+          "NOTE": "password vagrant is: $6$Salt$6AyUczFy6SgV8A2wKAKfA9drpzrUsTGPJ3QjcWBbgS97BxBO.C7ZcBFALRiRkKfi9x8MK2SHet38BCQWS9LsR/",
+          "root": {
+            "passwd": "$6$Salt$6AyUczFy6SgV8A2wKAKfA9drpzrUsTGPJ3QjcWBbgS97BxBO.C7ZcBFALRiRkKfi9x8MK2SHet38BCQWS9LsR/",
+            "passwd_type": "--iscrypted",
+            "key": "ceph_bootstrap.pub"
+          },
+          "file": {
+            "osd": "bcs_node_rhel_osd.ks",
+            "nonosd": "bcs_node_rhel_nonosd.ks"
+          },
+          "bootloader": {
+            "passwd": "",
+            "passwd_type": ""
+          },
+          "users": [
+            {
+              "name": "vagrant",
+              "passwd": "$6$Salt$6AyUczFy6SgV8A2wKAKfA9drpzrUsTGPJ3QjcWBbgS97BxBO.C7ZcBFALRiRkKfi9x8MK2SHet38BCQWS9LsR/",
+              "passwd_type": "--iscrypted",
+              "key": "ceph_bootstrap.pub",
+              "shell": "/bin/bash",
+              "comment": "Vagrant user",
+              "groups": "wheel",
+              "sudo": true
+            },
+            {
+              "name": "operations",
+              "passwd": "$6$Salt$3xxLPT099nzTbWkOS3CPNcar/zSLQ8BEgZdJk/AOkOb4V80sPepbraWcvrJvEEu6PswpKUw1WodWeiqRo1bw2/",
+              "passwd_type": "--iscrypted",
+              "key": "ceph_bootstrap.pub",
+              "shell": "/bin/bash",
+              "comment": "Operations user",
+              "groups": "wheel",
+              "sudo": true
+            },
+            {
+              "name": "cjones303",
+              "passwd": "$6$Salt$6AyUczFy6SgV8A2wKAKfA9drpzrUsTGPJ3QjcWBbgS97BxBO.C7ZcBFALRiRkKfi9x8MK2SHet38BCQWS9LsR/",
+              "passwd_type": "--iscrypted",
+              "key": "ceph_bootstrap.pub",
+              "shell": "/bin/bash",
+              "comment": "Awesome - what more can be said?",
+              "groups": "wheel",
+              "sudo": true
+            }
+          ]
+        },
+        "profiles": [
+          {"name": "ceph_osd_node", "file_type": "osd", "comment": "OSD type nodes either dedicated OSD or converged with other services like MON and RGW."},
+          {"name": "ceph_non_osd_node", "file_type": "nonosd", "comment": "NON-OSD type nodes. Services like MON, RGW or MDS."}
+        ],
+        "systems": [
+          {
+            "name": "ceph-mon1",
+            "profile": "ceph_non_osd_node",
+            "network": {
+              "public": {
+                "interface": "enp0s8",
+                "mac": "08:00:27:E3:84:01",
+                "ip": "10.121.1.3",
+                "netmask": "255.255.255.0",
+                "gateway": "10.121.1.2",
+                "mtu": 9000
+              },
+              "cluster": {
+                "interface": "enp0s9",
+                "mac": "08:00:27:86:A4:54",
+                "ip": "10.121.2.3",
+                "netmask": "255.255.255.0",
+                "gateway": "10.121.2.2",
+                "mtu": 9000
+              }
+            }
+          },
+          {
+            "name": "ceph-mon2",
+            "profile": "ceph_non_osd_node",
+            "network": {
+              "public": {
+                "interface": "enp0s8",
+                "mac": "08:00:27:2A:BF:BD",
+                "ip": "10.121.1.4",
+                "netmask": "255.255.255.0",
+                "gateway": "10.121.1.2",
+                "mtu": 9000
+              },
+              "cluster": {
+                "interface": "enp0s9",
+                "mac": "08:00:27:14:D5:01",
+                "ip": "10.121.2.4",
+                "netmask": "255.255.255.0",
+                "gateway": "10.121.2.2",
+                "mtu": 9000
+              }
+            }
+          }
+        ],
+        "dhcp": {
+          "shared_network": "bcs",
+          "single": {
+            "netmask": "255.255.255.0",
+            "gateway": "10.121.1.2"
+          },
+          "subnets":[
+            {"subnet": "10.121.1.0", "tag": "rack1", "dhcp_range": ["10.121.1.3", "10.121.1.254"], "netmask": "255.255.255.0", "router": "10.121.1.2"}
+          ]
+         },
+        "NOTE1": "NOTE: Each subnet represents a routable rack so dhcp will need to manage each subnet with the TOR using IP-helper for dhcp requests by nodes in the given rack.",
+        "NOTE2": "NOTE: You could just have one subnet for a single L2 span set of racks.",
+        "NOTE3": "NOTE: /27 for subnet mask of each rack. DNS could be added to each subnet entry above but the global DNS entry below is good enough for this.",
+        "partition_option": "ignoredisk --only-use=sda",
+        "partitions": [
+          {"part": "/boot", "fstype": "xfs", "size": 1024, "options": "--ondisk=sda"},
+          {"part": "/", "fstype": "xfs", "size": 10000, "options": "--ondisk=sda"},
+          {"part": "/var/lib", "fstype": "xfs", "size": 20000, "options": "--ondisk=sda"},
+          {"part": "swap", "fstype": "swap", "size": 8000, "options": ""}
+        ],
+        "NOTE4": "NOTE: Partitions are for OSD nodes. All other partitions are coded into the given ks file.",
+        "ports": {
+          "http": 80,
+          "https": 443,
+          "xmlrpc": 25151
+        },
+        "os": {
+          "name": "centos-7",
+          "version": "7.2",
+          "arch": "x86_64",
+          "distro": "centos-7-x86_64-minimal.iso",
+          "breed": "redhat"
+        },
+        "redhat": {
+          "management": {
+            "type": "off",
+            "server": "xmlrpc.rhn.redhat.com",
+            "key": "cloud-object-store"
+          }
+        },
+        "repo_mirror": true
+      },
+      "ceph": {
+        "cluster": "ceph",
+        "repo": {
+          "version": {
+            "name": "hammer",
+            "branch": "stable",
+            "revision": "0.el7",
+            "number": "0.94.5",
+            "arch": "x86_64"
+          }
+        },
+        "chooseleaf": "host",
+        "rebalance": false,
+        "journal_size": 10000,
+        "encrypted": false,
+        "config": {
+          "NOTE": "This section is pure key/value. Meaning, the key and value are added to the given location in ceph.conf.",
+          "global": {
+            "rgw override bucket index max shards": 5
+          },
+          "mon": {
+            "mon pg warn max per osd": 0,
+            "mon osd full ratio": 0.90,
+            "mon osd nearfull ratio": 0.80,
+            "clock drift allowed": 15
+          },
+          "radosgw": {
+            "cache max file size": 20000000
+          }
+        },
+        "pgs_per_node": 1024,
+        "mon": {
+          "port": 6789,
+          "niceness": -10
+        },
+        "radosgw": {
+          "port": 80,
+          "keystone": {
+            "auth": false,
+            "admin": {
+              "token": "",
+              "url": "",
+              "port": 35357
+            },
+            "accepted_roles": "admin Member _member_",
+            "token_cache_size": 1000,
+            "revocation_interval": 1200
+          },
+          "rgw_num_rados_handles": 5,
+          "civetweb_num_threads": 10
+        },
+        "osd": {
+          "devices": [
+              { "data": "/dev/sdb", "type": "hdd", "journal": "/dev/sdf" },
+              { "data": "/dev/sdc", "type": "hdd", "journal": "/dev/sdf" },
+              { "data": "/dev/sdd", "type": "hdd", "journal": "/dev/sdf" },
+              { "data": "/dev/sde", "type": "hdd", "journal": "/dev/sdf" }
+          ],
+          "niceness": -10
+        },
+        "restapi": {
+          "port": 5080
         },
         "pools": {
-          "active": ["radowgw"]
+          "active": ["radosgw"]
         }
       },
       "domain_name" : "ceph.example.com",
       "network": {
         "public": {
           "interface": "enp0s8",
-          "netmask": "255.255.255.0",
-          "cidr": "10.0.101.0/24",
-          "gateway": "10.0.101.10",
+          "cidr": [
+            "10.121.1.0/24"
+          ],
           "mtu": 1500
         },
         "cluster": {
           "interface": "enp0s9",
-          "netmask": "255.255.255.0",
-          "cidr": "192.168.101.0/24",
-          "gateway": "192.168.101.10",
-          "mtu": 9000
+          "cidr": [
+            "10.121.2.0/24"
+          ],
+          "mtu": 1500
         }
       },
-      "dns_servers": [ "8.8.8.8", "8.8.4.4" ]
+      "dns": {
+        "servers": [ "8.8.8.8", "8.8.4.4" ]
+      },
+      "ntp": {
+        "servers": [ "0.pool.ntp.org", "1.pool.ntp.org", "2.pool.ntp.org", "3.pool.ntp.org" ]
+      }
     },
     "chef_client": {
-      "server_url": "http://10.0.101.10:4000",
+      "server_url": "http://10.121.1.2:4000",
       "cache_path": "/var/chef/cache",
       "backup_path": "/var/chef/backup",
       "validation_client_name": "chef-validator",

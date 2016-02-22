@@ -1,7 +1,6 @@
 #
 # Author:: Chris Jones <cjones303@bloomberg.net>
 # Cookbook Name:: chef-bcs
-# Recipe:: ceph-mon
 #
 # Copyright 2015, Bloomberg Finance L.P.
 #
@@ -21,43 +20,42 @@
 case node['platform']
 when 'ubuntu'
   service 'isc-dhcp-server' do
-      action [:enable, :start]
+    action [:enable, :start]
   end
   service 'cobbler' do
-      action [:enable, :start]
+    action [:enable, :start]
   end
   service 'apache2' do
-      action [:enable, :start]
+    action [:enable, :start]
   end
 else
-  service 'cobblerd' do
-      action [:enable, :start]
-  end
   service 'httpd' do
-      action [:enable, :start]
+    action [:enable, :start]
   end
+  service 'dnsmasq' do
+    action [:enable, :start]
+  end
+  # Normally tftp will start with xinetd.
   service 'xinetd' do
-      action [:enable, :start]
+    action [:enable, :start]
+    provider Chef::Provider::Service::Init::Redhat
+    supports :status => true, :restart => true
   end
-end
-
-execute 'get cobbler signatures' do
-  command "cobbler signature update"
-  ignore_failure true
-end
-
-execute 'get_loaders' do
-  command "cobbler get_loaders"
-  ignore_failure true
-end
-
-case node['platform']
-when 'ubuntu'
-  service 'cobbler' do
-      action [:restart]
+  # xinetd - tftp is managed by it but there can be an issue on some systemd systems so try to start it again.
+  # NOTE: tftp.socket gets enabled on some systems but tftp.service does not thus on reboot tftp may not start. If
+  # that's the case then a manual start is required or another 'custom' tftp.service in /etc/systemd/service
+  service 'tftp-start' do
+    service_name 'tftp'
+    action [:start]
+    not_if "pgrep tftp"
   end
-else
+  service 'tftp-enable' do
+    service_name 'tftp'
+    action [:enable]
+  end
   service 'cobblerd' do
-      action [:restart]
+    action [:enable, :start]
   end
 end
+
+# No need to get_loaders or do signature update

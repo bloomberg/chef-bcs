@@ -3,7 +3,7 @@
 # Cookbook Name:: chef-bcs
 # Recipe:: ceph-restapi
 #
-# Copyright 2015, Bloomberg Finance L.P.
+# Copyright 2016, Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,4 +22,4 @@
 # attribute values are normally a better choice but in this case we want to set the 'rgw dns name' from
 # another node attribute value.
 
-node.default['ceph']['restapi']['port'] = node['chef-bcs']['restapi']['port']
+node.default['ceph']['restapi']['port'] = node['chef-bcs']['ceph']['restapi']['port']

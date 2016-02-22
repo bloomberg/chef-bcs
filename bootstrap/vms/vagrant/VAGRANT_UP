@@ -32,47 +32,55 @@ echo "| |   | '_ \ / _ \ |_ _____|  _ \| |   \___ \ "
 echo "| |___| | | |  __/  _|_____| |_) | |___ ___) |"
 echo " \____|_| |_|\___|_|       |____/ \____|____/ "
 echo
-echo "Chef-BCS Vagrant Bootstrap 0.9.6"
+echo "Chef-BCS Vagrant Bootstrap"
 echo "--------------------------------------------"
 echo "Bootstrapping local Vagrant environment..."
 echo
 
-while getopts bsvd opt; do
+while getopts cbsvdot opt; do
     case $opt in
         b)
             BUILD_VMS_ONLY=1
             ;;
-        s)
-            BOOTSTRAP_SKIP_VMS=1
-            ;;
-            # verbose
-        v)
-            set -x
+        c)
+            CHEF_KNIFE_DEBUG="-VV"
+            CHEF_CLIENT_DEBUG="-l debug"
             ;;
         d)
             BOOTSTRAP_VAGRANT_DEBUG=1
+            ;;
+        o)
+            BOOTSTRAP_OS=$OPTARG
+            ;;
+        s)
+            BOOTSTRAP_SKIP_VMS=1
+            ;;
+        t)
+            BOOTSTRAP_TYPE=$OPTARG
+            ;;
+        # verbose
+        v)
+            set -x
             ;;
     esac
 done
 
 source ../base_environment.sh
-export BOOTSTRAP_CHEF_ENV=vagrant  # Override
 
-# Source the bootstrap configuration file if present.
-BOOTSTRAP_CONFIG="$REPO_ROOT/bootstrap/config/bootstrap_config.sh"
-if [[ -f $BOOTSTRAP_CONFIG ]]; then
-  source $BOOTSTRAP_CONFIG
-fi
+export CHEF_KNIFE_DEBUG=${CHEF_KNIFE_DEBUG:-""}
+export CHEF_CLIENT_DEBUG=${CHEF_CLIENT_DEBUG:-""}
 
-# Set environment var BOOTSTRAP_OS here for vagrant
-export BOOTSTRAP_OS='vagrant-centos-7'
-
+# Override for other environments like production, staging etc.
+export BOOTSTRAP_CHEF_ENV=${BOOTSTRAP_CHEF_ENV:-"vagrant"}
+# Other types are 'bare_metal, vbox'
+export BOOTSTRAP_TYPE=${BOOTSTRAP_TYPE:-"vagrant"}
+# IMPORTANT: *MUST* match environment with 'chef owner' NOTE: This is also the Chef user
+export CHEF_BCS_OWNER=${CHEF_BCS_OWNER:-"vagrant"}
+export CHEF_BCS_GROUP=${CHEF_BCS_GROUP:-"vagrant"}
 # If set then only build the vms and clone them
 export BUILD_VMS_ONLY=${BUILD_VMS_ONLY:-0}
-
 # Bootstrap specific variables
 export BOOTSTRAP_SKIP_VMS=${BOOTSTRAP_SKIP_VMS:-0}
-
 # Vagrant debug flag
 export BOOTSTRAP_VAGRANT_DEBUG=${BOOTSTRAP_VAGRANT_DEBUG:-0}
 
@@ -80,10 +88,12 @@ export BOOTSTRAP_VAGRANT_DEBUG=${BOOTSTRAP_VAGRANT_DEBUG:-0}
 echo "Performing preflight environment validation..."
 source $REPO_ROOT/bootstrap/common/bootstrap_validate_env.sh
 
-# Test that Vagrant is really installed and of an appropriate version.
-if [[ $BOOTSTRAP_SKIP_VMS -ne 1 ]]; then
-  echo "Checking VirtualBox and Vagrant..."
-  source $REPO_ROOT/bootstrap/vms/vagrant/vagrant_test.sh
+if [[ $BOOTSTRAP_TYPE == "vagrant" ]]; then
+  # Test that Vagrant is really installed and of an appropriate version.
+  if [[ $BOOTSTRAP_SKIP_VMS -ne 1 ]]; then
+    echo "Checking VirtualBox and Vagrant..."
+    source $REPO_ROOT/bootstrap/vms/vagrant/vagrant_test.sh
+  fi
 fi
 
 # Configure and test any proxies configured.
@@ -97,34 +107,36 @@ fi
 echo "Downloading necessary files to local cache..."
 source $REPO_ROOT/bootstrap/common/bootstrap_prereqs.sh
 
-# Create VMs in Vagrant and start them.
-# VM only tests inside vagrant_create script
-echo "Clean up old VMs and Starting new local Vagrant cluster..."
-$REPO_ROOT/bootstrap/vms/vagrant/vagrant_create.sh
+if [[ $BOOTSTRAP_TYPE == "vagrant" ]]; then
+  # Create VMs in Vagrant and start them.
+  # VM only tests inside vagrant_create script
+  echo "Clean up old VMs and Starting new local Vagrant cluster..."
+  $REPO_ROOT/bootstrap/vms/vagrant/vagrant_create.sh
 
-# IMPORTANT: Inside vagrant_create.sh in the configure_network function the ADDING of OSD drives
-# occurs! This is important because it needes to be done while the VMs are off. Since adding network
-# adpaters also require the VM being off, putting them together saved time.
+  # IMPORTANT: Inside vagrant_create.sh in the configure_network function the ADDING of OSD drives
+  # occurs! This is important because it needes to be done while the VMs are off. Since adding network
+  # adpaters also require the VM being off, putting them together saved time.
 
-# Reset shared folders and virtualbox guest addons since addons are required for shared folders.
-$REPO_ROOT/bootstrap/vms/vagrant/vagrant_create_shared_folders_in_vms.sh
+  # Reset shared folders and virtualbox guest addons since addons are required for shared folders.
+  $REPO_ROOT/bootstrap/vms/vagrant/vagrant_create_shared_folders_in_vms.sh
 
-if [[ $BUILD_VMS_ONLY -eq 0 ]]; then
-  # Install and configure Chef on all Vagrant hosts.
-  echo "Installing and configuring Chef on all nodes using the all in one script."
-  $REPO_ROOT/bootstrap/vms/vagrant/vagrant_configure_chef_aio.sh
-else
-  echo
-  echo "--------------------------------"
-  echo "chef-bcs VMs have been created!"
-  echo "--------------------------------"
+  if [[ $BUILD_VMS_ONLY -eq 0 ]]; then
+    # Install and configure Chef on all Vagrant hosts.
+    echo "Installing and configuring Chef on all nodes using the all in one script."
+    $REPO_ROOT/bootstrap/vms/vagrant/vagrant_configure_chef_aio.sh
+  else
+    echo
+    echo "--------------------------------"
+    echo "chef-bcs VMs have been created!"
+    echo "--------------------------------"
+  fi
+
+  source vagrant_base.sh
+
+  echo "You can access the vms using the following:"
+  for vm in ${CEPH_CHEF_HOSTS[@]}; do
+    echo "  vagrant ssh $vm"
+  done
 fi
-
-source vagrant_base.sh
-
-echo "You can access the vms using the following:"
-for vm in ${CEPH_CHEF_HOSTS[@]}; do
-  echo "  vagrant ssh $vm"
-done
 
 echo "Finished in $SECONDS seconds"

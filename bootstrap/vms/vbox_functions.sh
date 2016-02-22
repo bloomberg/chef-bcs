@@ -31,6 +31,74 @@ function vbox_dir {
   echo $(vboxmanage list systemproperties | grep 'Default machine folder' | awk -F\: '{gsub(/^[ \t]+/, "", $2); print $2}')
 }
 
+# NOTE: Additional parameters could be passed to customize if desired.
+function vbox_create {
+  local vm=$1
+  local ostype=RedHat_64
+  # ostype for Ubuntu - Ubuntu_64
+  vm_dir=$(vbox_dir)
+  echo $vm
+  echo $vm_dir
+  echo $ostype
+
+  # NOTE: Modify memory, vram, cpus etc below if desired.
+  if [[ `is_vm_present $vm` -eq 0 ]]; then
+    echo $(vboxmanage createvm --name $vm --ostype $ostype 2>/dev/null)
+    echo $(vboxmanage registervm "$vm_dir/$vm/$vm.vbox")
+    echo $(vboxmanage modifyvm $vm --ioapic on --memory 2560 --vram 16 --cpus 2 --largepages on --nestedpaging on --vtxvpid on --hwvirtex on  2>/dev/null)
+  fi
+}
+
+# Set the vm's boot order
+function vbox_boot_order {
+  local vm=$1
+  local order=$2
+  local type=$3
+  # vm and order must be valid!
+  # order can be slot index is 1,2,3,4
+  # type can be none|floppy|dvd|disk|net
+  echo $(vboxmanage modifyvm $vm --boot$order $type 2>/dev/null)
+}
+
+# Set which nic boot order for pxe
+# For Ceph this should be the 'public' cluster nic unless using a mgt interface
+function vbox_nic_boot_order {
+  local vm=$1
+  local nic=$2
+  local priority=$3
+  # nic is slot index is 1,2,3,4...
+  # priority 0 - lowest (default), 1 (highest), 2, 3, 4 (low)
+
+  echo $(vboxmanage modifyvm $vm --nicbootprio$nic $priority 2>/dev/null)
+}
+
+# Set the mac address
+function vbox_nic_mac_set {
+  local vm=$1
+  local nic=$2
+  local mac=$3
+  # nic is slot index is 1,2,3,4...
+  # mac address
+
+  echo $(vboxmanage modifyvm $vm --macaddress$nic $mac 2>/dev/null)
+}
+
+# Get the mac address from the vm and adapter (vboxnet0...)
+function vbox_nic_mac_get {
+  local vm=$1
+  local adapter=$2
+  # nic is slot index is 1,2,3,4...
+  echo $(vboxmanage showvminfo --machinereadable $vm | pcregrep -o1 -M '^hostonlyadapter\d="$adapter"$\n*^macaddress\d="(.+)"' | $SED 's/^(..)(..)(..)(..)(..)(..)$/\1:\2:\3:\4:\5:\6/' 2>/dev/null)
+}
+
+function vbox_create_storage_controller {
+  local vm=$1
+  local controller="$2"
+
+  # 5 ports - could be whatever you want as long as there are enough ports of the number of drives.
+  echo $(vboxmanage storagectl $vm --name "$controller" --add sata --bootable on --controller IntelAhci --portcount 5 2>/dev/null)
+}
+
 function vbox_remove_hdd {
   local vm=$1
   local controller="$2"
@@ -171,7 +239,6 @@ function create_network_interfaces {
 function config_networks {
     # Force a pause to allow all of the vms to settle
     echo "Preparing to shutdown VMs. Please wait..."
-    sleep 5
 
     source $REPO_ROOT/bootstrap/vms/ceph_chef_hosts.env
     source $REPO_ROOT/bootstrap/vms/ceph_chef_adapters.env
@@ -182,7 +249,7 @@ function config_networks {
 
     # If you don't give VB enough time to close things down it will corrupt
     echo "Creating network interfaces..."
-    sleep 3
+    sleep 20
 
     # Build interfaces...
     create_network_interfaces

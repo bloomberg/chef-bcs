@@ -122,7 +122,6 @@ https://supermarket.chef.io/
 * [sudo](https://supermarket.chef.io/cookbooks/sudo)
 * [windows](https://supermarket.chef.io/cookbooks/windows)
 * [yum-epel](https://supermarket.chef.io/cookbooks/yum-epel)
-* [cobblerd](https://supermarket.chef.io/cookbooks/cobblerd)
 
 ## TEMPLATES
 
@@ -141,7 +140,7 @@ This cookbook can be used to implement a chosen cluster design. Most of the conf
 * `node['ceph']['config]'['global']['cluster network']` - a CIDR specification of a separate cluster replication network
 * `node['ceph']['config]'['global']['rgw dns name']` -  the main domain of the radosgw daemon
 
-Most notably, the configuration does _NOT_ need to set the `mon_initial_members`, because the cookbook does a node search to find other mons in the same environment.
+Most notably, the configuration does _NOT_ need to set the `mon initial members`, because the cookbook does a node search to find other mons in the same environment.
 
 The other set of attributes that this recipe needs is `node['ceph']['osd_devices']`, which is an array of OSD definitions, similar to the following:
 
