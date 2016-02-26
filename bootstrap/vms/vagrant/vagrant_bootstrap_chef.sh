@@ -71,6 +71,6 @@ do_on_node $CEPH_CHEF_BOOTSTRAP "cd \$HOME/chef-bcs/environments && $KNIFE envir
 
 # Setup ISO for bootstrapping now that chef-bcs cookbook has been copied to right place.
 # This file is too large for Chef to upload so do it after the cookbook upload above.
-if [[ ! -z $COBBLER_BOOTSTRAP_ISO ]]; then
-  do_on_node $CEPH_CHEF_BOOTSTRAP "sudo cp /ceph-files/cobbler/isos/*.iso \$HOME/chef-bcs/cookbooks/chef-bcs/files/default"
-fi
+#if [[ ! -z $COBBLER_BOOTSTRAP_ISO ]]; then
+#  do_on_node $CEPH_CHEF_BOOTSTRAP "sudo cp /ceph-files/cobbler/isos/*.iso \$HOME/chef-bcs/cookbooks/chef-bcs/files/default"
+#fi

@@ -17,29 +17,36 @@
 # limitations under the License.
 #
 
-if node['chef-bcs']['init_style'] != 'upstart'
-  package 'firewalld'
+package 'haproxy' do
+  action :upgrade
+end
 
-  service 'firewalld' do
+bash "enable-defaults-haproxy" do
+    user "root"
+    code <<-EOH
+        sed --in-place '/^ENABLED=/d' /etc/default/haproxy
+        echo 'ENABLED=1' >> /etc/default/haproxy
+    EOH
+    not_if "grep -e '^ENABLED=1' /etc/default/haproxy"
+end
+
+# Set the config
+template "/etc/haproxy/haproxy.cfg" do
+  source 'haproxy.cfg.erb'
+  variables lazy {
+    {
+      :radosgw_nodes => radosgw_nodes
+    }
+  }
+#  not_if "test -f /etc/haproxy/haproxy.cfg"
+end
+
+if node['chef-bcs']['init_style'] == 'upstart'
+else
+  service 'haproxy' do
+    restart_command "service haproxy stop && service haproxy start && sleep 5"
     provider Chef::Provider::Service::Redhat
     supports :status => true
     action [:enable, :start]
   end
-else
 end
-
-
-# Set permanent for all actions
-# node.default['firewall']['firewalld']['permanent'] = true
-
-# enable platform default firewall
-# firewall 'default' do
-#   action :install
-#   enabled_zone :public
-# end
-
-# Force the rules etc to be saved
-# firewall 'default' do
-#   action :save
-#   ignore_failure true
-# end

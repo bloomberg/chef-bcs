@@ -17,7 +17,8 @@
 # limitations under the License.
 #
 
-# Stop the firewall
-firewall 'default' do
-  action :disable
+service 'firewalld' do
+  provider Chef::Provider::Service::Redhat
+  supports :status => true
+  action [:stop]
 end

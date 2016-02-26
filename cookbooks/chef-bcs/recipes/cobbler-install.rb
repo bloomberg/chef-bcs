@@ -45,6 +45,7 @@ else
   package 'pykickstart'
   package 'xinetd'
   package 'createrepo'
+  package 'fence-agents'  # power mgt for cobbler
 end
 
 package 'cobbler'

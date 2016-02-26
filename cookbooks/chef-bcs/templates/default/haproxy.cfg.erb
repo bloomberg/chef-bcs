@@ -1,0 +1,56 @@
+################################################
+# Auto generated
+################################################
+
+global
+  daemon
+  user haproxy
+  group haproxy
+  pidfile /var/run/haproxy.pid
+  stats socket /var/run/haproxy/haproxy.asok level admin
+  log /dev/log local0 info
+  maxconn <%= node['chef-bcs']['adc']['connections']['max'] %>
+
+defaults
+  log global
+  mode http
+  option http-server-close
+  option abortonclose
+  option tcplog
+  option dontlognull
+  option nolinger
+  option redispatch
+  retries 3
+  timeout http-request 5s
+  timeout queue 1m
+  timeout connect 5s
+  timeout check 10s
+  timeout client 30m
+  timeout server 30m
+
+<% if node['chef-bcs']['adc']['stats']['enable'] %>
+listen stats <%="#{node['chef-bcs']['cobbler']['servers']["#{node['hostname']}"]['network']['public']['ip']}:#{node['chef-bcs']['adc']['stats']['port']}"%>
+    stats enable
+    stats uri /
+    stats hide-version
+    stats auth <%= node['chef-bcs']['adc']['stats']['user'] %>:<%= node['chef-bcs']['adc']['stats']['passwd'] %>
+<% end -%>
+
+frontend radosgw-http
+  bind <%="#{node['chef-bcs']['cobbler']['servers']["#{node['hostname']}"]['network']['public']['ip']}:#{node['chef-bcs']['adc']['vips']['port']['non_ssl']}"%>
+  option tcplog
+  default_backend radosgw-http-backend
+
+frontend radosgw-https
+  bind <%="#{node['chef-bcs']['cobbler']['servers']["#{node['hostname']}"]['network']['public']['ip']]}:#{node['chef-bcs']['adc']['port']['ssl']}"%> ssl crt <%= node['chef-bcs']['adc']['ssl'] %>
+  option tcplog
+  default_backend radosgw-http-backend
+
+backend radosgw-http-backend
+  balance <%= node['chef-bcs']['adc']['connections']['balance'] %>
+  option httpchk GET /
+  http-check expect status 200
+#  source <%= node['chef-bcs']['cobbler']['servers']["#{node['hostname']}"]['network']['public']['ip'] %>
+<% @radosgw_nodes.each do | rgw_node | -%>
+  <%= "server #{rgw_node['hostname']} #{node['chef-bcs']['cobbler']['servers']["#{rgw_node['hostname']}"]['network']['public']['ip']}:#{node['chef-bcs']['adc']['backend']['port']} check inter 5s rise 1 fall 1 observe layer7" %>
+<% end -%>

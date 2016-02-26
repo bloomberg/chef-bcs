@@ -22,6 +22,49 @@ require 'base64'
 require 'thread'
 require 'ipaddr'
 
+# ADC - Application Delivery Controller (load balancer)
+def is_adc_node
+  val = false
+  nodes = adc_nodes
+  nodes.each do |n|
+    if n['hostname'] == node['hostname']
+      val = true
+      break
+    end
+  end
+  val
+end
+
+def adc_nodes
+  results = search(:node, "tags:#{node['chef-bcs']['adc']['tag']}")
+  results.map! { |x| x['hostname'] == node['hostname'] ? node : x }
+  if !results.include?(node) && node.run_list.roles.include?(node['chef-bcs']['adc']['tag'])
+    results.push(node)
+  end
+  results.sort! { |a, b| a['hostname'] <=> b['hostname'] }
+end
+
+def is_radosgw_node
+  val = false
+  nodes = radosgw_nodes
+  nodes.each do |n|
+    if n['hostname'] == node['hostname']
+      val = true
+      break
+    end
+  end
+  val
+end
+
+def radosgw_nodes
+  results = search(:node, "tags:#{node['ceph']['radosgw']['tag']}")
+  results.map! { |x| x['hostname'] == node['hostname'] ? node : x }
+  if !results.include?(node) && node.run_list.roles.include?(node['ceph']['radosgw']['role'])
+    results.push(node)
+  end
+  results.sort! { |a, b| a['hostname'] <=> b['hostname'] }
+end
+
 def init_config
     if not Chef::DataBag.list.key?('configs')
         Chef::Log.info("************ Creating data_bag \"configs\"")

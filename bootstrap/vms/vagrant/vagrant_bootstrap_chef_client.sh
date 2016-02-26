@@ -28,7 +28,6 @@ source vagrant_base.sh
 # 3. vagrant_bootstrap_chef_client.sh
 # Then do the mon, osd, rgw etc.
 
-# TODO: Make OS check here to do for Ubuntu or RHEL based...
-do_on_node $CEPH_CHEF_BOOTSTRAP "sudo cp /ceph-files/cobbler/isos/centos-7-x86_64-minimal.iso /tmp"
+do_on_node $CEPH_CHEF_BOOTSTRAP "sudo cp /ceph-files/cobbler/isos/*.iso /tmp"
 
 do_on_node $CEPH_CHEF_BOOTSTRAP "sudo chef-client"

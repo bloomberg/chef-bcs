@@ -30,7 +30,7 @@ eula --agreed
 # System bootloader configuration
 # Use grub2-mkpasswd-pbkdf2 to generate cryptic password for security
 # bootloader --append=" crashkernel=auto" --location=mbr --boot-drive=sda --iscrypted --password={{ bootloader_pwd }}
-bootloader --append=" crashkernel=auto" --location=mbr --boot-drive=sda <%= node['chef-bcs']['cobbler']['kickstart']['bootloader']['passwd_type'] %> <%= node['chef-bcs']['cobbler']['kickstart']['bootloader']['passwd'] %>
+bootloader --location=mbr <%= node['chef-bcs']['cobbler']['kickstart']['bootloader']['passwd_type'] %> <%= node['chef-bcs']['cobbler']['kickstart']['bootloader']['passwd'] %>
 
 # Partition clearing information
 clearpart --all --initlabel
@@ -94,22 +94,27 @@ $SNIPPET('pre_install_network_config')
 $SNIPPET('pre_anamon')
 %end
 
-%packages
+%packages --nobase --ignoremissing
 <% if node['chef-bcs']['cobbler']['os']['name'] == 'centos-7' %>
 # CentOS
-@^Infrastructure Server
+@Infrastructure Server
 # CentOS end
 <% else %>
 # RHEL begin
 @^infrastructure-server-environment
 # RHEL end
 <% end -%>
-kexec-tools
-vim
-git
 wget
 curl
+iputils
+net-tools
 ntp
+ntpdate
+parted
+kexec-tools
+vim
+tmux
+git
 tftp-server
 dnsmasq
 %end
