@@ -18,11 +18,6 @@
 # limitations under the License.
 #
 
-# This recipe sets up ceph osd configuration information needed by the ceph cookbook recipes
-node.default['ceph']['osd']['devices'] = node['chef-bcs']['ceph']['osd']['devices']
-
-# node.default['ceph']['config']['osd'] = node['chef-bcs']['ceph']['config']['osd']
-
 # PG         "pgp_auto_adjust" : false,
 
 # Note: The default size of replica is 3 but since we only have 2 OSD devices then we need to change

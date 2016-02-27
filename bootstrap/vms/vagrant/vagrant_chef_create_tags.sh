@@ -52,6 +52,8 @@ for vm in ${CEPH_ADMIN_HOSTS[@]}; do
 done
 
 # Added a tag to the last vm (can come back and change the name to a var later) for an ADC (haproxy/keepalived)
+do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE tag create ceph-vm1.ceph.example.com 'ceph-adc' $CHEF_KNIFE_DEBUG"
+do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE tag create ceph-vm2.ceph.example.com 'ceph-adc' $CHEF_KNIFE_DEBUG"
 do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE tag create ceph-vm3.ceph.example.com 'ceph-adc' $CHEF_KNIFE_DEBUG"
 
 # Just use the first VM as a radosgw node

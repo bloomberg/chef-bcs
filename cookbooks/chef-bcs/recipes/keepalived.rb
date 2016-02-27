@@ -22,14 +22,14 @@ package 'keepalived' do
 end
 
 # Set the config
-template "/etc/keepalived/keepalived.cfg" do
+template "/etc/keepalived/keepalived.conf" do
   source 'keepalived.conf.erb'
   variables lazy {
     {
-      :adc_nodes => adc_nodes
+      :adc_nodes => adc_nodes,
+      :server => get_keepalived_server
     }
   }
-#  not_if "test -f /etc/keepalived/keepalived.conf"
 end
 
 # All for binding additional IPs not found in ifcfg files.
@@ -38,14 +38,15 @@ template "/etc/sysctl.d/99-sysctl.conf" do
 end
 
 execute 'update-sysctl' do
-  command 'systctl -p'
+  command 'sysctl -p'
 end
 
 if node['chef-bcs']['init_style'] == 'upstart'
 else
   service 'keepalived' do
     provider Chef::Provider::Service::Redhat
-    supports :status => true
     action [:enable, :start]
+    supports :restart => true, :status => true
+    subscribes :restart, "template[/etc/keepalived/keepalived.conf]"
   end
 end

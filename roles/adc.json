@@ -1,0 +1,15 @@
+{
+    "name": "adc",
+    "default_attributes": {
+    },
+    "json_class": "Chef::Role",
+    "run_list": [
+      "role[common]",
+      "recipe[chef-bcs::haproxy]",
+      "recipe[chef-bcs::keepalived]"
+    ],
+    "description": "ADC (load balancer)",
+    "chef_type": "role",
+    "override_attributes": {
+    }
+}

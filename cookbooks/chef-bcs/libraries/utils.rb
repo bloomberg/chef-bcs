@@ -44,6 +44,75 @@ def adc_nodes
   results.sort! { |a, b| a['hostname'] <=> b['hostname'] }
 end
 
+def get_server
+  val = nil
+  servers = node['chef-bcs']['cobbler']['servers']
+  servers.each do | server |
+    if server['name'] == node['hostname']
+      val = server
+      break
+    end
+  end
+  val
+end
+
+def get_keepalived_server
+  val = nil
+  servers = node['chef-bcs']['keepalived']['servers']
+  servers.each do | server |
+    if server['name'] == node['hostname']
+      val = server
+      break
+    end
+  end
+  val
+end
+
+def get_adc_backend_nodes
+  results = []
+  rgw_nodes = radosgw_nodes
+
+  servers = node['chef-bcs']['cobbler']['servers']
+  rgw_nodes.each do | rgw |
+    servers.each do | server |
+      if server['name'] == rgw['hostname']
+        svr = {}
+        svr['name'] = server['name']
+        svr['ip'] = server['network']['public']['ip']
+        svr['weight'] = get_backend_int_attr(server['name'], 'weight')
+        svr['options'] = get_backend_str_attr(server['name'], 'options')
+        results.push(svr)
+      end
+    end
+  end
+
+  results
+end
+
+def get_backend_int_attr(name, attr)
+  val = 0
+  backend_nodes = node['chef-bcs']['adc']['backend']['servers']
+  backend_nodes.each do | backend |
+    if backend['name'] == name
+      val = backend[attr]
+      break
+    end
+  end
+  val
+end
+
+def get_backend_str_attr(name, attr)
+  val = ''
+  backend_nodes = node['chef-bcs']['adc']['backend']['servers']
+  backend_nodes.each do | backend |
+    if backend['name'] == name
+      val = backend[attr]
+      break
+    end
+  end
+  val
+end
+
 def is_radosgw_node
   val = false
   nodes = radosgw_nodes

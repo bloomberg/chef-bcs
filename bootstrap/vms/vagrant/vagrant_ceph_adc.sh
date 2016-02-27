@@ -1,8 +1,6 @@
+#!/bin/bash
 #
-# Author:: Chris Jones <cjones303@bloomberg.net>
-# Cookbook Name:: chef-bcs
-# Recipe:: ceph-rgw
-#
+# Author: Chris Jones <cjones303@bloomberg.net>
 # Copyright 2016, Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,6 +16,10 @@
 # limitations under the License.
 #
 
-# This is one way to set node default values within a higher level area. However, role default or override
-# attribute values are normally a better choice but in this case we want to set the 'rgw dns name' from
-# another node attribute value.
+source vagrant_base.sh
+
+# NOTE: This sets up the ADC (haproxy and keepalived)
+for vm in ${CEPH_ADC_HOSTS[@]}; do
+  do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE node run_list add $vm.$BOOTSTRAP_DOMAIN 'role[ceph-adc]' $CHEF_KNIFE_DEBUG"
+  do_on_node $vm "sudo chef-client $CHEF_CLIENT_DEBUG -o 'role[ceph-adc]'"
+done

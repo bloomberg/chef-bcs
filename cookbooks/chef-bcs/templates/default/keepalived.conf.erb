@@ -4,30 +4,49 @@
 
 global_defs {
   router_id <%= node['hostname'] %>
-#  weight <%= node['chef-bcs']['keepalived']['server']["#{node['hostname']}"]['weight']
 }
 
+# fall - takes this many tries before going into a fail state
+# rise - takes this many tries before going into an active state
 vrrp_script chk_haproxy {
   script "killall -0 haproxy"
   interval 2
-  weight 2
+  fall 2
+  rise 1
+  # NOTE: Can add a script here or in a vrrp_instance below to keep resources off until required.
+  # For example, dynamically stop a service if no longer master and start secondary services that can run etc.
+}
+
+# Set the sync group so that all of the VIPs are moved if something happens to anyone of them.
+vrrp_sync_group VG1 {
+  group {
+    <% node['chef-bcs']['adc']['vips'].each_with_index do | vip, index | %>
+    vrrp_inst_<%= @server['router-id'] + index %>
+    <% end -%>
+  }
 }
 
 # Have an instance per VIP
-vrrp_instance 100 {
-  virtual_router_id 100
+<% node['chef-bcs']['adc']['vips'].each_with_index do | vip, index | %>
+vrrp_instance <%= @server['router-id'] + index %> {
+  virtual_router_id <%= @server['router-id'] + index %>
 
   # for electing MASTER, highest priority wins.
-  priority  <%= node['chef-bcs']['keepalived']['servers']["#{node['hostname']}"]['priority'] %>
-  state     MASTER
+  priority  <%= @server['priority'] %>
+  # Setting state to BACKUP and nopreempt says to not switch to higher priority node until something happens
+  state     BACKUP
+  nopreempt
 
-  interface <%= node['chef-bcs']['network']['public']['interface'] %>
+  # Advert interval
+  advert_int 1
+
+  interface <%= vip['interface'] %>
 
   virtual_ipaddress {
-    <%="#{node['chef-bcs']['management']['vip']}/#{(node['bcpc']['management']['cidr'].match /\d+\.\d+\.\d+\.\d+\/(\d+)/)[1].to_i}"%>
+    <%="#{vip['ip']}/#{vip['cidr']}"%>
   }
   track_script {
-<% if node['chef-bcs']['keepalived']['checks'] -%>
+<% if node['chef-bcs']['keepalived']['checks'] %>
     chk_haproxy
 <% end -%>
   }
@@ -37,139 +56,4 @@ vrrp_instance 100 {
   }
 }
 
-
-###########
-global_defs {
-  notification_email {
-    root@rtp10-svc-4.cloud.cisco.com
-  }
-  notification_email_from keepalived@rtp10-svc-4.cloud.cisco.com
-  smtp_server localhost
-  smtp_connect_timeout 30
-  router_id csm-a-aio-001
-}
-
-static_ipaddress {
-
-}
-
-vrrp_script haproxy {
-  script   "killall -0 haproxy"
-  interval 2
-  weight   2
-}
-vrrp_instance 50 {
-  virtual_router_id 50
-
-  # Advert interval
-  advert_int 1
-
-  # for electing MASTER, highest priority wins.
-  priority  100
-  state     MASTER
-
-  interface bond0
-
-  virtual_ipaddress {
-
-      10.207.240.5 dev bond0
-
-  }
-
-  track_script {
-    haproxy
-  }
-
-}
-
-vrrp_instance 51 {
-  virtual_router_id 51
-
-  # Advert interval
-  advert_int 1
-
-  # for electing MASTER, highest priority wins.
-  priority  100
-  state     MASTER
-
-  interface bond0
-
-  virtual_ipaddress {
-
-      10.207.240.4 dev bond0
-
-
-  }
-
-  track_script {
-    haproxy
-  }
-
-}
-
-
-#########
-global_defs {
-  notification_email {
-    root@rtp10-svc-4-medium01.cisco.com
-  }
-  notification_email_from keepalived@rtp10-svc-4-medium01.cisco.com
-  smtp_server localhost
-  smtp_connect_timeout 30
-  router_id csl-a-proxyinternal-001
-}
-
-static_ipaddress {
-}
-
-vrrp_script haproxy {
-  script   "killall -0 haproxy"
-  interval 2
-  weight   2
-}
-vrrp_instance 177 {
-  virtual_router_id 177
-
-  # Advert interval
-  advert_int 1
-
-  # for electing MASTER, highest priority wins.
-  priority  100
-  state     MASTER
-
-  interface eth0
-
-  virtual_ipaddress {
-      10.207.236.177 dev eth0
-  }
-
-  track_script {
-    haproxy
-  }
-
-}
-vrrp_instance 178 {
-  virtual_router_id 178
-
-  # Advert interval
-  advert_int 1
-
-  # for electing MASTER, highest priority wins.
-  priority  100
-  state     MASTER
-
-  interface eth0
-
-  virtual_ipaddress {
-
-      10.207.236.178 dev eth0
-
-
-  }
-
-  track_script {
-    haproxy
-  }
-
-
-}
+<% end %>

@@ -37,6 +37,7 @@ source $REPO_ROOT/bootstrap/vms/ceph_chef_mon_hosts.env
 source $REPO_ROOT/bootstrap/vms/ceph_chef_rgw_hosts.env
 source $REPO_ROOT/bootstrap/vms/ceph_chef_mds_hosts.env
 source $REPO_ROOT/bootstrap/vms/ceph_chef_admin_hosts.env
+source $REPO_ROOT/bootstrap/vms/ceph_chef_adc_hosts.env
 
 source $REPO_ROOT/bootstrap/vms/vbox_functions.sh
 

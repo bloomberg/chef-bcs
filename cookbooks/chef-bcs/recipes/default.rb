@@ -81,5 +81,3 @@ end
 
 # Set ntp servers
 node.default['ntp']['servers'] = node['chef-bcs']['ntp']['servers']
-
-node.default['ceph']['cluster'] = node['chef-bcs']['ceph']['cluster']

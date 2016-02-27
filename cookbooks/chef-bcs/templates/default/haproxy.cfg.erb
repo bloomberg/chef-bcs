@@ -7,7 +7,7 @@ global
   user haproxy
   group haproxy
   pidfile /var/run/haproxy.pid
-  stats socket /var/run/haproxy/haproxy.asok level admin
+  #stats socket /var/run/haproxy/haproxy.asok level admin
   log /dev/log local0 info
   maxconn <%= node['chef-bcs']['adc']['connections']['max'] %>
 
@@ -29,28 +29,33 @@ defaults
   timeout server 30m
 
 <% if node['chef-bcs']['adc']['stats']['enable'] %>
-listen stats <%="#{node['chef-bcs']['cobbler']['servers']["#{node['hostname']}"]['network']['public']['ip']}:#{node['chef-bcs']['adc']['stats']['port']}"%>
+# Only want the real IP and not the VIPs
+listen stats <%= @server['network']['public']['ip'] %>:<%= node['chef-bcs']['adc']['stats']['port'] %>
     stats enable
     stats uri /
     stats hide-version
     stats auth <%= node['chef-bcs']['adc']['stats']['user'] %>:<%= node['chef-bcs']['adc']['stats']['passwd'] %>
 <% end -%>
 
-frontend radosgw-http
-  bind <%="#{node['chef-bcs']['cobbler']['servers']["#{node['hostname']}"]['network']['public']['ip']}:#{node['chef-bcs']['adc']['vips']['port']['non_ssl']}"%>
+<% node['chef-bcs']['adc']['vips'].each do | vip | %>
+frontend radosgw-http-<%="#{vip['name']}"%>
+  bind <%="#{vip['ip']}:#{node['chef-bcs']['adc']['vip']['port']['non_ssl']}"%>
   option tcplog
   default_backend radosgw-http-backend
 
-frontend radosgw-https
-  bind <%="#{node['chef-bcs']['cobbler']['servers']["#{node['hostname']}"]['network']['public']['ip']]}:#{node['chef-bcs']['adc']['port']['ssl']}"%> ssl crt <%= node['chef-bcs']['adc']['ssl'] %>
-  option tcplog
-  default_backend radosgw-http-backend
+#frontend radosgw-https-<%="#{vip['name']}"%>
+#  bind <%="#{vip['ip']}:#{node['chef-bcs']['adc']['vip']['port']['ssl']}"%> ssl crt <%="#{node['chef-bcs']['adc']['ssl']['path']}/#{node['chef-bcs']['adc']['ssl']['path']}" %>
+#  option tcplog
+#  default_backend radosgw-http-backend
 
+<% end %>
+
+# NOTE: Could try to have a vip related backend since vips represent network tiers. Try to have a different instance
+# Actually, using a different port per rgw instance would work.
 backend radosgw-http-backend
   balance <%= node['chef-bcs']['adc']['connections']['balance'] %>
   option httpchk GET /
   http-check expect status 200
-#  source <%= node['chef-bcs']['cobbler']['servers']["#{node['hostname']}"]['network']['public']['ip'] %>
-<% @radosgw_nodes.each do | rgw_node | -%>
-  <%= "server #{rgw_node['hostname']} #{node['chef-bcs']['cobbler']['servers']["#{rgw_node['hostname']}"]['network']['public']['ip']}:#{node['chef-bcs']['adc']['backend']['port']} check inter 5s rise 1 fall 1 observe layer7" %>
+<% @backend_nodes.each do | backend_node | -%>
+  <%= "server #{backend_node['name']} #{backend_node['ip']}:#{node['chef-bcs']['adc']['backend']['port']} weight #{backend_node['weight']} #{backend_node['options']}" %>
 <% end -%>

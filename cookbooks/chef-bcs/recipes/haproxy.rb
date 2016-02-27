@@ -22,23 +22,36 @@ package 'haproxy' do
 end
 
 bash "enable-defaults-haproxy" do
-    user "root"
-    code <<-EOH
-        sed --in-place '/^ENABLED=/d' /etc/default/haproxy
-        echo 'ENABLED=1' >> /etc/default/haproxy
-    EOH
-    not_if "grep -e '^ENABLED=1' /etc/default/haproxy"
+  user "root"
+  code <<-EOH
+      sed --in-place '/^ENABLED=/d' /etc/default/haproxy
+      echo 'ENABLED=1' >> /etc/default/haproxy
+  EOH
+  not_if "grep -e '^ENABLED=1' /etc/default/haproxy"
 end
+
+directory '/etc/ssl/private' do
+  owner 'root'
+  group 'root'
+  mode 0700
+  recursive true
+  action :create
+  not_if "test -d /etc/ssl/private"
+end
+
+
+# Add SSL PEM here
+
 
 # Set the config
 template "/etc/haproxy/haproxy.cfg" do
   source 'haproxy.cfg.erb'
   variables lazy {
     {
-      :radosgw_nodes => radosgw_nodes
+      :backend_nodes => get_adc_backend_nodes,
+      :server => get_server
     }
   }
-#  not_if "test -f /etc/haproxy/haproxy.cfg"
 end
 
 if node['chef-bcs']['init_style'] == 'upstart'
@@ -46,7 +59,8 @@ else
   service 'haproxy' do
     restart_command "service haproxy stop && service haproxy start && sleep 5"
     provider Chef::Provider::Service::Redhat
-    supports :status => true
     action [:enable, :start]
+    supports :restart => true, :status => true
+    subscribes :restart, "template[/etc/haproxy/haproxy.cfg]"
   end
 end
