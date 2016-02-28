@@ -22,6 +22,7 @@ package 'keepalived' do
 end
 
 # Set the config
+# NOTE: If the virtual_router_id is
 template "/etc/keepalived/keepalived.conf" do
   source 'keepalived.conf.erb'
   variables lazy {
@@ -33,13 +34,13 @@ template "/etc/keepalived/keepalived.conf" do
 end
 
 # All for binding additional IPs not found in ifcfg files.
-template "/etc/sysctl.d/99-sysctl.conf" do
-  source '99-sysctl.conf.erb'
-end
+# template "/etc/sysctl.d/99-sysctl.conf" do
+#   source '99-sysctl.conf.erb'
+# end
 
-execute 'update-sysctl' do
-  command 'sysctl -p'
-end
+# execute 'update-sysctl' do
+#   command 'sysctl -p'
+# end
 
 if node['chef-bcs']['init_style'] == 'upstart'
 else

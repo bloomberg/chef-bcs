@@ -1,0 +1,8 @@
+BOOTPROTO=none
+NAME=<%= @interface %>
+DEVICE=<%= @interface %>
+ONBOOT=yes
+MASTER=<%= node['chef-bcs']['adc']['bond']['name'] %>
+SLAVE=yes
+USERCTL=no
+NM_CONTROLLED=<%= node['chef-bcs']['adc']['bond']['nm_controlled'] %>

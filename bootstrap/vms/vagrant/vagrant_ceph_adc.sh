@@ -22,4 +22,5 @@ source vagrant_base.sh
 for vm in ${CEPH_ADC_HOSTS[@]}; do
   do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE node run_list add $vm.$BOOTSTRAP_DOMAIN 'role[ceph-adc]' $CHEF_KNIFE_DEBUG"
   do_on_node $vm "sudo chef-client $CHEF_CLIENT_DEBUG -o 'role[ceph-adc]'"
+  sleep 5
 done

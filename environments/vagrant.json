@@ -7,6 +7,13 @@
   "chef_type": "environment",
   "override_attributes": {
     "chef-bcs": {
+      "bootstrap": {
+        "name": "ceph-bootstrap",
+        "interfaces": [
+          {"name": "enp0s8", "ip": "10.121.1.2", "netmask": "255.255.255.0", "gateway": ""},
+          {"name": "enp0s9", "ip": "10.121.2.2", "netmask": "255.255.255.0", "gateway": ""}
+        ]
+      },
       "adc": {
         "tag": "ceph-adc",
         "interface": "enp0s8",
@@ -18,8 +25,13 @@
         },
         "bond": {
           "enable": true,
+          "name": "bond0",
+          "type": "Ethernet",
+          "mtu": 1500,
           "interfaces": ["enp0s8", "enp0s9"],
-          "name": "bond0"
+          "options": "mode=4 miimon=100 xmit_hash_policy=layer2+3",
+          "vbox_options": "mode=1 miimon=100 fail_over_mac=1",
+          "nm_controlled": "no"
         },
         "connections": {
           "max": 8000,

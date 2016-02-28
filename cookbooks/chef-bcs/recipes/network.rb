@@ -23,8 +23,10 @@
 
 execute 'network-public' do
   command lazy { "ip link set dev #{node['chef-bcs']['network']['public']['interface']} mtu #{node['chef-bcs']['network']['public']['mtu']}" }
+  not_if "ip link show dev #{node['chef-bcs']['network']['public']['interface']} | grep 'mtu #{node['chef-bcs']['network']['public']['mtu']}'"
 end
 
 execute 'network-cluster' do
   command lazy { "ip link set dev #{node['chef-bcs']['network']['cluster']['interface']} mtu #{node['chef-bcs']['network']['cluster']['mtu']}" }
+  not_if "ip link show dev #{node['chef-bcs']['network']['cluster']['interface']} | grep 'mtu #{node['chef-bcs']['network']['cluster']['mtu']}'"
 end

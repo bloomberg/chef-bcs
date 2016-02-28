@@ -22,6 +22,73 @@ require 'base64'
 require 'thread'
 require 'ipaddr'
 
+def is_bootstrap_node
+  val = false
+  if node['hostname'] == node['chef-bcs']['bootstrap']['name']
+    val = true
+  end
+  val
+end
+
+# Bonding...
+# Bond IP will be the public ip
+def get_bond_ip
+  val = nil
+  if is_bootstrap_node
+    interface = node['chef-bcs']['bootstrap']['interfaces'].first
+    val = interface['ip']
+  else
+    servers = node['chef-bcs']['cobbler']['servers']
+    servers.each do | server |
+      if server['name'] == node['hostname']
+        val = server['network']['public']['ip']
+        break
+      end
+    end
+  end
+  val
+end
+
+def get_bond_gateway
+  val = nil
+  if is_bootstrap_node
+    interface = node['chef-bcs']['bootstrap']['interfaces'].first
+    val = interface['gateway']
+  else
+    servers = node['chef-bcs']['cobbler']['servers']
+    servers.each do | server |
+      if server['name'] == node['hostname']
+        # IMPORTANT - VirtualBox environment should be named vagrant.json or vbox.json
+        # Don't put a GATEWAY value in for a VirtualBox environment
+        if node.chef_environment == 'vagrant' || node.chef_environment == 'vbox'
+          val = ''
+        else
+          val = server['network']['public']['gateway']
+        end
+        break
+      end
+    end
+  end
+  val
+end
+
+def get_bond_netmask
+  val = nil
+  if is_bootstrap_node
+    interface = node['chef-bcs']['bootstrap']['interfaces'].first
+    val = interface['netmask']
+  else
+    servers = node['chef-bcs']['cobbler']['servers']
+    servers.each do | server |
+      if server['name'] == node['hostname']
+        val = server['network']['public']['netmask']
+        break
+      end
+    end
+  end
+  val
+end
+
 # ADC - Application Delivery Controller (load balancer)
 def is_adc_node
   val = false
