@@ -30,3 +30,30 @@ execute 'network-cluster' do
   command lazy { "ip link set dev #{node['chef-bcs']['network']['cluster']['interface']} mtu #{node['chef-bcs']['network']['cluster']['mtu']}" }
   not_if "ip link show dev #{node['chef-bcs']['network']['cluster']['interface']} | grep 'mtu #{node['chef-bcs']['network']['cluster']['mtu']}'"
 end
+
+# ADC nodes are the only ones that allow bonding
+=begin
+if !node['chef-bcs']['adc']['bond']['enable']
+  node['chef-bcs']['adc']['bond']['interfaces'].each do | interface |
+    template "/etc/sysconfig/network-scripts/ifcfg-#{interface}" do
+      source 'ifcfg-nic.erb'
+      variables lazy {
+        {
+          :interface => interface,
+          :ip_addr => get_ip(interface),
+          :netmask => get_netmask(interface),
+          :gateway => get_gateway(interface)
+        }
+      }
+    end
+  end
+
+  service 'network' do
+    provider Chef::Provider::Service::Redhat
+    action [:enable, :restart]
+    supports :restart => true, :status => true
+    subscribes :restart, "template[/etc/sysconfig/network-scripts/ifcfg-#{node['chef-bcs']['adc']['bond']['interfaces'][0]}]"
+  end
+
+end
+=end

@@ -1,0 +1,29 @@
+---
+# BUILD_ENV environment file
+#
+# NOTE: The values below are Vagrant only. A production like version would only have values reflective of that
+# environment which may or may not contain some of the information below (i.e., http_proxy etc).
+vagrant:
+    box: bento/centos-7.1  # centos/7
+    lsb_name: centos
+    storage_controller: SATA Controller
+    # Netmask and CIDR block suffix
+    net_mask:
+        - 255.255.255.0
+        - 24
+    # Must be two DNS entries. If you change this then make sure to change the Vagrantfile where it builds the dns info
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    memory: 2560
+    cpus: 2
+    vram: 16
+    drive_size: 20480
+    # If proxies are used then the following syntax is used: <proxy node>:<port> <-- Note NO http(s):// prefix
+    http_proxy:
+    https_proxy:
+    # Important: CA cert directory *must* reside in the root of the project. Put cert(s) in that directory.
+    # Also, you may not use an intermediate CA cert. If so, then leave it blank.
+    # Example: certs/my_firm_cert.pem and certs/my_firm_intermediate_cert.pem
+    ssl_ca_file_path:
+    ssl_ca_intermediate_file_path:

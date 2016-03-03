@@ -1,41 +1,43 @@
 {
-  "name": "vagrant",
+  {# NOTE: This template goes through a multi-phase process where the first pass pulls from one data file and  #}
+  {# and the second from another data file. The yaml data is found in /bootstrap/seed_data #}
+  "name": "{{ environment }}",
   "json_class": "Chef::Environment",
-  "description": "Vagrant test environment",
-  "NOTE": "NOTE key is ONLY for documenting this json data since json does not allow for comments. This data file is for using Vagrant instead of PXE booting like in production on bare-metal nodes.",
+  "description": "Data to build out {{ data_center }} Ceph Cluster",
   "cookbook_versions": {},
   "chef_type": "environment",
   "override_attributes": {
     "chef-bcs": {
       "bootstrap": {
-        "name": "ceph-bootstrap",
+        "name": "{{ node.name }}",
         "interfaces": [
-          {"name": "enp0s8", "ip": "10.121.1.2", "netmask": "255.255.255.0", "gateway": ""},
-          {"name": "enp0s9", "ip": "10.121.2.2", "netmask": "255.255.255.0", "gateway": ""}
+        {% for item in interfaces %}
+          {"name": "{{ item.interface }}", "ip": "{{ item.ip }}", "netmask": "{{ item.netmask }}", "gateway": "{{ item.gateway }}"}{% if not loop.last %},{% endif %}
+        {% endfor %}
         ]
       },
       "adc": {
         "tag": "ceph-adc",
-        "interface": "enp0s8",
+        "interface": "{{ adc.interface }}",
         "stats": {
-          "enable": true,
-          "user": "haproxy",
-          "passwd": "haproxy",
-          "port": 1936
+          "enable": {{ adc.haproxy.enable }},
+          "user": "{{ adc.haproxy.user }}",
+          "passwd": "{{ adc.haproxy.passwd }}",
+          "port": {{ adc.haproxy.port }}
         },
         "bond": {
-          "enable": false,
-          "name": "bond0",
+          "enable": {{ bond.enable }},
+          "name": "{{ bond.name }}",
           "type": "Ethernet",
-          "mtu": 1500,
-          "interfaces": ["enp0s8", "enp0s9"],
-          "options": "mode=4 miimon=100 xmit_hash_policy=layer2+3",
+          "mtu": {{ bond.mtu }},
+          "interfaces": [{{ nameservers|join(',') }}],
+          "options": "{{ bond.options }}",
           "vbox_options": "mode=1 miimon=100 fail_over_mac=1",
           "nm_controlled": "no"
         },
         "connections": {
-          "max": 8000,
-          "balance": "roundrobin"
+          "max": {{ adc.max_connections }},
+          "balance": "{{ adc.balance }}"
         },
         "ssl": {
           "path": "/etc/ssl/private",
@@ -48,31 +50,32 @@
           }
         },
         "vips": [
-          {"name": "admin", "ip": "10.121.16.17", "cidr": 28, "interface": "enp0s8"},
-          {"name": "prod", "ip": "10.121.16.18", "cidr": 28, "interface": "enp0s8"},
-          {"name": "dev", "ip": "10.121.16.19", "cidr": 28, "interface": "enp0s8"}
+        {% for item in vips %}
+          {"name": "{{ item.name }}", "ip": "{{ item.ip }}", "cidr": {{ item.cidr }}, "interface": "{{ item.interface }}"}{% if not loop.last %},{% endif %}
+        {% endfor %}
         ],
-        "NOTE-VIP": "VIPS are 10.121.16.16/28 range (.17 - .30). Advertised via BGP or Static+BFD Beacon.",
+        {# VIPS are 10.121.16.16/28 range (.17 - .30). Advertised via BGP or Static+BFD Beacon. #}
         "backend": {
-          "port": 8080,
+          "port": {{ backend.port }},
           "servers": [
-            {"name": "ceph-vm1", "weight": 6, "options": "check inter 2s rise 2 fall 3"},
-            {"name": "ceph-vm2", "weight": 3, "options": "check inter 2s rise 2 fall 3"}
+          {% for item in backend.servers %}
+            {"name": "{{ item.name }}", "weight": "{{ item.weight }}", "options": {{ item.options }}}{% if not loop.last %},{% endif %}
+          {% endfor %}
           ]
         }
       },
       "keepalived": {
-        "passwd": "keepalived",
+        "passwd": "{{ adc.keepalived.passwd }}",
         "checks": true,
         "servers": [
-          {"name": "ceph-vm1", "weight": 5, "interface": "enp0s8", "priority": 98, "router-id": 25},
-          {"name": "ceph-vm2", "weight": 5, "interface": "enp0s8", "priority": 100, "router-id": 50},
-          {"name": "ceph-vm3", "weight": 5, "interface": "enp0s8", "priority": 99, "router-id": 75}
+        {% for item in adc.keepalived.servers %}
+          {"name": "{{ item.name }}", "weight": "{{ item.weight }}", "interface": {{ item.interface }}}{% if not loop.last %},{% endif %}
+        {% endfor %}
         ]
       },
       "chef": {
-        "owner": "vagrant",
-        "group": "vagrant"
+        "owner": "{{ chef.owner }}",
+        "group": "{{ chef.group }}"
       },
       "security": {
         "sshd": {
@@ -116,20 +119,20 @@
         "pid_max": 4194303
       },
       "ipmi": {
-        "user": "vbox",
-        "passwd": "$6$Salt$xvQkYaQ4urNWmnjpinAZSR/ZOaRy/aacKh4j18ayq/.mswLqleFZI5zaD1BCg2Fdzy1BjpBv9VIgVgt6YoA8T0",
+        "user": "{{ ipmi.user }}",
+        "passwd": "{{ ipmi.passwd }}",
         "NOTE": "password of vbox is: $6$Salt$xvQkYaQ4urNWmnjpinAZSR/ZOaRy/aacKh4j18ayq/.mswLqleFZI5zaD1BCg2Fdzy1BjpBv9VIgVgt6YoA8T0"
       },
       "cobbler": {
         "web_user": "cobbler",
-        "pxe_interface": "enp0s3",
-        "server": "10.121.1.2",
+        "pxe_interface": "{{ cobbler.interface }}",
+        "server": "{{ cobbler.server }}",
         "kickstart": {
           "NOTE": "password vagrant is: $6$Salt$6AyUczFy6SgV8A2wKAKfA9drpzrUsTGPJ3QjcWBbgS97BxBO.C7ZcBFALRiRkKfi9x8MK2SHet38BCQWS9LsR/",
           "root": {
-            "passwd": "$6$Salt$6AyUczFy6SgV8A2wKAKfA9drpzrUsTGPJ3QjcWBbgS97BxBO.C7ZcBFALRiRkKfi9x8MK2SHet38BCQWS9LsR/",
+            "passwd": "{{ cobbler.kickstart.root }}",
             "passwd_type": "--iscrypted",
-            "key": "ceph_bootstrap.pub"
+            "key": "{{ cobbler.kickstart.key }}"
           },
           "file": {
             "osd": "bcs_node_rhel_osd.ks",
@@ -247,11 +250,13 @@
         "dhcp": {
           "shared_network": "bcs",
           "single": {
-            "netmask": "255.255.255.0",
-            "gateway": "10.121.1.2"
+            "netmask": "{{ cobbler.kickstart.dhcp.single.netmask }}",
+            "gateway": "{{ cobbler.kickstart.dhcp.single.gateway }}"
           },
           "subnets":[
-            {"subnet": "10.121.1.0", "tag": "rack1", "dhcp_range": ["10.121.1.10", "10.121.1.254"], "netmask": "255.255.255.0", "router": "10.121.1.2"}
+          {% for item in cobbler.kickstart.dhcp.subnets %}
+            {"subnet": "{{ item.name }}", "tag": "{{ item.tag }}", "dhcp_range": [{{ item.dhcp_range|join(',') }}], "netmask": "{{ item.netmask }}", "router": "{{ item.router }}"}{% if not loop.last %},{% endif %}
+          {% endfor %}
           ]
          },
         "NOTE1": "NOTE: Each subnet represents a routable rack so dhcp will need to manage each subnet with the TOR using IP-helper for dhcp requests by nodes in the given rack.",
@@ -271,20 +276,20 @@
           "xmlrpc": 25151
         },
         "os": {
-          "name": "rhel-7.2",
-          "version": "7.2",
-          "arch": "x86_64",
-          "distro": "rhel-server-7.2-x86_64-dvd.iso",
-          "breed": "redhat"
+          "name": "{{ cobbler.kickstart.os.name }}",
+          "version": "{{ cobbler.kickstart.os.version }}",
+          "arch": "{{ cobbler.kickstart.os.arch }}",
+          "distro": "{{ cobbler.kickstart.os.distro }}",
+          "breed": "{{ cobbler.kickstart.os.breed }}"
         },
         "redhat": {
           "management": {
-            "type": "off",
-            "server": "xmlrpc.rhn.redhat.com",
-            "key": "cloud-object-store"
+            "type": "{{ cobbler.kickstart.redhat.management.type }}",
+            "server": "{{ cobbler.kickstart.redhat.management.server }}",
+            "key": "{{ cobbler.kickstart.redhat.management.key }}"
           }
         },
-        "repo_mirror": true
+        "repo_mirror": {{ cobbler.kickstart.repo_mirror }}
       },
       "ceph": {
         "cluster": "ceph",
@@ -353,32 +358,32 @@
           "active": ["radosgw"]
         }
       },
-      "domain_name" : "ceph.example.com",
+      "domain_name" : "{{ node.domain }}",
       "network": {
         "public": {
-          "interface": "enp0s8",
+          "interface": "{{ network.public.interface }}",
           "cidr": [
-            "10.121.1.0/24"
+            {{ network.public.cidr|join(',') }}
           ],
-          "mtu": 1500
+          "mtu": {{ network.public.mtu }}
         },
         "cluster": {
-          "interface": "enp0s9",
+          "interface": "{{ network.cluster.interface }}",
           "cidr": [
-            "10.121.2.0/24"
+            {{ network.mtu.cidr|join(',') }}
           ],
-          "mtu": 1500
+          "mtu": {{ network.cluster.mtu }}
         }
       },
       "dns": {
-        "servers": [ "8.8.8.8", "8.8.4.4" ]
+        "servers": [ {{ nameservers|join(',') }} ]
       },
       "ntp": {
-        "servers": [ "0.pool.ntp.org", "1.pool.ntp.org", "2.pool.ntp.org", "3.pool.ntp.org" ]
+        "servers": [ {{ ntp|join(',') }} ]
       }
     },
     "chef_client": {
-      "server_url": "http://10.121.1.2:4000",
+      "server_url": "{{ chef.server }}",
       "cache_path": "/var/chef/cache",
       "backup_path": "/var/chef/backup",
       "validation_client_name": "chef-validator",

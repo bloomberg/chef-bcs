@@ -30,6 +30,81 @@ def is_bootstrap_node
   val
 end
 
+def get_ip(interface)
+  val = nil
+  if is_bootstrap_node
+    node['chef-bcs']['bootstrap']['interfaces'].each do | intf |
+      if interface == intf
+        val = intf['ip']
+        break
+      end
+    end
+  else
+    servers = node['chef-bcs']['cobbler']['servers']
+    servers.each do | server |
+      if server['name'] == node['hostname']
+        if interface == server['network']['public']['interface']
+          val = server['network']['public']['ip']
+        else
+          val = server['network']['cluster']['ip']
+        end
+        break
+      end
+    end
+  end
+  val
+end
+
+def get_gateway(interface)
+  val = nil
+  if is_bootstrap_node
+    node['chef-bcs']['bootstrap']['interfaces'].each do | intf |
+      if interface == intf
+        val = intf['gateway']
+        break
+      end
+    end
+  else
+    servers = node['chef-bcs']['cobbler']['servers']
+    servers.each do | server |
+      if server['name'] == node['hostname']
+        if interface == server['network']['public']['interface']
+          val = server['network']['public']['gateway']
+        else
+          val = server['network']['cluster']['gateway']
+        end
+        break
+      end
+    end
+  end
+  val
+end
+
+def get_netmask(interface)
+  val = nil
+  if is_bootstrap_node
+    node['chef-bcs']['bootstrap']['interfaces'].each do | intf |
+      if interface == intf
+        val = intf['netmask']
+        break
+      end
+    end
+  else
+    servers = node['chef-bcs']['cobbler']['servers']
+    servers.each do | server |
+      if server['name'] == node['hostname']
+        if interface == server['network']['public']['interface']
+          val = server['network']['public']['netmask']
+        else
+          val = server['network']['cluster']['netmask']
+        end
+        break
+      end
+    end
+  end
+  val
+end
+
 # Bonding...
 # Bond IP will be the public ip
 def get_bond_ip

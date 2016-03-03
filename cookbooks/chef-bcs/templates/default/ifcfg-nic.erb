@@ -1,0 +1,11 @@
+BOOTPROTO=none
+NAME=<%= @interface %>
+DEVICE=<%= @interface %>
+ONBOOT=yes
+USERCTL=no
+IPADDR=<%= @ip_addr %>
+NETMASK=<%= @netmask %>
+GATEWAY=<%= @gateway %>
+DNS1=<%= node['chef-bcs']['dns']['servers'][0] %>
+DNS1=<%= node['chef-bcs']['dns']['servers'][1] %>
+#NM_CONTROLLED=<%= node['chef-bcs']['adc']['bond']['nm_controlled'] %>

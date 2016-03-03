@@ -112,9 +112,12 @@ def find_file(path, pattern):
     for file in os.listdir(path):
         if fnmatch.fnmatch(file, pattern):
             return file
-    return none
+    return None
+
 
 def find_comps_file_name(file_name):
+    if file_name is None:
+        return None
     index = file_name.index('-')
     if index:
         return file_name[index-1:]

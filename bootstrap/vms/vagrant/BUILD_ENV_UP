@@ -1,0 +1,237 @@
+#!/bin/bash
+#
+# Copyright 2016, Bloomberg Finance L.P.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# This script builds the VirtualBox build VM required to build the bootstrap ISO. It must be ran from a desktop or
+# laptop or anywhere that has full Internet access.
+
+# The boostrap ISO will be used to build the initial bootstrap node in the cluster. This is done via *moving* the ISO
+# to an area in the Network where the ISO can be copied *OR* mounted by the initial bootstrap node. For example,
+# the KVM interface will need access to the ISO so it can use it to build the boostrap node via the kickstart file on
+# the ISO.
+
+# The ISO build process will build a final ISO that includes the following:
+# 1. Updated packages
+# 2. Modified *repodata* that has been re-indexed to support an additional packages
+# 3. Modified *isolinux/isolinux.cfg that has been updated to automatically start the OS build using
+#    a new kickstart file that is found in the chef-bcs/files/default/bcs_bootstrap_rhel.ks.
+# 4. New directories called /postinstall/{ceph-files,ceph-host}. These contain the pre-req colleced files/packages
+#    downloaded via 'bootstrap_prereqs.sh'.
+
+# The custom kickstart will build the OS, partition the drive and do raid1 on second drive, up nics on bootstrap
+# and copy over postinstall directories to where they need to be on bootstrap. The postinstall directories are
+# Chef server and all required prereq packages/files. It also contains the redhat satellite key for the repos.
+
+# Vagrant creates the build VM and in this script and you can access the VM with BUILD_UP and *NOT* CEPH_UP
+
+# Once on the newly built bootstrap node you can run (as root) the 'build_bootstrap_node.sh'. This will create
+# the structure for the Chef Server, move over the ISO used to build the rest of the nodes, build the Chef
+# server and prep it with all of the cookbooks and make sure Cobbler is ready to go. Once you're satisfied
+# with the bootstrap node then start the PXE booting of the cluster. Also, there are two types of kickstart files,
+# OSD and NON-OSD. The difference is mainly the drive configuration. Each of the kickstarts also have the rhel
+# satellite key built in for the packages.
+
+# The node ISO is not a custom built ISO and resides on the Satellite server so that it can be rsync down to /tmp.
+# This keeps the custom ISO at a normal size since it does not have to include it.
+
+# Note: If needed and Satellite server is not available then the bootstrap kickstart can be modified to copy over
+# the packages to the Cobbler repo_mirror directory (/var/www/cobbler/repo_mirror) and then run createrepo to
+# generate the indexes and setup the *.repo file in /etc/yum.repos.d/. The node kickstarts would need to be
+# modified too to pull repo from the bootstrap node instead of the Satellite server via the Capsule server. If this
+# process is used instead of Satellite then you must keep the packages updated via mounted ISO process. Just FYI.
+
+set -e
+
+# CAN ONLY be ran from the /chef-bcs/bootstrap/vms/vagrant directory!
+
+while getopts bv opt; do
+    case $opt in
+        b)
+            BUILD_VMS_ONLY=1
+            ;;
+        # verbose
+        v)
+            set -x
+            ;;
+    esac
+done
+
+# Using environment vars from CEPH_UP :)
+
+# Force banner not to show
+export DONT_SHOW_BANNER=1
+# Force no download of ISO which means it has already been download - see below
+export COBBLER_DOWNLOAD_ISO=0
+
+source vagrant_base.sh
+
+do_on_node() {
+  echo
+  echo "Issuing command: vagrant ssh $1 -c ${2}"
+  echo "----------------------------------------------------------------------------------------"
+  NODE=$1
+  shift
+  COMMAND="${*}"
+  vagrant ssh $NODE -c "$COMMAND"
+}
+
+#### Modify section - begin ####
+CHEF_BCS_ENV=cob1
+# The name of the build server. Change it in build_server_config *AND* here!
+vm=bcs-build-server
+CEPH_CHEF_FILES=ceph-files
+CEPH_CHEF_REPO=ceph-host
+ISOVOLUMEID="RHEL-7.2 Server.x86_64"
+PACKAGER=Bloomberg
+COMPS_FILE=comps.xml
+ks=bcs_bootstrap_rhel.ks.j2
+
+# IMPORTANT!! These vars *MUST* be set to either the http location for download OR the file location on your local
+# file system. Everything but RHEL can be downloaded via http. RHEL must be downloaded *BEFORE* starting this process.
+# The location of where you put RHEL should be set here if RHEL. The default is the Downloads area on a mac.
+export COBBLER_REMOTE_URL_ISO="$HOME/Downloads/rhel-server-7.2-x86_64-dvd.iso"
+export COBBLER_BOOTSTRAP_ISO="rhel-server-7.2-x86_64.iso"
+
+# NOTE: IMPORTANT - The internal repo (if one) *MUST* be in the same structure as the external github public version.
+# The internal repo will override the public version so *ONLY* put files in the internal repo that you don't want
+# to be public AND that you want to take priority!
+export GITHUB_REPO=${GITHUB_REPO:-"chef-bcs"}
+export GITHUB_EXTERNAL_REPO=${GITHUB_EXTERNAL_REPO:-"https://github.com/cloudm2/$GITHUB_REPO"}
+export GITHUB_INTERNAL_REPO=${GITHUB_INTERNAL_REPO:-"https://bbgithub.dev.bloomberg.com/BCS/$GITHUB_REPO"}
+
+#### Modify section - end ####
+
+rm -rf $BOOTSTRAP_CACHE_DIR/build/iso/in
+rm -rf $BOOTSTRAP_CACHE_DIR/build/iso/out
+mkdir -p $BOOTSTRAP_CACHE_DIR/build/iso/{in,out}
+
+# Configure and test any proxies configured.
+if [[ ! -z $BOOTSTRAP_HTTP_PROXY ]] || [[ ! -z $BOOTSTRAP_HTTPS_PROXY ]] ; then
+  echo "Testing configured proxies..."
+  source $REPO_ROOT/bootstrap/common/bootstrap_proxy_setup.sh
+fi
+
+export BOOTSTRAP_TYPE=${BOOTSTRAP_TYPE:-"vagrant"}
+
+# Perform preflight checks to validate environment sanity as much as possible.
+echo "Performing preflight environment validation..."
+source $REPO_ROOT/bootstrap/common/bootstrap_validate_env.sh
+
+echo "Checking VirtualBox and Vagrant..."
+source $REPO_ROOT/bootstrap/vms/vagrant/vagrant_test.sh
+
+# Do prerequisite work prior to starting build, downloading files and
+# creating local directories.
+echo "Downloading necessary files to local cache..."
+source $REPO_ROOT/bootstrap/common/bootstrap_prereqs.sh
+
+# Copy over RHEL
+echo "Copying ISO to cache..."
+if [[ ! -f $BOOTSTRAP_CACHE_DIR/build/iso/in/$COBBLER_BOOTSTRAP_ISO ]]; then
+  cp $COBBLER_REMOTE_URL_ISO $BOOTSTRAP_CACHE_DIR/build/iso/in/$COBBLER_BOOTSTRAP_ISO
+fi
+
+# Get the chef-bcs github repo and any internal github (note: change this to fit your needs).
+# Put these in the cache directory where the shared folders will be mapped.
+# Force a clean git clone
+rm -rf $BOOTSTRAP_CACHE_DIR/build/github/external
+rm -rf $BOOTSTRAP_CACHE_DIR/build/github/internal
+
+mkdir -p $BOOTSTRAP_CACHE_DIR/build/github/{external,internal}
+
+git clone $GITHUB_EXTERNAL_REPO $BOOTSTRAP_CACHE_DIR/build/github/external/$GITHUB_REPO
+
+# May be there so ignore fail if not there.
+set +e
+git clone $GITHUB_INTERNAL_REPO $BOOTSTRAP_CACHE_DIR/build/github/internal/$GITHUB_REPO
+set -e
+
+# An alternative to the above git clone is to have the clone somewhere on your system and then sym link to it instead :)
+
+# IMPORTANT!!!!!
+# Copy over the Vagrantfile_build_env to Vagrantfile
+# There are two Vagrantfile* files. One for building the build environment (Vagrant_build_env) and one for
+# building the BCS cluster (Vagrantfile_bcs) for testing.
+cp Vagrantfile_build_env Vagrantfile
+
+# Clean up old build vm
+# Since the earlier cp command copied the Vagrantfile_build_env to Vagrantfile then only that VM will be destroyed
+vagrant destroy -f
+
+# Create VM.
+# Since the earlier cp command copied the Vagrantfile_build_env to Vagrantfile then only that VM will be built
+vagrant up
+
+echo
+echo "Vagrant build complete..."
+echo
+
+if [[ $BUILD_VMS_ONLY -eq 0 ]]; then
+  echo "Copying ISO to /tmp..."
+  echo
+  # Move the ISO because we rsync later
+  do_on_node $vm "mv /ceph-files/build/iso/in/*.iso /tmp"
+  echo "Creating directories and mounting base ISO..."
+  echo
+  do_on_node $vm "mkdir -p /tmp/build/{iso,mnt,packages}"
+  do_on_node $vm "sudo mount -o loop /tmp/$COBBLER_BOOTSTRAP_ISO /tmp/build/mnt"
+  echo "Moving ISO data to /tmp/build/iso..."
+  echo
+  do_on_node $vm "rsync -av /tmp/build/mnt/ /tmp/build/iso/"
+  do_on_node $vm "sudo mkdir -p /tmp/build/iso/postinstall/ceph-files"
+  do_on_node $vm "sudo mkdir -p /tmp/build/iso/ks"
+  do_on_node $vm "sudo chown vagrant:vagrant /tmp/build/iso/postinstall"
+  do_on_node $vm "sudo chown vagrant:vagrant /tmp/build/iso/ks"
+  # Currently not modifying the packages so no need to update *comps*.xml and do createrepo
+  # If packages were updated then several other steps would need to be performed
+  do_on_node $vm "sudo umount /tmp/build/mnt"
+  do_on_node $vm "sudo find /tmp/build/iso -name TRANS.TBL -exec rm -f {} \;"
+  # Copy over ceph-files and to postinstall
+  echo "Copying $CEPH_CHEF_FILES to ISO..."
+  echo
+  # No ceph-host in this part of build cycle. The ceph-host will be made on actual bootstrap node during
+  # kickstart post install cycle.
+  do_on_node $vm "sudo rsync -av /ceph-files/ /tmp/build/iso/postinstall/ceph-files/"
+  do_on_node $vm "sudo rsync -av /ceph-host/ /tmp/build/iso/postinstall/ceph-host/"
+  do_on_node $vm "sudo find /tmp/build/iso/postinstall/ceph-files -name *_downloaded -exec rm -f {} \;"
+  do_on_node $vm "sudo pip install --upgrade pip"
+  do_on_node $vm "sudo pip install pyyaml"
+
+  # Build Data - isolinux.cfg
+  do_on_node $vm "sudo /ceph-host/common/jinja_render.py -d /ceph-host/bootstrap/data/environment/$CHEF_BCS_ENV/base-seed.yaml -i /ceph-host/bootstrap/templates/isolinux.cfg.j2 -o /tmp/build/iso/isolinux/isolinux.cfg"
+  do_on_node $vm "sudo /ceph-host/common/jinja_render.py -d /ceph-host/bootstrap/data/environment/$CHEF_BCS_ENV/base-seed.yaml -i /ceph-host/bootstrap/templates/bcs_bootstrap_rhel.ks.j2 -o /tmp/build/iso/ks/bcs_bootstrap_rhel.ks"
+  do_on_node $vm "sudo /ceph-host/common/jinja_render.py -d /ceph-host/bootstrap/data/environment/$CHEF_BCS_ENV/base-seed.yaml -i /ceph-host/bootstrap/templates/production.json.j2 -o /tmp/build/iso/postinstall/ceph-host/environments/production.json"
+
+  # Build ISO with custom kickstart
+  echo "Generating new ISO..."
+  echo
+  #do_on_node $vm "TODAY=\$(date +'%Y-%m-%d'); sudo mkisofs -r -J -N -d -hide-rr-moved -R -T -no-emul-boot -boot-load-size 4 -boot-info-table -V \"$ISOVOLUMEID\" -p \"$PACKAGER\" -A \"$ISOVOLUMEID - \$TODAY\" -b isolinux/isolinux.bin -c isolinux/boot.cat -x \"lost+found\" -eltorito-alt-boot -e images/efiboot.img -no-emul-boot -o /tmp/$CHEF_BCS_ENV-$COBBLER_BOOTSTRAP_ISO /tmp/build/iso"
+  #echo "Generating MD5 in ISO..."
+  echo
+  #do_on_node $vm "sudo implantisomd5 /tmp/$CHEF_BCS_ENV-$COBBLER_BOOTSTRAP_ISO"
+  echo "Copying $CHEF_BCS_ENV-$COBBLER_BOOTSTRAP_ISO to $BOOTSTRAP_CACHE_DIR/build/iso/out"
+  echo
+  #do_on_node $vm "cp /tmp/$CHEF_BCS_ENV-$COBBLER_BOOTSTRAP_ISO /ceph-files/build/iso/out/."
+fi
+
+echo
+echo "------------------------------------------"
+echo "chef-bcs $vm (BUILD SERVER) created"
+echo "------------------------------------------"
+echo
+echo "vagrant ssh $vm"
+echo
+echo "Finished in $SECONDS seconds"

@@ -120,9 +120,8 @@ end
 if $lsb_name == 'centos' or $lsb_name == 'rhel'
     $repos_script = <<-EOH
       sudo yum install -y kernel-devel-`uname -r` gcc make perl bzip2
-      sudo yum install -y epel-release rsync vim anaconda anaconda-help anaconda-runtime
-      sudo yum install -y createrepo /usr/bin/yumdownloader /usr/bin/mkisofs
-      sudo yum install -y python-pip python-jinja2
+      sudo yum install -y epel-release rsync
+      sudo yum group install "Development tools"
     EOH
 else
     $repos_script = <<-EOH

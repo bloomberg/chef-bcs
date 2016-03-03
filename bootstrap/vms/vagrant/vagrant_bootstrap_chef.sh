@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Author: Chris Jones <cjones303@bloomberg.net>
-# Copyright 2015, Bloomberg Finance L.P.
+# Copyright 2016, Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -68,9 +68,3 @@ fi
 do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE cookbook upload -a"
 do_on_node $CEPH_CHEF_BOOTSTRAP "cd \$HOME/chef-bcs/roles && $KNIFE role from file *.json"
 do_on_node $CEPH_CHEF_BOOTSTRAP "cd \$HOME/chef-bcs/environments && $KNIFE environment from file $BOOTSTRAP_CHEF_ENV.json"
-
-# Setup ISO for bootstrapping now that chef-bcs cookbook has been copied to right place.
-# This file is too large for Chef to upload so do it after the cookbook upload above.
-#if [[ ! -z $COBBLER_BOOTSTRAP_ISO ]]; then
-#  do_on_node $CEPH_CHEF_BOOTSTRAP "sudo cp /ceph-files/cobbler/isos/*.iso \$HOME/chef-bcs/cookbooks/chef-bcs/files/default"
-#fi

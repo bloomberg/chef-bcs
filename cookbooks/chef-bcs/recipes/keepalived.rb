@@ -17,6 +17,11 @@
 # limitations under the License.
 #
 
+# NOTE: Need to install BGP route advertisment to inform spines about VIPs.
+package 'bird' do
+  action :upgrade
+end
+
 package 'keepalived' do
   action :upgrade
 end

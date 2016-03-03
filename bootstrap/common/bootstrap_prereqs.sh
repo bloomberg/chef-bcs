@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright 2015, Bloomberg Finance L.P.
+# Copyright 2016, Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -47,14 +47,10 @@ download_file() {
 
 # Obtain an RHEL 7.2 image to be used for PXE booting in production.
 if [[ ! -z $COBBLER_BOOTSTRAP_ISO ]]; then
-  # This cmd only works for non-rhel distros. Redhat has timed urls for downloads you could login to the rhn access portal
-  # and get the url and then update $COBBLER_REMOTE_URL_ISO or copy the ISO to cobber/isos.
-  substring=http
-  if [ "${COBBLER_REMOTE_URL_ISO/$substring}" = "$COBBLER_REMOTE_URL_ISO" ] ; then
-    cp $COBBLER_REMOTE_URL_ISO $BOOTSTRAP_CACHE_DIR/cobbler/isos/$COBBLER_BOOTSTRAP_ISO
-    echo "$COBBLER_REMOTE_URL_ISO"
-  else
+  if [[ $COBBLER_DOWNLOAD_ISO -eq 1 ]]; then
+    set +e
     download_file cobbler/isos/$COBBLER_BOOTSTRAP_ISO $COBBLER_REMOTE_URL_ISO
+    set -e
   fi
 fi
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright 2015, Bloomberg Finance L.P.
+# Copyright 2016, Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -86,10 +86,12 @@ delete=($CEPH_CHEF_BOOTSTRAP)
 # All of the VMs for Ceph with the bootstrap node removed.
 ceph_vms=("${CEPH_CHEF_HOSTS[@]/$delete}")
 
-echo
-echo "##########"
-echo "Root: $REPO_ROOT"
-echo "Chef-BCS Bootstrap: $CEPH_CHEF_BOOTSTRAP"
-echo "Ceph VMs: ${ceph_vms[@]}"
-echo "##########"
-echo
+if [[ $DONT_SHOW_BANNER -eq 0 ]]; then
+  echo
+  echo "##########"
+  echo "Root: $REPO_ROOT"
+  echo "Chef-BCS Bootstrap: $CEPH_CHEF_BOOTSTRAP"
+  echo "Ceph VMs: ${ceph_vms[@]}"
+  echo "##########"
+  echo
+fi

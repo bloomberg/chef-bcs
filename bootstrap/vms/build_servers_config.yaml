@@ -1,0 +1,8 @@
+---
+# BUILD_ENV - Build bootstrap server info
+#
+# NOTE: The bootstrap role is a build and/or admin node used to hold the Chef Server and launch access to the other nodes
+# in a production like environment.
+- name: bcs-build-server
+  roles:
+    - build
