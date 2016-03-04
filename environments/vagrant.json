@@ -52,12 +52,11 @@
           {"name": "prod", "ip": "10.121.16.18", "cidr": 28, "interface": "enp0s8"},
           {"name": "dev", "ip": "10.121.16.19", "cidr": 28, "interface": "enp0s8"}
         ],
-        "NOTE-VIP": "VIPS are 10.121.16.16/28 range (.17 - .30). Advertised via BGP or Static+BFD Beacon.",
+        "NOTE-VIP": "VIPS are 10.121.16.16/28 range (.17 - .30). Advertised via BGP",
         "backend": {
-          "port": 8080,
           "servers": [
-            {"name": "ceph-vm1", "weight": 6, "options": "check inter 2s rise 2 fall 3"},
-            {"name": "ceph-vm2", "weight": 3, "options": "check inter 2s rise 2 fall 3"}
+            {"name": "ceph-vm1", "weight": 6, "port": 8080, "options": "check inter 2s rise 2 fall 3"},
+            {"name": "ceph-vm2", "weight": 3, "port": 8080, "options": "check inter 2s rise 2 fall 3"}
           ]
         }
       },

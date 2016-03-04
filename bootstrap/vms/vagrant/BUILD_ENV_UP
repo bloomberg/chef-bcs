@@ -211,20 +211,31 @@ if [[ $BUILD_VMS_ONLY -eq 0 ]]; then
   do_on_node $vm "sudo pip install pyyaml"
 
   # Build Data - isolinux.cfg
-  do_on_node $vm "sudo /ceph-host/common/jinja_render.py -d /ceph-host/bootstrap/data/environment/$CHEF_BCS_ENV/base-seed.yaml -i /ceph-host/bootstrap/templates/isolinux.cfg.j2 -o /tmp/build/iso/isolinux/isolinux.cfg"
-  do_on_node $vm "sudo /ceph-host/common/jinja_render.py -d /ceph-host/bootstrap/data/environment/$CHEF_BCS_ENV/base-seed.yaml -i /ceph-host/bootstrap/templates/bcs_bootstrap_rhel.ks.j2 -o /tmp/build/iso/ks/bcs_bootstrap_rhel.ks"
-  do_on_node $vm "sudo /ceph-host/common/jinja_render.py -d /ceph-host/bootstrap/data/environment/$CHEF_BCS_ENV/base-seed.yaml -i /ceph-host/bootstrap/templates/production.json.j2 -o /tmp/build/iso/postinstall/ceph-host/environments/production.json"
+  do_on_node $vm "sudo /ceph-host/bootstrap/templates/jinja_render.py -d /ceph-host/bootstrap/data/environment/$CHEF_BCS_ENV/base-seed.yaml -i /ceph-host/bootstrap/templates/isolinux.cfg.j2 -o /tmp/build/iso/isolinux/isolinux.cfg"
+  do_on_node $vm "sudo /ceph-host/bootstrap/templates/jinja_render.py -d /ceph-host/bootstrap/data/environment/$CHEF_BCS_ENV/base-seed.yaml -i /ceph-host/bootstrap/templates/bcs_bootstrap_rhel.ks.j2 -o /tmp/build/iso/ks/bcs_bootstrap_rhel.ks"
+  do_on_node $vm "sudo /ceph-host/bootstrap/templates/jinja_render.py -d /ceph-host/bootstrap/data/environment/$CHEF_BCS_ENV/base-seed.yaml -i /ceph-host/bootstrap/templates/production.json.j2 -o /tmp/build/iso/postinstall/ceph-host/environments/production.json.j2"
+
+  do_on_node $vm "cp /ceph-host/bootstrap/data/environment/$CHEF_BCS_ENV/rack01-node-seed.yaml /tmp/."
+  do_on_node $vm "cp /ceph-host/bootstrap/data/environment/$CHEF_BCS_ENV/rack02-node-seed.yaml /tmp/."
+  do_on_node $vm "cp /ceph-host/bootstrap/data/environment/$CHEF_BCS_ENV/rack03-node-seed.yaml /tmp/."
+
+  do_on_node $vm "cp /tmp/rack01-node-seed.yaml /tmp/rack-node-seed.yaml"
+  do_on_node $vm "sed '/---/d' /tmp/rack02-node-seed.yaml >> /tmp/rack-node-seed.yaml"
+  do_on_node $vm "sed '/---/d' /tmp/rack03-node-seed.yaml >> /tmp/rack-node-seed.yaml"
+
+  do_on_node $vm "sudo /ceph-host/bootstrap/templates/jinja_render.py -d /tmp/rack-node-seed.yaml -i /tmp/build/iso/postinstall/ceph-host/environments/production.json.j2 -o /tmp/build/iso/postinstall/ceph-host/environments/production.json"
+  do_on_node $vm "sudo rm /tmp/build/iso/postinstall/ceph-host/environments/production.json.j2"
 
   # Build ISO with custom kickstart
   echo "Generating new ISO..."
   echo
-  #do_on_node $vm "TODAY=\$(date +'%Y-%m-%d'); sudo mkisofs -r -J -N -d -hide-rr-moved -R -T -no-emul-boot -boot-load-size 4 -boot-info-table -V \"$ISOVOLUMEID\" -p \"$PACKAGER\" -A \"$ISOVOLUMEID - \$TODAY\" -b isolinux/isolinux.bin -c isolinux/boot.cat -x \"lost+found\" -eltorito-alt-boot -e images/efiboot.img -no-emul-boot -o /tmp/$CHEF_BCS_ENV-$COBBLER_BOOTSTRAP_ISO /tmp/build/iso"
-  #echo "Generating MD5 in ISO..."
+  do_on_node $vm "TODAY=\$(date +'%Y-%m-%d'); sudo mkisofs -r -J -N -d -hide-rr-moved -R -T -no-emul-boot -boot-load-size 4 -boot-info-table -V \"$ISOVOLUMEID\" -p \"$PACKAGER\" -A \"$ISOVOLUMEID - \$TODAY\" -b isolinux/isolinux.bin -c isolinux/boot.cat -x \"lost+found\" -eltorito-alt-boot -e images/efiboot.img -no-emul-boot -o /tmp/$CHEF_BCS_ENV-$COBBLER_BOOTSTRAP_ISO /tmp/build/iso"
+  echo "Generating MD5 in ISO..."
   echo
-  #do_on_node $vm "sudo implantisomd5 /tmp/$CHEF_BCS_ENV-$COBBLER_BOOTSTRAP_ISO"
+  do_on_node $vm "sudo implantisomd5 /tmp/$CHEF_BCS_ENV-$COBBLER_BOOTSTRAP_ISO"
   echo "Copying $CHEF_BCS_ENV-$COBBLER_BOOTSTRAP_ISO to $BOOTSTRAP_CACHE_DIR/build/iso/out"
   echo
-  #do_on_node $vm "cp /tmp/$CHEF_BCS_ENV-$COBBLER_BOOTSTRAP_ISO /ceph-files/build/iso/out/."
+  do_on_node $vm "cp /tmp/$CHEF_BCS_ENV-$COBBLER_BOOTSTRAP_ISO /ceph-files/build/iso/out/."
 fi
 
 echo

@@ -57,5 +57,5 @@ backend radosgw-http-backend
   option httpchk GET /
   http-check expect status 200
 <% @backend_nodes.each do | backend_node | -%>
-  <%= "server #{backend_node['name']} #{backend_node['ip']}:#{node['chef-bcs']['adc']['backend']['port']} weight #{backend_node['weight']} #{backend_node['options']}" %>
+  <%= "server #{backend_node['name']} #{backend_node['ip']}:#{backend_node['port']} weight #{backend_node['weight']} #{backend_node['options']}" %>
 <% end -%>

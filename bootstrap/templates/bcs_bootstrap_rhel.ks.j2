@@ -36,19 +36,28 @@ network --bootproto=static --device={{ int.device }} --mtu={{ int.mtu }} --noipv
 # part swap                  --size=32768
 
 part raid.01 --size=1024  --ondisk=sda
-part raid.02 --size=10000 --ondisk=sda
-part raid.03 --size=20000 --ondisk=sda
-part raid.04 --size=8000  --ondisk=sda
+part raid.02 --size=20000 --ondisk=sda
+part raid.03 --size=30000 --ondisk=sda
+part raid.04 --size=50000 --ondisk=sda
+part raid.05 --size=30000 --ondisk=sda
+part raid.06 --size=60000 --ondisk=sda
+part raid.07 --size=20000 --ondisk=sda
 
-part raid.05 --size=1024  --ondisk=sdb
-part raid.06 --size=10000 --ondisk=sdb
-part raid.07 --size=20000 --ondisk=sdb
-part raid.08 --size=8000  --ondisk=sdb
+part raid.08 --size=1024  --ondisk=sdb
+part raid.09 --size=20000 --ondisk=sdb
+part raid.10 --size=30000 --ondisk=sdb
+part raid.11 --size=50000 --ondisk=sdb
+part raid.12 --size=30000 --ondisk=sdb
+part raid.13 --size=60000 --ondisk=sdb
+part raid.14 --size=20000 --ondisk=sdb
 
-raid /boot    --level=RAID1 --device=md0 --fstype=xfs  raid.01 raid.05
-raid /        --level=RAID1 --device=md1 --fstype=xfs  raid.02 raid.06
-raid /var/lib --level=RAID1 --device=md2 --fstype=xfs  raid.03 raid.07
-raid swap     --level=RAID1 --device=md3 --fstype=swap raid.04 raid.08
+raid /boot      --level=RAID1 --device=md0 --fstype=xfs  raid.01 raid.08
+raid /          --level=RAID1 --device=md1 --fstype=xfs  raid.02 raid.09
+raid /var/lib   --level=RAID1 --device=md2 --fstype=xfs  raid.03 raid.10
+raid /var/www   --level=RAID1 --device=md3 --fstype=xfs  raid.04 raid.11
+raid /opt       --level=RAID1 --device=md4 --fstype=xfs  raid.05 raid.12
+raid /var/chef  --level=RAID1 --device=md5 --fstype=xfs  raid.06 raid.13
+raid swap       --level=RAID1 --device=md6 --fstype=swap raid.07 raid.14
 
 ####################################
 
@@ -153,6 +162,7 @@ chown operations:operations -R /home/operations/.ssh
 # Setup sudoer
 echo "%operations ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/operations
 sed -i "s/^[^#].*requiretty/#Defaults requiretty/" /etc/sudoers
+echo "operations ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/operations
 
 # End final steps
 %end

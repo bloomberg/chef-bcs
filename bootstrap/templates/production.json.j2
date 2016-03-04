@@ -1,7 +1,7 @@
 {
-  {# NOTE: This template goes through a multi-phase process where the first pass pulls from one data file and  #}
-  {# and the second from another data file. The yaml data is found in /bootstrap/seed_data #}
-  "name": "{{ environment }}",
+  {#- NOTE: This template goes through a multi-phase process where the first pass pulls from one data file and  #}
+  {#- and the second from another data file. The yaml data is found in /bootstrap/seed_data #}
+  "name": "production",
   "json_class": "Chef::Environment",
   "description": "Data to build out {{ data_center }} Ceph Cluster",
   "cookbook_versions": {},
@@ -11,9 +11,9 @@
       "bootstrap": {
         "name": "{{ node.name }}",
         "interfaces": [
-        {% for item in interfaces %}
-          {"name": "{{ item.interface }}", "ip": "{{ item.ip }}", "netmask": "{{ item.netmask }}", "gateway": "{{ item.gateway }}"}{% if not loop.last %},{% endif %}
-        {% endfor %}
+        {%- for item in interfaces %}
+          {"name": "{{ item.interface }}", "ip": "{{ item.ip }}", "netmask": "{{ item.netmask }}", "gateway": "{{ item.gateway }}"}{%- if not loop.last %},{% endif %}
+        {%- endfor %}
         ]
       },
       "adc": {
@@ -30,9 +30,8 @@
           "name": "{{ bond.name }}",
           "type": "Ethernet",
           "mtu": {{ bond.mtu }},
-          "interfaces": [{{ nameservers|join(',') }}],
+          "interfaces": ["{{ nameservers|join('","') }}"],
           "options": "{{ bond.options }}",
-          "vbox_options": "mode=1 miimon=100 fail_over_mac=1",
           "nm_controlled": "no"
         },
         "connections": {
@@ -41,7 +40,7 @@
         },
         "ssl": {
           "path": "/etc/ssl/private",
-          "pem": "s3.adc.pem"
+          "pem": "s3.bcs.bloomberg.com.pem"
         },
         "vip": {
           "port": {
@@ -50,17 +49,16 @@
           }
         },
         "vips": [
-        {% for item in vips %}
-          {"name": "{{ item.name }}", "ip": "{{ item.ip }}", "cidr": {{ item.cidr }}, "interface": "{{ item.interface }}"}{% if not loop.last %},{% endif %}
-        {% endfor %}
+        {%- for item in vips %}
+          {"name": "{{ item.name }}", "ip": "{{ item.ip }}", "cidr": {{ item.cidr }}, "interface": "{{ item.interface }}"}{%- if not loop.last %},{% endif %}
+        {%- endfor %}
         ],
         {# VIPS are 10.121.16.16/28 range (.17 - .30). Advertised via BGP or Static+BFD Beacon. #}
         "backend": {
-          "port": {{ backend.port }},
           "servers": [
-          {% for item in backend.servers %}
-            {"name": "{{ item.name }}", "weight": "{{ item.weight }}", "options": {{ item.options }}}{% if not loop.last %},{% endif %}
-          {% endfor %}
+          {%- for item in backend.servers %}
+            {"name": "{{ item.name }}", "weight": "{{ item.weight }}", "port": {{ item.port }}, "options": "{{ item.options }}"}{%- if not loop.last %},{% endif %}
+          {%- endfor %}
           ]
         }
       },
@@ -68,9 +66,9 @@
         "passwd": "{{ adc.keepalived.passwd }}",
         "checks": true,
         "servers": [
-        {% for item in adc.keepalived.servers %}
-          {"name": "{{ item.name }}", "weight": "{{ item.weight }}", "interface": {{ item.interface }}}{% if not loop.last %},{% endif %}
-        {% endfor %}
+        {%- for item in adc.keepalived.servers %}
+          {"name": "{{ item.name }}", "weight": "{{ item.weight }}", "interface": "{{ item.interface }}"}{%- if not loop.last %},{% endif %}
+        {%- endfor %}
         ]
       },
       "chef": {
@@ -109,10 +107,10 @@
               ]
             }
           ],
-        "NOTE1": "NOTE: Firewall open ports are accumulative for each node based on it's role. Role must match ceph-chef tags.",
-        "NOTE2": "NOTE: Range start = 0 then range is skipped else put in exact ranges.",
-        "NOTE3": "NOTE: OSDs start at 6800 and each OSD uses at least 3 ports. The end number should be high enough to account for this. MDS should match OSD.",
-        "NOTE4": "NOTE: If you run multiple instances of RGW then keep the port count in mind."
+        {#- "NOTE1": "NOTE: Firewall open ports are accumulative for each node based on it's role. Role must match ceph-chef tags.", #}
+        {#- "NOTE2": "NOTE: Range start = 0 then range is skipped else put in exact ranges.", #}
+        {#- "NOTE3": "NOTE: OSDs start at 6800 and each OSD uses at least 3 ports. The end number should be high enough to account for this. MDS should match OSD.", #}
+        {#- "NOTE4": "NOTE: If you run multiple instances of RGW then keep the port count in mind." #}
         }
       },
       "system": {
@@ -121,14 +119,14 @@
       "ipmi": {
         "user": "{{ ipmi.user }}",
         "passwd": "{{ ipmi.passwd }}",
-        "NOTE": "password of vbox is: $6$Salt$xvQkYaQ4urNWmnjpinAZSR/ZOaRy/aacKh4j18ayq/.mswLqleFZI5zaD1BCg2Fdzy1BjpBv9VIgVgt6YoA8T0"
+        {#- "NOTE": "password of vbox is: $6$Salt$xvQkYaQ4urNWmnjpinAZSR/ZOaRy/aacKh4j18ayq/.mswLqleFZI5zaD1BCg2Fdzy1BjpBv9VIgVgt6YoA8T0" #}
       },
       "cobbler": {
         "web_user": "cobbler",
         "pxe_interface": "{{ cobbler.interface }}",
         "server": "{{ cobbler.server }}",
         "kickstart": {
-          "NOTE": "password vagrant is: $6$Salt$6AyUczFy6SgV8A2wKAKfA9drpzrUsTGPJ3QjcWBbgS97BxBO.C7ZcBFALRiRkKfi9x8MK2SHet38BCQWS9LsR/",
+          {#- "NOTE": "password vagrant is: $6$Salt$6AyUczFy6SgV8A2wKAKfA9drpzrUsTGPJ3QjcWBbgS97BxBO.C7ZcBFALRiRkKfi9x8MK2SHet38BCQWS9LsR/", #}
           "root": {
             "passwd": "{{ cobbler.kickstart.root }}",
             "passwd_type": "--iscrypted",
@@ -139,39 +137,19 @@
             "nonosd": "bcs_node_rhel_nonosd.ks"
           },
           "bootloader": {
-            "passwd": "",
-            "passwd_type": ""
+            "passwd": "{{ cobbler.kickstart.bootloader.passwd }}",
+            "passwd_type": "{{ cobbler.kickstart.bootloader.passwd_type }}"
           },
           "users": [
             {
-              "name": "vagrant",
-              "passwd": "$6$Salt$6AyUczFy6SgV8A2wKAKfA9drpzrUsTGPJ3QjcWBbgS97BxBO.C7ZcBFALRiRkKfi9x8MK2SHet38BCQWS9LsR/",
+              "name": "{{ user.name }}",
+              "passwd": "{{ user.passwd }}",
               "passwd_type": "--iscrypted",
-              "key": "ceph_bootstrap.pub",
+              "key": "{{ user.key }}",
               "shell": "/bin/bash",
-              "comment": "Vagrant user",
-              "groups": "wheel",
-              "sudo": true
-            },
-            {
-              "name": "operations",
-              "passwd": "$6$Salt$3xxLPT099nzTbWkOS3CPNcar/zSLQ8BEgZdJk/AOkOb4V80sPepbraWcvrJvEEu6PswpKUw1WodWeiqRo1bw2/",
-              "passwd_type": "--iscrypted",
-              "key": "ceph_bootstrap.pub",
-              "shell": "/bin/bash",
-              "comment": "Operations user",
-              "groups": "wheel",
-              "sudo": true
-            },
-            {
-              "name": "cjones303",
-              "passwd": "$6$Salt$6AyUczFy6SgV8A2wKAKfA9drpzrUsTGPJ3QjcWBbgS97BxBO.C7ZcBFALRiRkKfi9x8MK2SHet38BCQWS9LsR/",
-              "passwd_type": "--iscrypted",
-              "key": "ceph_bootstrap.pub",
-              "shell": "/bin/bash",
-              "comment": "Awesome - what more can be said?",
-              "groups": "wheel",
-              "sudo": true
+              "comment": "{{ user.comment }}",
+              "groups": "{{ user.group }}",
+              "sudo": {{ user.sudo }}
             }
           ]
         },
@@ -180,72 +158,17 @@
           {"name": "ceph_non_osd_node", "file_type": "nonosd", "comment": "NON-OSD type nodes. Services like MON, RGW or MDS."}
         ],
         "servers": [
-          {
-            "name": "ceph-vm1",
-            "profile": "ceph_non_osd_node",
-            "network": {
-              "public": {
-                "interface": "enp0s3",
-                "mac": "08:00:27:E3:84:01",
-                "ip": "10.121.1.3",
-                "netmask": "255.255.255.0",
-                "gateway": "10.121.1.2",
-                "mtu": 1500
-              },
-              "cluster": {
-                "interface": "enp0s8",
-                "mac": "08:00:27:3E:CB:B0",
-                "ip": "10.121.2.3",
-                "netmask": "255.255.255.0",
-                "gateway": "10.121.2.2",
-                "mtu": 1500
-              }
-            }
-          },
-          {
-            "name": "ceph-vm2",
-            "profile": "ceph_non_osd_node",
-            "network": {
-              "public": {
-                "interface": "enp0s3",
-                "mac": "08:00:27:EB:EC:61",
-                "ip": "10.121.1.4",
-                "netmask": "255.255.255.0",
-                "gateway": "10.121.1.2",
-                "mtu": 1500
-              },
-              "cluster": {
-                "interface": "enp0s8",
-                "mac": "08:00:27:C5:9F:40",
-                "ip": "10.121.2.4",
-                "netmask": "255.255.255.0",
-                "gateway": "10.121.2.2",
-                "mtu": 1500
-              }
-            }
-          },
-          {
-            "name": "ceph-vm3",
-            "profile": "ceph_non_osd_node",
-            "network": {
-              "public": {
-                "interface": "enp0s3",
-                "mac": "08:00:27:8B:9F:3F",
-                "ip": "10.121.1.5",
-                "netmask": "255.255.255.0",
-                "gateway": "10.121.1.2",
-                "mtu": 1500
-              },
-              "cluster": {
-                "interface": "enp0s8",
-                "mac": "08:00:27:1B:3B:E7",
-                "ip": "10.121.2.5",
-                "netmask": "255.255.255.0",
-                "gateway": "10.121.2.2",
-                "mtu": 1500
-              }
-            }
-          }
+          {%- raw %}
+          {%- for item in rack_01.nodes %}
+            {"name": "{{ item.name }}", "profile": "{{ item.profile }}", "network": {"public": {"interface": "{{ item.public.device }}", "mac": "{{ item.public.mac }}", "ip": "{{ rack_01.interfaces.public.ip_prefix  }}{{ item.public.ip }}", "netmask": "{{ rack_01.netmask }}", "gateway": "{{ rack_01.interfaces.public.gateway }}", "mtu": {{ rack_01.interfaces.public.mtu }}}, "cluster": {"interface": "{{ item.cluster.device }}", "mac": "{{ item.cluster.mac }}", "ip": "{{ rack_01.interfaces.cluster.ip_prefix  }}{{ item.cluster.ip }}", "netmask": "{{ rack_01.netmask }}", "gateway": "{{ rack_01.interfaces.cluster.gateway }}", "mtu": {{ rack_01.interfaces.cluster.mtu }}}}},
+          {%- endfor %}
+          {%- for item in rack_02.nodes %}
+            {"name": "{{ item.name }}", "profile": "{{ item.profile }}", "network": {"public": {"interface": "{{ item.public.device }}", "mac": "{{ item.public.mac }}", "ip": "{{ rack_02.interfaces.public.ip_prefix  }}{{ item.public.ip }}", "netmask": "{{ rack_02.netmask }}", "gateway": "{{ rack_02.interfaces.public.gateway }}", "mtu": {{ rack_02.interfaces.public.mtu }}}, "cluster": {"interface": "{{ item.cluster.device }}", "mac": "{{ item.cluster.mac }}", "ip": "{{ rack_02.interfaces.cluster.ip_prefix  }}{{ item.cluster.ip }}", "netmask": "{{ rack_02.netmask }}", "gateway": "{{ rack_02.interfaces.cluster.gateway }}", "mtu": {{ rack_02.interfaces.cluster.mtu }}}}},
+          {%- endfor %}
+          {%- for item in rack_03.nodes %}
+            {"name": "{{ item.name }}", "profile": "{{ item.profile }}", "network": {"public": {"interface": "{{ item.public.device }}", "mac": "{{ item.public.mac }}", "ip": "{{ rack_03.interfaces.public.ip_prefix  }}{{ item.public.ip }}", "netmask": "{{ rack_02.netmask }}", "gateway": "{{ rack_03.interfaces.public.gateway }}", "mtu": {{ rack_03.interfaces.public.mtu }}}, "cluster": {"interface": "{{ item.cluster.device }}", "mac": "{{ item.cluster.mac }}", "ip": "{{ rack_03.interfaces.cluster.ip_prefix  }}{{ item.cluster.ip }}", "netmask": "{{ rack_03.netmask }}", "gateway": "{{ rack_03.interfaces.cluster.gateway }}", "mtu": {{ rack_03.interfaces.cluster.mtu }}}}}{%- if not loop.last %},{% endif %}
+          {%- endfor %}
+          {%- endraw %}
         ],
         "dhcp": {
           "shared_network": "bcs",
@@ -254,22 +177,23 @@
             "gateway": "{{ cobbler.kickstart.dhcp.single.gateway }}"
           },
           "subnets":[
-          {% for item in cobbler.kickstart.dhcp.subnets %}
-            {"subnet": "{{ item.name }}", "tag": "{{ item.tag }}", "dhcp_range": [{{ item.dhcp_range|join(',') }}], "netmask": "{{ item.netmask }}", "router": "{{ item.router }}"}{% if not loop.last %},{% endif %}
-          {% endfor %}
+          {%- for item in cobbler.kickstart.dhcp.subnets %}
+            {"subnet": "{{ item.subnet }}", "tag": "{{ item.tag }}", "dhcp_range": ["{{ item.dhcp_range|join('","') }}"], "netmask": "{{ item.netmask }}", "router": "{{ item.router }}"}{%- if not loop.last %},{% endif %}
+          {%- endfor %}
           ]
          },
-        "NOTE1": "NOTE: Each subnet represents a routable rack so dhcp will need to manage each subnet with the TOR using IP-helper for dhcp requests by nodes in the given rack.",
-        "NOTE2": "NOTE: You could just have one subnet for a single L2 span set of racks.",
-        "NOTE3": "NOTE: /27 for subnet mask of each rack. DNS could be added to each subnet entry above but the global DNS entry below is good enough for this.",
+        {#- "NOTE1": "NOTE: Each subnet represents a routable rack so dhcp will need to manage each subnet with the TOR using IP-helper for dhcp requests by nodes in the given rack.", #}
+        {#- "NOTE2": "NOTE: You could just have one subnet for a single L2 span set of racks.", #}
+        {#- "NOTE3": "NOTE: /27 for subnet mask of each rack. DNS could be added to each subnet entry above but the global DNS entry below is good enough for this.", #}
         "partition_option": "ignoredisk --only-use=sda",
         "partitions": [
           {"part": "/boot", "fstype": "xfs", "size": 1024, "options": "--ondisk=sda"},
-          {"part": "/", "fstype": "xfs", "size": 10000, "options": "--ondisk=sda"},
-          {"part": "/var/lib", "fstype": "xfs", "size": 20000, "options": "--ondisk=sda"},
-          {"part": "swap", "fstype": "swap", "size": 8000, "options": ""}
+          {"part": "/", "fstype": "xfs", "size": 30000, "options": "--ondisk=sda"},
+          {"part": "/var/lib", "fstype": "xfs", "size": 40000, "options": "--ondisk=sda"},
+          {"part": "/opt", "fstype": "xfs", "size": 20000, "options": "--ondisk=sda"},
+          {"part": "swap", "fstype": "swap", "size": 20000, "options": ""}
         ],
-        "NOTE4": "NOTE: Partitions are for OSD nodes. All other partitions are coded into the given ks file.",
+        {#- "NOTE4": "NOTE: Partitions are for OSD nodes. All other partitions are coded into the given ks file.", #}
         "ports": {
           "http": 80,
           "https": 443,
@@ -304,10 +228,11 @@
         },
         "chooseleaf": "host",
         "rebalance": false,
-        "journal_size": 10000,
+        {#- Change the journal size for the prod SSD #}
+        "journal_size": 30000,
         "encrypted": false,
         "config": {
-          "NOTE": "This section is pure key/value. Meaning, the key and value are added to the given location in ceph.conf.",
+          {#- "NOTE": "This section is pure key/value. Meaning, the key and value are added to the given location in ceph.conf.", #}
           "global": {
             "rgw override bucket index max shards": 5
           },
@@ -344,10 +269,18 @@
         },
         "osd": {
           "devices": [
-              { "data": "/dev/sdb", "type": "hdd", "journal": "/dev/sdf" },
-              { "data": "/dev/sdc", "type": "hdd", "journal": "/dev/sdf" },
-              { "data": "/dev/sdd", "type": "hdd", "journal": "/dev/sdf" },
-              { "data": "/dev/sde", "type": "hdd", "journal": "/dev/sdf" }
+            { "data": "/dev/sda", "type": "hdd", "journal": "/dev/sdm" },
+            { "data": "/dev/sdb", "type": "hdd", "journal": "/dev/sdm" },
+            { "data": "/dev/sdc", "type": "hdd", "journal": "/dev/sdm" },
+            { "data": "/dev/sdd", "type": "hdd", "journal": "/dev/sdm" },
+            { "data": "/dev/sde", "type": "hdd", "journal": "/dev/sdm" },
+            { "data": "/dev/sdf", "type": "hdd", "journal": "/dev/sdn" },
+            { "data": "/dev/sdg", "type": "hdd", "journal": "/dev/sdn" },
+            { "data": "/dev/sdh", "type": "hdd", "journal": "/dev/sdn" },
+            { "data": "/dev/sdi", "type": "hdd", "journal": "/dev/sdn" },
+            { "data": "/dev/sdj", "type": "hdd", "journal": "/dev/sdn" },
+            { "data": "/dev/sdk", "type": "hdd", "journal": "/dev/sdn" },
+            { "data": "/dev/sdl", "type": "hdd", "journal": "/dev/sdn" }
           ],
           "niceness": -10
         },
@@ -363,23 +296,23 @@
         "public": {
           "interface": "{{ network.public.interface }}",
           "cidr": [
-            {{ network.public.cidr|join(',') }}
+            "{{ network.public.cidr|join('", "') }}"
           ],
           "mtu": {{ network.public.mtu }}
         },
         "cluster": {
           "interface": "{{ network.cluster.interface }}",
           "cidr": [
-            {{ network.mtu.cidr|join(',') }}
+            "{{ network.cluster.cidr|join('", "') }}"
           ],
           "mtu": {{ network.cluster.mtu }}
         }
       },
       "dns": {
-        "servers": [ {{ nameservers|join(',') }} ]
+        "servers": ["{{ nameservers|join('", "') }}"]
       },
       "ntp": {
-        "servers": [ {{ ntp|join(',') }} ]
+        "servers": ["{{ ntp|join('", "') }}"]
       }
     },
     "chef_client": {
