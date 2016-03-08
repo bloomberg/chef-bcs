@@ -73,7 +73,7 @@ download_file $CHEF_SERVER_RPM https://web-dl.packagecloud.io/chef/stable/packag
 mkdir -p $BOOTSTRAP_CACHE_DIR/{cookbooks,gems}
 
 # Most important cookbook
-#download_file cookbooks/ceph-chef-0.9.8.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/ceph-chef/versions/0.9.8/download
+download_file cookbooks/ceph-chef-0.9.9.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/ceph-chef/versions/0.9.9/download
 
 download_file cookbooks/poise-2.6.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/poise/versions/2.6.0/download
 download_file cookbooks/chef-client-4.3.3.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/chef-client/versions/4.3.3/download
@@ -104,3 +104,6 @@ mkdir -p $BOOTSTRAP_CACHE_DIR/gems
 for GEM in ${GEMS[@]}; do
   download_file gems/$GEM.gem https://rubygems.global.ssl.fastly.net/gems/$GEM.gem
 done
+
+# If you just want all of the latest rpms
+# wget -r -l1 -np http://download.ceph.com/rpm-hammer/el7/x86_64/ -P . -A "*0.94.6*"

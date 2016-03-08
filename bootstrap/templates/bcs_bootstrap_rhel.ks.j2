@@ -1,7 +1,6 @@
-# Static for a given environment
-#
+#######################################
+# Static for the given environment
 # kickstart file for Chef-BCS Bootstrap
-#
 
 ########## MODIFY SECTION ##########
 # To create encrypted pwd: python -c 'import crypt; print(crypt.crypt("password", "$6$Salt"))'
@@ -9,32 +8,18 @@
 
 # Root password
 rootpw --iscrypted {{ node.root_pwd }}
-# password
-# rootpw --iscrypted $6$Salt$ygQwp3qFOrRhVYjIXpJ.pncgAiz/pE7KOhueH1fOZjbacHhTMYbfRW4lcU.MO9aBersBiskL9xMK.VXhCw.4a/
 
 # User
-# Simple clear text pwd for boot but changes once installed. You can also generate an encrypted pwd and put it here
 # Change pwd 'operations' to anything you like
 user --groups={{ user.group }} --name={{ user.name }} --iscrypted --password={{ user.passwd }}
-# user --groups=wheel --name=operations --iscrypted --password=$6$Salt$3xxLPT099nzTbWkOS3CPNcar/zSLQ8BEgZdJk/AOkOb4V80sPepbraWcvrJvEEu6PswpKUw1WodWeiqRo1bw2/
 
 # Static NETWORK
 {% for int in interfaces %}
-network --bootproto=static --device={{ int.device }} --mtu={{ int.mtu }} --noipv6 --activate --ip={{ int.ip }} --netmask={{ int.netmask }} --gateway={{ int.gateway }} --nameserver={{ nameservers|join(',') }} --hostname={{ node.fqdn }} --onboot=off
+network --bootproto=static --device={{ int.device }} --mtu={{ int.mtu }} --noipv6 --activate --ip={{ int.ip }} --netmask={{ int.netmask }} --gateway={{ int.gateway }} --nameserver={{ nameservers|join(',') }} --hostname={{ node.name }}.{{ node.domain }} --onboot=yes
 {% endfor %}
 
-# network --bootproto=static --device=enp0s3 --mtu=9000 --noipv6 --activate --ip=10.121.1.2 --netmask=255.255.255.224 --gateway=10.121.1.2 --nameserver=8.8.8.8 --hostname=vbox-ceph-bootstrap --onboot=off
-# network --bootproto=static --device=enp0s8 --mtu=9000 --noipv6 --activate --ip=10.121.2.2 --netmask=255.255.255.224 --gateway=10.121.2.2 --nameserver=8.8.8.8 --hostname=vbox-ceph-bootstrap --onboot=off
-
 # Important: The bootstrap partition schema is static to the given environment
-# ignoredisk --drives=sdb,sdc
-#ignoredisk --only-use=sda
-#part /boot    --fstype=xfs --size=1024   --ondisk=sda
-#part /        --fstype=xfs --size=10000  --ondisk=sda
-#part /var/lib --fstype=xfs --size=20000  --ondisk=sda
-#part swap                  --size=8000
-# part swap                  --size=32768
-
+# Raid 1
 part raid.01 --size=1024  --ondisk=sda
 part raid.02 --size=20000 --ondisk=sda
 part raid.03 --size=30000 --ondisk=sda
@@ -69,6 +54,7 @@ cdrom
 # System authorization information
 auth  --enableshadow  --passalgo=sha512
 
+# End-user agreement
 eula --agreed
 
 # System bootloader configuration
@@ -116,6 +102,9 @@ zerombr
 @^infrastructure-server-environment
 kexec-tools
 ipmitool
+rsync
+yum-utils
+createrepo
 vim
 git
 wget
@@ -124,6 +113,8 @@ ntp
 tftp-server
 dnsmasq
 tmux
+genisoimage
+anaconda
 %end
 
 %post --nochroot
@@ -138,31 +129,66 @@ echo "==> copying files from media to install drive..."
 cp -r /run/install/repo/postinstall /mnt/sysimage/tmp
 find /mnt/sysimage/tmp -name TRANS.TBL -exec rm -f {} \;
 
+mkdir /mnt/sysimage/ceph-files
+mkdir /mnt/sysimage/ceph-host
+mkdir -p /mnt/sysimage/tmp/build/iso
+
+rsync -av /run/install/repo/ /mnt/sysimage/tmp/build/iso/
+
 %end
 
-%post
-exec 1>/mnt/sysimage/root/kickstart-stage2.log 2>&1
+%post --log=/root/kickstart-stage2.log
+
+#!/bin/sh
+set -x
 
 # Start yum configuration
 $yum_config_stanza
 # End yum configuration
 
 # Start final steps
+groupadd {{ user.name }}
+useradd {{ user.name }} -g {{ user.name }} -G wheel
+
+chown -R {{ user.name }}:{{ user.name }} /ceph-files
+chown -R {{ user.name }}:{{ user.name }} /ceph-host
+
+cp -R /tmp/postinstall/ceph-files/* /ceph-files/.
+cp -R /tmp/postinstall/ceph-host/* /ceph-host/.
+
 # Allow root login to begin with. Chef recipe will disable later in process.
 sed -i "s/#PermitRootLogin yes/PermitRootLogin yes/" /etc/ssh/sshd_config
 sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
 
 # Add a public key here to authorized_keys but make sure to set permission to 0600
-mkdir --mode=0700 -p /home/operations/.ssh
-echo "{{ user.key }}" >> /home/operations/.ssh/authorized_keys
-# echo "<whatever your .pub key>" >> /home/operations/.ssh/authorized_keys
-chmod 0600 /home/operations/.ssh/authorized_keys
-chown operations:operations -R /home/operations/.ssh
+mkdir --mode=0700 -p /home/{{ user.name }}/.ssh
+cat <<EOM >/home/{{ user.name }}/.ssh/authorized_keys
+{{ user.key }}
+EOM
+chmod 0600 /home/{{ user.name }}/.ssh/authorized_keys
+chown -R {{ user.name }}:{{ user.group }} /home/{{ user.name }}/.ssh
 
 # Setup sudoer
-echo "%operations ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/operations
+echo "%{{ user.name }} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/{{ user.name }}
 sed -i "s/^[^#].*requiretty/#Defaults requiretty/" /etc/sudoers
-echo "operations ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/operations
+echo "{{ user.name }} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/{{ user.name }}
+
+{% if cobbler.kickstart.redhat.management.type %}
+{{ cobbler.kickstart.redhat.management.commands.C1 }}
+{{ cobbler.kickstart.redhat.management.commands.C2 }}
+{{ cobbler.kickstart.redhat.management.commands.C3 }}
+{{ cobbler.kickstart.redhat.management.commands.C4 }}
+{% endif %}
+
+# Build ISO to be used for Cobbler
+rm -rf /tmp/build/iso/ks
+find /tmp/build/iso -name TRANS.TBL -exec rm -f {} \;
+cp /tmp/postinstall/ceph-host/bootstrap/templates/isolinux.cfg /tmp/build/iso/isolinux/isolinux.cfg
+# TODAY=$(date +'%Y-%m-%d')
+rm -rf /tmp/build/iso/.rr_moved
+# mkisofs
+genisoimage -r -J -N -d -hide-rr-moved -R -T -no-emul-boot -boot-load-size 4 -boot-info-table -V "{{ ISO.volume_id }}" -p "{{ ISO.packer }}" -A "{{ ISO.volume_id }}" -b isolinux/isolinux.bin -c isolinux/boot.cat -x "lost+found" -eltorito-alt-boot -e images/efiboot.img -no-emul-boot -o /tmp/{{ cobbler.kickstart.os.distro }} /tmp/build/iso
+implantisomd5 /tmp/{{ cobbler.kickstart.os.distro }}
 
 # End final steps
 %end

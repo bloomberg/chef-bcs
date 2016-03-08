@@ -168,4 +168,11 @@ echo "<%= usr['name'] %> ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/<%= usr['nam
 <% end %>
 <% end -%>
 
+{% if cobbler.kickstart.redhat.management.type %}
+{{ cobbler.kickstart.redhat.management.commands.C1 }}
+{{ cobbler.kickstart.redhat.management.commands.C2 }}
+{{ cobbler.kickstart.redhat.management.commands.C3 }}
+{{ cobbler.kickstart.redhat.management.commands.C4 }}
+{% endif %}
+# End final steps
 %end

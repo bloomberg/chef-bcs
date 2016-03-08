@@ -17,7 +17,8 @@
 # limitations under the License.
 #
 
-# NOTE: Bonding
+# NOTE: Bonding - *IMPORTANT* - Make sure your switch is configured for bonding or you may not be able to reach
+# your node. You will then have to use your IPMI (depending on platform) UI to get to the console to change things!!
 
 execute 'modprobe-bond' do
   command 'modprobe --first-time bonding'
@@ -41,7 +42,7 @@ end
 # IMPORTANT: bare-metal should be set:
 # 1. Set "mode=4 miimon=100 xmit_hash_policy=layer2+3" for bonding_opts
 # 2. Set GATEWAY to proper gateway of TOR or router depending on how your network is setup
-# 3. Set mtu to 9000 if possible. Significant performance increase. IMPORTANT: auto-adjust of mtu should be enabled on servers/routers or lower mtu clients will FAIL!
+# 3. Set mtu to 9000 if possible. Significant performance increase. IMPORTANT: auto-adjust (discovery) of mtu should be enabled on servers/routers or lower mtu clients will FAIL!
 
 # You can check what the bond looks like with:
 # 1. ip a

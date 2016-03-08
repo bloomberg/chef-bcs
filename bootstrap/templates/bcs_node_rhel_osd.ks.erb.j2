@@ -1,26 +1,5 @@
 ####################################
-# kickstart template for Chef-BCS Nodes that are NON-OSD nodes. If the node is a converged node where the node serves
-# multiple roles such as OSD, MON, RGW then the other kickstart for OSD should be used. This is for stand alone
-# MON, MDS, RGW nodes.
-
-########## MODIFY SECTION ##########
-
-part raid.01 --size=1024  --ondisk=sda
-part raid.02 --size=10000 --ondisk=sda
-part raid.03 --size=20000 --ondisk=sda
-part raid.04 --size=8000  --ondisk=sda
-
-part raid.05 --size=1024  --ondisk=sdb
-part raid.06 --size=10000 --ondisk=sdb
-part raid.07 --size=20000 --ondisk=sdb
-part raid.08 --size=8000  --ondisk=sdb
-
-raid /boot    --level=RAID1 --device=md0 --fstype=xfs  raid.01 raid.05
-raid /        --level=RAID1 --device=md1 --fstype=xfs  raid.02 raid.06
-raid /var/lib --level=RAID1 --device=md2 --fstype=xfs  raid.03 raid.07
-raid swap     --level=RAID1 --device=md3 --fstype=swap raid.04 raid.08
-
-####################################
+# kickstart template for Chef-BCS Nodes of OSD nodes. If a given node has an OSD role then it must use this kickstart.
 # Whatever is not found below then Cobbler 'fills in' the missing pieces such as networking.
 
 # System authorization information
@@ -31,7 +10,7 @@ eula --agreed
 # System bootloader configuration
 # Use grub2-mkpasswd-pbkdf2 to generate cryptic password for security
 # bootloader --append=" crashkernel=auto" --location=mbr --boot-drive=sda --iscrypted --password={{ bootloader_pwd }}
-bootloader --location=mbr <%= node['chef-bcs']['cobbler']['kickstart']['bootloader']['passwd_type'] %> <%= node['chef-bcs']['cobbler']['kickstart']['bootloader']['passwd'] %>
+bootloader --append=" crashkernel=auto" --location=mbr --boot-drive=sda <%= node['chef-bcs']['cobbler']['kickstart']['bootloader']['passwd_type'] %> <%= node['chef-bcs']['cobbler']['kickstart']['bootloader']['passwd'] %>
 
 # Partition clearing information
 clearpart --all --initlabel
@@ -87,6 +66,15 @@ url --url=$tree
 # Clear the Master Boot Record
 zerombr
 
+# Important: If you need other drives partitioned then change the 'partition_option' in the data and remove 'ignoredisk'
+# ignoredisk --drives=sdb,sdc
+# ignoredisk --only-use=sda
+<%= node['chef-bcs']['cobbler']['partition_option'] %>
+<% node['chef-bcs']['cobbler']['partitions'].each do |par| %>
+part <%= par['part'] %> --fstype=<%= par['fstype'] %> --size=<%= par['size'] %> <%= par['options'] %>
+<% end %>
+#part swap --size=32768
+
 %pre
 $SNIPPET('log_ks_pre')
 $SNIPPET('autoinstall_start')
@@ -108,6 +96,7 @@ $SNIPPET('pre_anamon')
 wget
 curl
 iputils
+man
 net-tools
 ntp
 ntpdate
@@ -168,4 +157,11 @@ echo "<%= usr['name'] %> ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/<%= usr['nam
 <% end %>
 <% end -%>
 
+{% if cobbler.kickstart.redhat.management.type %}
+{{ cobbler.kickstart.redhat.management.commands.C1 }}
+{{ cobbler.kickstart.redhat.management.commands.C2 }}
+{{ cobbler.kickstart.redhat.management.commands.C3 }}
+{{ cobbler.kickstart.redhat.management.commands.C4 }}
+{% endif %}
+# End final steps
 %end

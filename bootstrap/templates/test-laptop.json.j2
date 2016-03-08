@@ -1,16 +1,15 @@
 {
   {#- NOTE: This template goes through a multi-phase process where the first pass pulls from one data file and  #}
   {#- and the second from another data file. The yaml data is found in /bootstrap/seed_data #}
-  "name": "production",
+  "name": "test-laptop",
   "json_class": "Chef::Environment",
-  "description": "Data to build out {{ node.data_center }} Ceph Cluster",
+  "description": "Data to build out {{ data_center }} Ceph Cluster",
   "cookbook_versions": {},
   "chef_type": "environment",
   "override_attributes": {
     "chef-bcs": {
       "bootstrap": {
         "name": "{{ node.name }}",
-        "env": "{{ node.env }}",
         "interfaces": [
         {%- for item in interfaces %}
           {"name": "{{ item.interface }}", "ip": "{{ item.ip }}", "netmask": "{{ item.netmask }}", "gateway": "{{ item.gateway }}"}{%- if not loop.last %},{% endif %}
@@ -54,7 +53,7 @@
           {"name": "{{ item.name }}", "ip": "{{ item.ip }}", "cidr": {{ item.cidr }}, "interface": "{{ item.interface }}"}{%- if not loop.last %},{% endif %}
         {%- endfor %}
         ],
-        {#- VIPS are 10.121.16.16/28 range (.17 - .30). Advertised via BGP or Static+BFD Beacon. #}
+        {# VIPS are 10.121.16.16/28 range (.17 - .30). Advertised via BGP or Static+BFD Beacon. #}
         "backend": {
           "servers": [
           {%- for item in backend.servers %}
@@ -161,13 +160,13 @@
         "servers": [
           {%- raw %}
           {%- for item in rack_01.nodes %}
-            {"name": "{{ item.name }}", "roles": [{%- for role in item.roles %}"{{role}}"{%- if not loop.last %},{% endif %}{%- endfor %}], "profile": "{{ item.profile }}", "network": {"public": {"interface": "{{ item.public.device }}", "mac": "{{ item.public.mac }}", "ip": "{{ rack_01.interfaces.public.ip_prefix  }}{{ item.public.ip }}", "netmask": "{{ rack_01.netmask }}", "gateway": "{{ rack_01.interfaces.public.gateway }}", "mtu": {{ rack_01.interfaces.public.mtu }}}, "cluster": {"interface": "{{ item.cluster.device }}", "mac": "{{ item.cluster.mac }}", "ip": "{{ rack_01.interfaces.cluster.ip_prefix  }}{{ item.cluster.ip }}", "netmask": "{{ rack_01.netmask }}", "gateway": "{{ rack_01.interfaces.cluster.gateway }}", "mtu": {{ rack_01.interfaces.cluster.mtu }}}}},
+            {"name": "{{ item.name }}", "profile": "{{ item.profile }}", "network": {"public": {"interface": "{{ item.public.device }}", "mac": "{{ item.public.mac }}", "ip": "{{ rack_01.interfaces.public.ip_prefix  }}{{ item.public.ip }}", "netmask": "{{ rack_01.netmask }}", "gateway": "{{ rack_01.interfaces.public.gateway }}", "mtu": {{ rack_01.interfaces.public.mtu }}}, "cluster": {"interface": "{{ item.cluster.device }}", "mac": "{{ item.cluster.mac }}", "ip": "{{ rack_01.interfaces.cluster.ip_prefix  }}{{ item.cluster.ip }}", "netmask": "{{ rack_01.netmask }}", "gateway": "{{ rack_01.interfaces.cluster.gateway }}", "mtu": {{ rack_01.interfaces.cluster.mtu }}}}},
           {%- endfor %}
           {%- for item in rack_02.nodes %}
-            {"name": "{{ item.name }}", "roles": [{%- for role in item.roles %}"{{role}}"{%- if not loop.last %},{% endif %}{%- endfor %}], "profile": "{{ item.profile }}", "network": {"public": {"interface": "{{ item.public.device }}", "mac": "{{ item.public.mac }}", "ip": "{{ rack_02.interfaces.public.ip_prefix  }}{{ item.public.ip }}", "netmask": "{{ rack_02.netmask }}", "gateway": "{{ rack_02.interfaces.public.gateway }}", "mtu": {{ rack_02.interfaces.public.mtu }}}, "cluster": {"interface": "{{ item.cluster.device }}", "mac": "{{ item.cluster.mac }}", "ip": "{{ rack_02.interfaces.cluster.ip_prefix  }}{{ item.cluster.ip }}", "netmask": "{{ rack_02.netmask }}", "gateway": "{{ rack_02.interfaces.cluster.gateway }}", "mtu": {{ rack_02.interfaces.cluster.mtu }}}}},
+            {"name": "{{ item.name }}", "profile": "{{ item.profile }}", "network": {"public": {"interface": "{{ item.public.device }}", "mac": "{{ item.public.mac }}", "ip": "{{ rack_02.interfaces.public.ip_prefix  }}{{ item.public.ip }}", "netmask": "{{ rack_02.netmask }}", "gateway": "{{ rack_02.interfaces.public.gateway }}", "mtu": {{ rack_02.interfaces.public.mtu }}}, "cluster": {"interface": "{{ item.cluster.device }}", "mac": "{{ item.cluster.mac }}", "ip": "{{ rack_02.interfaces.cluster.ip_prefix  }}{{ item.cluster.ip }}", "netmask": "{{ rack_02.netmask }}", "gateway": "{{ rack_02.interfaces.cluster.gateway }}", "mtu": {{ rack_02.interfaces.cluster.mtu }}}}},
           {%- endfor %}
           {%- for item in rack_03.nodes %}
-            {"name": "{{ item.name }}", "roles": [{%- for role in item.roles %}"{{role}}"{%- if not loop.last %},{% endif %}{%- endfor %}], "profile": "{{ item.profile }}", "network": {"public": {"interface": "{{ item.public.device }}", "mac": "{{ item.public.mac }}", "ip": "{{ rack_03.interfaces.public.ip_prefix  }}{{ item.public.ip }}", "netmask": "{{ rack_02.netmask }}", "gateway": "{{ rack_03.interfaces.public.gateway }}", "mtu": {{ rack_03.interfaces.public.mtu }}}, "cluster": {"interface": "{{ item.cluster.device }}", "mac": "{{ item.cluster.mac }}", "ip": "{{ rack_03.interfaces.cluster.ip_prefix  }}{{ item.cluster.ip }}", "netmask": "{{ rack_03.netmask }}", "gateway": "{{ rack_03.interfaces.cluster.gateway }}", "mtu": {{ rack_03.interfaces.cluster.mtu }}}}}{%- if not loop.last %},{% endif %}
+            {"name": "{{ item.name }}", "profile": "{{ item.profile }}", "network": {"public": {"interface": "{{ item.public.device }}", "mac": "{{ item.public.mac }}", "ip": "{{ rack_03.interfaces.public.ip_prefix  }}{{ item.public.ip }}", "netmask": "{{ rack_02.netmask }}", "gateway": "{{ rack_03.interfaces.public.gateway }}", "mtu": {{ rack_03.interfaces.public.mtu }}}, "cluster": {"interface": "{{ item.cluster.device }}", "mac": "{{ item.cluster.mac }}", "ip": "{{ rack_03.interfaces.cluster.ip_prefix  }}{{ item.cluster.ip }}", "netmask": "{{ rack_03.netmask }}", "gateway": "{{ rack_03.interfaces.cluster.gateway }}", "mtu": {{ rack_03.interfaces.cluster.mtu }}}}}{%- if not loop.last %},{% endif %}
           {%- endfor %}
           {%- endraw %}
         ],
@@ -219,7 +218,6 @@
       "ceph": {
         "cluster": "ceph",
         "repo": {
-          "create": {{ ceph.repo.create }},
           "version": {
             "name": "hammer",
             "branch": "stable",

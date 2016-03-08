@@ -90,6 +90,7 @@ do_on_node() {
 
 #### Modify section - begin ####
 CHEF_BCS_ENV=cob1
+BUILD_ENV=production/$CHEF_BCS_ENV
 # The name of the build server. Change it in build_server_config *AND* here!
 vm=bcs-build-server
 CEPH_CHEF_FILES=ceph-files
@@ -138,6 +139,9 @@ source $REPO_ROOT/bootstrap/vms/vagrant/vagrant_test.sh
 echo "Downloading necessary files to local cache..."
 source $REPO_ROOT/bootstrap/common/bootstrap_prereqs.sh
 
+# Just remove cobbler iso to make sure it's clean
+rm -f $BOOTSTRAP_CACHE_DIR/cobbler/isos/*
+
 # Copy over RHEL
 echo "Copying ISO to cache..."
 if [[ ! -f $BOOTSTRAP_CACHE_DIR/build/iso/in/$COBBLER_BOOTSTRAP_ISO ]]; then
@@ -183,15 +187,15 @@ if [[ $BUILD_VMS_ONLY -eq 0 ]]; then
   echo "Copying ISO to /tmp..."
   echo
   # Move the ISO because we rsync later
-  do_on_node $vm "mv /ceph-files/build/iso/in/*.iso /tmp"
+  do_on_node $vm "mv /ceph-files/build/iso/in/rhel*.iso /tmp"
   echo "Creating directories and mounting base ISO..."
   echo
-  do_on_node $vm "mkdir -p /tmp/build/{iso,mnt,packages}"
+  do_on_node $vm "mkdir -p /tmp/build/{iso,mnt,packages,keys}"
   do_on_node $vm "sudo mount -o loop /tmp/$COBBLER_BOOTSTRAP_ISO /tmp/build/mnt"
   echo "Moving ISO data to /tmp/build/iso..."
   echo
   do_on_node $vm "rsync -av /tmp/build/mnt/ /tmp/build/iso/"
-  do_on_node $vm "sudo mkdir -p /tmp/build/iso/postinstall/ceph-files"
+  do_on_node $vm "sudo mkdir -p /tmp/build/iso/postinstall/ceph-files/keys"
   do_on_node $vm "sudo mkdir -p /tmp/build/iso/ks"
   do_on_node $vm "sudo chown vagrant:vagrant /tmp/build/iso/postinstall"
   do_on_node $vm "sudo chown vagrant:vagrant /tmp/build/iso/ks"
@@ -211,13 +215,18 @@ if [[ $BUILD_VMS_ONLY -eq 0 ]]; then
   do_on_node $vm "sudo pip install pyyaml"
 
   # Build Data - isolinux.cfg
-  do_on_node $vm "sudo /ceph-host/bootstrap/templates/jinja_render.py -d /ceph-host/bootstrap/data/environment/$CHEF_BCS_ENV/base-seed.yaml -i /ceph-host/bootstrap/templates/isolinux.cfg.j2 -o /tmp/build/iso/isolinux/isolinux.cfg"
-  do_on_node $vm "sudo /ceph-host/bootstrap/templates/jinja_render.py -d /ceph-host/bootstrap/data/environment/$CHEF_BCS_ENV/base-seed.yaml -i /ceph-host/bootstrap/templates/bcs_bootstrap_rhel.ks.j2 -o /tmp/build/iso/ks/bcs_bootstrap_rhel.ks"
-  do_on_node $vm "sudo /ceph-host/bootstrap/templates/jinja_render.py -d /ceph-host/bootstrap/data/environment/$CHEF_BCS_ENV/base-seed.yaml -i /ceph-host/bootstrap/templates/production.json.j2 -o /tmp/build/iso/postinstall/ceph-host/environments/production.json.j2"
+  do_on_node $vm "sudo /ceph-host/bootstrap/templates/jinja_render.py -d /ceph-host/bootstrap/data/environment/$BUILD_ENV/base-seed.yaml -i /ceph-host/bootstrap/templates/isolinux.cfg.j2 -o /tmp/build/iso/isolinux/isolinux.cfg"
+  do_on_node $vm "sudo /ceph-host/bootstrap/templates/jinja_render.py -d /ceph-host/bootstrap/data/environment/$BUILD_ENV/base-seed.yaml -i /ceph-host/bootstrap/templates/bcs_bootstrap_rhel.ks.j2 -o /tmp/build/iso/ks/bcs_bootstrap_rhel.ks"
+  do_on_node $vm "sudo /ceph-host/bootstrap/templates/jinja_render.py -d /ceph-host/bootstrap/data/environment/$BUILD_ENV/base-seed.yaml -i /ceph-host/bootstrap/templates/production.json.j2 -o /tmp/build/iso/postinstall/ceph-host/environments/production.json.j2"
+  # Overrides dummy operations.pub in files/default
+  do_on_node $vm "sudo /ceph-host/bootstrap/templates/jinja_render.py -d /ceph-host/bootstrap/data/environment/$BUILD_ENV/base-seed.yaml -i /ceph-host/bootstrap/templates/operations.pub.j2 -o /tmp/build/iso/postinstall/ceph-host/cookbooks/chef-bcs/files/default/operations.pub"
+  # Build kickstart template to be used by Chef
+  do_on_node $vm "sudo /ceph-host/bootstrap/templates/jinja_render.py -d /ceph-host/bootstrap/data/environment/$BUILD_ENV/base-seed.yaml -i /ceph-host/bootstrap/templates/bcs_node_rhel_nonosd.ks.erb.j2 -o /tmp/build/iso/postinstall/ceph-host/cookbooks/chef-bcs/templates/default/bcs_node_rhel_nonosd.ks.erb"
+  do_on_node $vm "sudo /ceph-host/bootstrap/templates/jinja_render.py -d /ceph-host/bootstrap/data/environment/$BUILD_ENV/base-seed.yaml -i /ceph-host/bootstrap/templates/bcs_node_rhel_osd.ks.erb.j2 -o /tmp/build/iso/postinstall/ceph-host/cookbooks/chef-bcs/templates/default/bcs_node_rhel_osd.ks.erb"
 
-  do_on_node $vm "cp /ceph-host/bootstrap/data/environment/$CHEF_BCS_ENV/rack01-node-seed.yaml /tmp/."
-  do_on_node $vm "cp /ceph-host/bootstrap/data/environment/$CHEF_BCS_ENV/rack02-node-seed.yaml /tmp/."
-  do_on_node $vm "cp /ceph-host/bootstrap/data/environment/$CHEF_BCS_ENV/rack03-node-seed.yaml /tmp/."
+  do_on_node $vm "cp /ceph-host/bootstrap/data/environment/$BUILD_ENV/rack01-node-seed.yaml /tmp/."
+  do_on_node $vm "cp /ceph-host/bootstrap/data/environment/$BUILD_ENV/rack02-node-seed.yaml /tmp/."
+  do_on_node $vm "cp /ceph-host/bootstrap/data/environment/$BUILD_ENV/rack03-node-seed.yaml /tmp/."
 
   do_on_node $vm "cp /tmp/rack01-node-seed.yaml /tmp/rack-node-seed.yaml"
   do_on_node $vm "sed '/---/d' /tmp/rack02-node-seed.yaml >> /tmp/rack-node-seed.yaml"
@@ -229,7 +238,9 @@ if [[ $BUILD_VMS_ONLY -eq 0 ]]; then
   # Build ISO with custom kickstart
   echo "Generating new ISO..."
   echo
-  do_on_node $vm "TODAY=\$(date +'%Y-%m-%d'); sudo mkisofs -r -J -N -d -hide-rr-moved -R -T -no-emul-boot -boot-load-size 4 -boot-info-table -V \"$ISOVOLUMEID\" -p \"$PACKAGER\" -A \"$ISOVOLUMEID - \$TODAY\" -b isolinux/isolinux.bin -c isolinux/boot.cat -x \"lost+found\" -eltorito-alt-boot -e images/efiboot.img -no-emul-boot -o /tmp/$CHEF_BCS_ENV-$COBBLER_BOOTSTRAP_ISO /tmp/build/iso"
+  # This commented line is for possible future reference - ls -1 | sed -e 's/\.rpm$//' | grep 'x86_64' | xargs yum install --downloadonly --downloaddir=/tmp/repos
+  # mkisofs
+  do_on_node $vm "TODAY=\$(date +'%Y-%m-%d'); sudo genisoimage -r -J -N -d -hide-rr-moved -R -T -no-emul-boot -boot-load-size 4 -boot-info-table -V \"$ISOVOLUMEID\" -p \"$PACKAGER\" -A \"$ISOVOLUMEID - \$TODAY\" -b isolinux/isolinux.bin -c isolinux/boot.cat -x \"lost+found\" -eltorito-alt-boot -e images/efiboot.img -no-emul-boot -o /tmp/$CHEF_BCS_ENV-$COBBLER_BOOTSTRAP_ISO /tmp/build/iso"
   echo "Generating MD5 in ISO..."
   echo
   do_on_node $vm "sudo implantisomd5 /tmp/$CHEF_BCS_ENV-$COBBLER_BOOTSTRAP_ISO"

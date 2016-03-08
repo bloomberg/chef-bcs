@@ -1,3 +1,4 @@
+####################################
 # kickstart template for Chef-BCS Nodes of OSD nodes. If a given node has an OSD role then it must use this kickstart.
 # Whatever is not found below then Cobbler 'fills in' the missing pieces such as networking.
 
@@ -115,13 +116,8 @@ exec 1>/mnt/sysimage/root/kickstart-stage1.log 2>&1
 
 %end
 
-%post
+%post --log=/root/kickstart-stage2.log
 $SNIPPET('log_ks_post')
-exec 1>/mnt/sysimage/root/kickstart-stage2.log 2>&1
-
-# Allow root login to begin with. Chef recipe will disable later in process.
-sed -i "s/#PermitRootLogin yes/PermitRootLogin yes/" /etc/ssh/sshd_config
-sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
 
 # Start yum configuration
 $yum_config_stanza
@@ -136,6 +132,15 @@ $SNIPPET('cobbler_register')
 # Enable post-install boot notification
 $SNIPPET('post_anamon')
 # Start final steps
+# Sets the --netboot flag for the host on cobbler
+$SNIPPET('kickstart_done')
+
+#!/bin/sh
+set -x
+
+# Allow root login to begin with. Chef recipe will disable later in process.
+sed -i "s/#PermitRootLogin yes/PermitRootLogin yes/" /etc/ssh/sshd_config
+sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
 
 <% node['chef-bcs']['cobbler']['kickstart']['users'].each do | usr | %>
 <% if usr['key'] %>
@@ -148,10 +153,9 @@ chown <%= usr['name'] %>:<%= usr['name'] %> -R /home/<%= usr['name'] %>/.ssh
 <% if usr['sudo'] %>
 echo "%<%= usr['name'] %> ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/<%= usr['name'] %>
 sed -i "s/^[^#].*requiretty/#Defaults requiretty/" /etc/sudoers
+echo "<%= usr['name'] %> ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/<%= usr['name'] %>
 <% end %>
 <% end -%>
 
-# Sets the --netboot flag for the host on cobbler
-$SNIPPET('kickstart_done')
 # End final steps
 %end

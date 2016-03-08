@@ -9,6 +9,7 @@
     "chef-bcs": {
       "bootstrap": {
         "name": "ceph-bootstrap",
+        "env": "/home/vagrant/chef-bcs/environments",
         "interfaces": [
           {"name": "enp0s8", "ip": "10.121.1.2", "netmask": "255.255.255.0", "gateway": ""},
           {"name": "enp0s9", "ip": "10.121.2.2", "netmask": "255.255.255.0", "gateway": ""}
@@ -177,7 +178,31 @@
         ],
         "servers": [
           {
+            "name": "ceph-bootstrap",
+            "roles": ["bootstrap", "adc"],
+            "profile": "",
+            "network": {
+              "public": {
+                "interface": "enp0s3",
+                "mac": "08:00:27:E3:84:01",
+                "ip": "10.121.1.3",
+                "netmask": "255.255.255.0",
+                "gateway": "10.121.1.2",
+                "mtu": 1500
+              },
+              "cluster": {
+                "interface": "enp0s8",
+                "mac": "08:00:27:3E:CB:B0",
+                "ip": "10.121.2.3",
+                "netmask": "255.255.255.0",
+                "gateway": "10.121.2.2",
+                "mtu": 1500
+              }
+            }
+          },
+          {
             "name": "ceph-vm1",
+            "roles": ["mon", "rgw", "osd", "adc", "admin"],
             "profile": "ceph_non_osd_node",
             "network": {
               "public": {
@@ -200,6 +225,7 @@
           },
           {
             "name": "ceph-vm2",
+            "roles": ["mon", "rgw", "osd", "adc", "admin"],
             "profile": "ceph_non_osd_node",
             "network": {
               "public": {
@@ -222,6 +248,7 @@
           },
           {
             "name": "ceph-vm3",
+            "roles": ["mon", "rgw", "osd", "adc", "admin"],
             "profile": "ceph_non_osd_node",
             "network": {
               "public": {
@@ -288,6 +315,7 @@
       "ceph": {
         "cluster": "ceph",
         "repo": {
+          "create": true,
           "version": {
             "name": "hammer",
             "branch": "stable",
