@@ -114,6 +114,13 @@ $SNIPPET('log_ks_post_nochroot')
 # Logging is set up if needed
 exec 1>/mnt/sysimage/root/kickstart-stage1.log 2>&1
 
+echo "==> copying files from media to install drive..."
+cp -r /run/install/repo/postinstall /mnt/sysimage/tmp
+find /mnt/sysimage/tmp -name TRANS.TBL -exec rm -f {} \;
+
+mkdir /mnt/sysimage/ceph-files
+mkdir /mnt/sysimage/ceph-host
+
 %end
 
 %post --log=/root/kickstart-stage2.log
@@ -138,30 +145,49 @@ $SNIPPET('kickstart_done')
 #!/bin/sh
 set -x
 
+groupadd {{ user.name }}
+useradd {{ user.name }} -g {{ user.name }} -G wheel
+
+cp -R /tmp/postinstall/ceph-files/* /ceph-files/.
+cp -R /tmp/postinstall/ceph-host/* /ceph-host/.
+
+chown -R {{ user.name }}:{{ user.name }} /ceph-files
+chown -R {{ user.name }}:{{ user.name }} /ceph-host
+
+cat /ceph-host/bootstrap/data/environment/{{ node.environment }}/hosts >> /etc/hosts
+
 # Allow root login to begin with. Chef recipe will disable later in process.
 sed -i "s/#PermitRootLogin yes/PermitRootLogin yes/" /etc/ssh/sshd_config
 sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
 
-<% node['chef-bcs']['cobbler']['kickstart']['users'].each do | usr | %>
-<% if usr['key'] %>
-mkdir --mode=0700 -p /home/<%= usr['name'] %>/.ssh
-wget -O /home/<%= usr['name'] %>/.ssh/authorized_keys http://$http_server:$http_port/cobbler/pub/<%= usr['key'] %>
-chmod 0600 /home/<%= usr['name'] %>/.ssh/authorized_keys
-chown <%= usr['name'] %>:<%= usr['name'] %> -R /home/<%= usr['name'] %>/.ssh
-<% end %>
+# Add a public key here to authorized_keys but make sure to set permission to 0600
+mkdir --mode=0700 -p /home/{{ user.name }}/.ssh
+cat <<EOM >/home/{{ user.name }}/.ssh/authorized_keys
+{{ user.key }}
+EOM
+chmod 0600 /home/{{ user.name }}/.ssh/authorized_keys
+chown -R {{ user.name }}:{{ user.group }} /home/{{ user.name }}/.ssh
 
-<% if usr['sudo'] %>
-echo "%<%= usr['name'] %> ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/<%= usr['name'] %>
+# Setup sudoer
+echo "%{{ user.name }} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/{{ user.name }}
 sed -i "s/^[^#].*requiretty/#Defaults requiretty/" /etc/sudoers
-echo "<%= usr['name'] %> ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/<%= usr['name'] %>
-<% end %>
-<% end -%>
+echo "{{ user.name }} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/{{ user.name }}
 
 {% if cobbler.kickstart.redhat.management.type %}
 {{ cobbler.kickstart.redhat.management.commands.C1 }}
 {{ cobbler.kickstart.redhat.management.commands.C2 }}
 {{ cobbler.kickstart.redhat.management.commands.C3 }}
 {{ cobbler.kickstart.redhat.management.commands.C4 }}
+# Go ahead and create a script in /tmp if the network has issues during the process.
+cat <<EOM >/tmp/rhelsub.sh
+service network restart
+{{ cobbler.kickstart.redhat.management.commands.C1 }}
+{{ cobbler.kickstart.redhat.management.commands.C2 }}
+{{ cobbler.kickstart.redhat.management.commands.C3 }}
+{{ cobbler.kickstart.redhat.management.commands.C4 }}
+yum update -y
+EOM
+chmod +x /tmp/rhelsub.sh
 {% endif %}
 # End final steps
 %end

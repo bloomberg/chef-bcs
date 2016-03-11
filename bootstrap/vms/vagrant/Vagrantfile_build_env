@@ -16,7 +16,8 @@
 # limitations under the License.
 #
 
-# IMPORTANT - This is a Vagrantfile that *MUST* be copied to Vagrantfile_build_env for BUILD ENVIRONMENT
+# BUILD_ENV
+# IMPORTANT - This is a Vagrantfile that *MUST* be copied FROM Vagrantfile_build_env for BUILD ENVIRONMENT
 
 # NOTE: At the time this project started, the Vagrant fedora plugin seemed to have a bug in it's networking
 # where it overroad nic1 (nat) which caused ssh to fail. So, we had to create a way to update the consistent

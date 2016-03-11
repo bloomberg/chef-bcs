@@ -37,7 +37,7 @@ echo "--------------------------------------------"
 echo "Bootstrapping local CEPH environment using Vagrant..."
 echo
 
-while getopts cbsvdot opt; do
+while getopts cbsvdo:t: opt; do
     case $opt in
         b)
             BUILD_VMS_ONLY=1

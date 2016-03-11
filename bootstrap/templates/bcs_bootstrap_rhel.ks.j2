@@ -15,7 +15,7 @@ user --groups={{ user.group }} --name={{ user.name }} --iscrypted --password={{ 
 
 # Static NETWORK
 {% for int in interfaces %}
-network --bootproto=static --device={{ int.device }} --mtu={{ int.mtu }} --noipv6 --activate --ip={{ int.ip }} --netmask={{ int.netmask }} --gateway={{ int.gateway }} --nameserver={{ nameservers|join(',') }} --hostname={{ node.name }}.{{ node.domain }} --onboot=yes
+network --onboot=yes --bootproto=static --device={{ int.device }} --mtu={{ int.mtu }} --noipv6 --activate --ip={{ int.ip }} --netmask={{ int.netmask }} --gateway={{ int.gateway }} --nameserver={{ nameservers[0] }} --nameserver={{ nameservers[1] }} --hostname={{ node.name }}.{{ node.domain }}
 {% endfor %}
 
 # Important: The bootstrap partition schema is static to the given environment
@@ -60,7 +60,7 @@ eula --agreed
 # System bootloader configuration
 # Use grub2-mkpasswd-pbkdf2 to generate cryptic password for security
 # bootloader --append=" crashkernel=auto" --location=mbr --boot-drive=sda --iscrypted --password={{ bootloader_pwd }}
-bootloader --append=" crashkernel=auto" --location=mbr --boot-drive=sda
+bootloader --append=" crashkernel=auto" --location=mbr --driveorder=sda,sdb
 
 # Partition clearing information
 clearpart --all --initlabel
@@ -150,11 +150,14 @@ $yum_config_stanza
 groupadd {{ user.name }}
 useradd {{ user.name }} -g {{ user.name }} -G wheel
 
+# Note: The postinstall directory remains but can be removed if desired.
+cp -R /tmp/postinstall/ceph-files/* /ceph-files/.
+cp -R /tmp/postinstall/ceph-host/* /ceph-host/.
+
 chown -R {{ user.name }}:{{ user.name }} /ceph-files
 chown -R {{ user.name }}:{{ user.name }} /ceph-host
 
-cp -R /tmp/postinstall/ceph-files/* /ceph-files/.
-cp -R /tmp/postinstall/ceph-host/* /ceph-host/.
+cat /ceph-host/bootstrap/data/environment/{{ node.environment }}/hosts >> /etc/hosts
 
 # Allow root login to begin with. Chef recipe will disable later in process.
 sed -i "s/#PermitRootLogin yes/PermitRootLogin yes/" /etc/ssh/sshd_config
@@ -165,7 +168,9 @@ mkdir --mode=0700 -p /home/{{ user.name }}/.ssh
 cat <<EOM >/home/{{ user.name }}/.ssh/authorized_keys
 {{ user.key }}
 EOM
+cp /ceph-host/bootstrap/data/environment/{{ node.environment }}/{{ user.private_key }} /home/{{ user.name }}/.ssh/id_rsa
 chmod 0600 /home/{{ user.name }}/.ssh/authorized_keys
+chmod 0600 /home/{{ user.name }}/.ssh/id_rsa
 chown -R {{ user.name }}:{{ user.group }} /home/{{ user.name }}/.ssh
 
 # Setup sudoer
@@ -178,6 +183,16 @@ echo "{{ user.name }} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/{{ user.name }}
 {{ cobbler.kickstart.redhat.management.commands.C2 }}
 {{ cobbler.kickstart.redhat.management.commands.C3 }}
 {{ cobbler.kickstart.redhat.management.commands.C4 }}
+# Go ahead and create a script in /tmp if the network has issues during the process.
+cat <<EOM >/tmp/rhelsub.sh
+service network restart
+{{ cobbler.kickstart.redhat.management.commands.C1 }}
+{{ cobbler.kickstart.redhat.management.commands.C2 }}
+{{ cobbler.kickstart.redhat.management.commands.C3 }}
+{{ cobbler.kickstart.redhat.management.commands.C4 }}
+yum update -y
+EOM
+chmod +x /tmp/rhelsub.sh
 {% endif %}
 
 # Build ISO to be used for Cobbler

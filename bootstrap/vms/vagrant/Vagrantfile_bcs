@@ -16,6 +16,9 @@
 # limitations under the License.
 #
 
+# BCS
+# IMPORTANT: This Vagrantfile must be copied FROM Vagrantfile_bcs
+
 # This is a Vagrantfile to automatically provision a local ceph cluster.
 
 # NOTE: At the time this project started, the Vagrant fedora plugin seemed to have a bug in it's networking

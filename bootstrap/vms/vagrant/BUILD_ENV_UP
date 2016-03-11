@@ -57,10 +57,20 @@ set -e
 
 # CAN ONLY be ran from the /chef-bcs/bootstrap/vms/vagrant directory!
 
-while getopts bv opt; do
+while getopts bd:e:g:v opt; do
     case $opt in
         b)
             BUILD_VMS_ONLY=1
+            ;;
+        d)
+            dc=$OPTARG
+            ;;
+        e)
+            env=$OPTARG
+            ;;
+        # internal_git is optional
+        g)
+            internal_git=$OPTARG
             ;;
         # verbose
         v)
@@ -68,6 +78,31 @@ while getopts bv opt; do
             ;;
     esac
 done
+
+# NOTE: Check your private data documentation for these values before running this!
+echo "Environment:"
+echo $env
+echo $dc
+echo
+
+if [[ -z $env ]]; then
+  echo "IMPORTANT - environment *MUST* be passed in (i.e., production, Test-Laptop, vagrant or whatever you call it but it must match the directory structure in /bootstrap/data/environment/???)"
+  exit 1
+fi
+
+if [[ -z $dc ]]; then
+  echo "IMPORTANT - (Data center) environment *MUST* be passed in (i.e., dc1, dc2, whatever you call it but it must match the directory structure in /bootstrap/data/environment/$env/???)"
+  exit 1
+fi
+
+# Build dns.txt and hosts before doing anything else
+# NOTE IMPORTANT - These two scripts are *NOT* included in the public repo because they are specific to your *specific* environment.
+# You can comment them out or add two scripts that build your dns and hosts files.
+# If these two do not exist in your environment then the script will fail here!
+export REPO_ROOT=$(git rev-parse --show-toplevel)
+echo "Building DNS and hosts files..."
+/$REPO_ROOT/bootstrap/data/environment/$env/scripts/build_dns_file.sh $dc
+/$REPO_ROOT/bootstrap/data/environment/$env/scripts/build_hosts_file.sh $dc
 
 # Using environment vars from CEPH_UP :)
 
@@ -89,8 +124,8 @@ do_on_node() {
 }
 
 #### Modify section - begin ####
-CHEF_BCS_ENV=cob1
-BUILD_ENV=production/$CHEF_BCS_ENV
+CHEF_BCS_ENV=$dc
+BUILD_ENV=$env/$CHEF_BCS_ENV
 # The name of the build server. Change it in build_server_config *AND* here!
 vm=bcs-build-server
 CEPH_CHEF_FILES=ceph-files
@@ -110,9 +145,10 @@ export COBBLER_BOOTSTRAP_ISO="rhel-server-7.2-x86_64.iso"
 # The internal repo will override the public version so *ONLY* put files in the internal repo that you don't want
 # to be public AND that you want to take priority!
 export GITHUB_REPO=${GITHUB_REPO:-"chef-bcs"}
-export GITHUB_EXTERNAL_REPO=${GITHUB_EXTERNAL_REPO:-"https://github.com/cloudm2/$GITHUB_REPO"}
-export GITHUB_INTERNAL_REPO=${GITHUB_INTERNAL_REPO:-"https://bbgithub.dev.bloomberg.com/BCS/$GITHUB_REPO"}
-
+export GITHUB_EXTERNAL_REPO=${GITHUB_EXTERNAL_REPO:-"https://github.com/bloomberg/$GITHUB_REPO"}
+if [[ ! -z $internal_git ]]; then
+export GITHUB_INTERNAL_REPO=${GITHUB_INTERNAL_REPO:-"https://$internal_git/$GITHUB_REPO"}
+fi
 #### Modify section - end ####
 
 rm -rf $BOOTSTRAP_CACHE_DIR/build/iso/in
@@ -151,16 +187,19 @@ fi
 # Get the chef-bcs github repo and any internal github (note: change this to fit your needs).
 # Put these in the cache directory where the shared folders will be mapped.
 # Force a clean git clone
+set +e
 rm -rf $BOOTSTRAP_CACHE_DIR/build/github/external
 rm -rf $BOOTSTRAP_CACHE_DIR/build/github/internal
-
 mkdir -p $BOOTSTRAP_CACHE_DIR/build/github/{external,internal}
+set -e
 
 git clone $GITHUB_EXTERNAL_REPO $BOOTSTRAP_CACHE_DIR/build/github/external/$GITHUB_REPO
 
 # May be there so ignore fail if not there.
 set +e
+if [[ ! -z $internal_git ]]; then
 git clone $GITHUB_INTERNAL_REPO $BOOTSTRAP_CACHE_DIR/build/github/internal/$GITHUB_REPO
+fi
 set -e
 
 # An alternative to the above git clone is to have the clone somewhere on your system and then sym link to it instead :)
@@ -214,10 +253,15 @@ if [[ $BUILD_VMS_ONLY -eq 0 ]]; then
   do_on_node $vm "sudo pip install --upgrade pip"
   do_on_node $vm "sudo pip install pyyaml"
 
+  # Build the initial bootstrap_chef.sh script in the data center specific folder
+  do_on_node $vm "sudo /ceph-host/bootstrap/templates/jinja_render.py -d /ceph-host/bootstrap/data/environment/$BUILD_ENV/base-seed.yaml -i /ceph-host/bootstrap/data/environment/$env/bootstrap_chef.sh.j2 -o /tmp/build/iso/postinstall/ceph-host/bootstrap/data/environment/$env/$dc/bootstrap_chef.sh"
+  do_on_node $vm "sudo chmod +x /tmp/build/iso/postinstall/ceph-host/bootstrap/data/environment/$env/$dc/bootstrap_chef.sh"
+
   # Build Data - isolinux.cfg
   do_on_node $vm "sudo /ceph-host/bootstrap/templates/jinja_render.py -d /ceph-host/bootstrap/data/environment/$BUILD_ENV/base-seed.yaml -i /ceph-host/bootstrap/templates/isolinux.cfg.j2 -o /tmp/build/iso/isolinux/isolinux.cfg"
   do_on_node $vm "sudo /ceph-host/bootstrap/templates/jinja_render.py -d /ceph-host/bootstrap/data/environment/$BUILD_ENV/base-seed.yaml -i /ceph-host/bootstrap/templates/bcs_bootstrap_rhel.ks.j2 -o /tmp/build/iso/ks/bcs_bootstrap_rhel.ks"
-  do_on_node $vm "sudo /ceph-host/bootstrap/templates/jinja_render.py -d /ceph-host/bootstrap/data/environment/$BUILD_ENV/base-seed.yaml -i /ceph-host/bootstrap/templates/production.json.j2 -o /tmp/build/iso/postinstall/ceph-host/environments/production.json.j2"
+  # NOTE: Yes, it's true...the output is another .j2 becase it does multiple passes.
+  do_on_node $vm "sudo /ceph-host/bootstrap/templates/jinja_render.py -d /ceph-host/bootstrap/data/environment/$BUILD_ENV/base-seed.yaml -i /ceph-host/bootstrap/templates/$env.json.j2 -o /tmp/build/iso/postinstall/ceph-host/environments/$env.json.j2"
   # Overrides dummy operations.pub in files/default
   do_on_node $vm "sudo /ceph-host/bootstrap/templates/jinja_render.py -d /ceph-host/bootstrap/data/environment/$BUILD_ENV/base-seed.yaml -i /ceph-host/bootstrap/templates/operations.pub.j2 -o /tmp/build/iso/postinstall/ceph-host/cookbooks/chef-bcs/files/default/operations.pub"
   # Build kickstart template to be used by Chef
@@ -232,8 +276,8 @@ if [[ $BUILD_VMS_ONLY -eq 0 ]]; then
   do_on_node $vm "sed '/---/d' /tmp/rack02-node-seed.yaml >> /tmp/rack-node-seed.yaml"
   do_on_node $vm "sed '/---/d' /tmp/rack03-node-seed.yaml >> /tmp/rack-node-seed.yaml"
 
-  do_on_node $vm "sudo /ceph-host/bootstrap/templates/jinja_render.py -d /tmp/rack-node-seed.yaml -i /tmp/build/iso/postinstall/ceph-host/environments/production.json.j2 -o /tmp/build/iso/postinstall/ceph-host/environments/production.json"
-  do_on_node $vm "sudo rm /tmp/build/iso/postinstall/ceph-host/environments/production.json.j2"
+  do_on_node $vm "sudo /ceph-host/bootstrap/templates/jinja_render.py -d /tmp/rack-node-seed.yaml -i /tmp/build/iso/postinstall/ceph-host/environments/$env.json.j2 -o /tmp/build/iso/postinstall/ceph-host/environments/$env.json"
+  do_on_node $vm "sudo rm /tmp/build/iso/postinstall/ceph-host/environments/$env.json.j2"
 
   # Build ISO with custom kickstart
   echo "Generating new ISO..."

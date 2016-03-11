@@ -64,14 +64,16 @@ end
 # Set up a default system - you will need to add the information via cobbler system edit on the cli to match your environment
 # Also, do cobbler system add for every ceph node with mac, IP, etc OR modify the json data used by cobbler and then restart cobbler
 node['chef-bcs']['cobbler']['servers'].each do | server |
-  bash "add-to-cobbler" do
-    user 'root'
-    code <<-EOH
-      cobbler system add --name=#{server['name']} --profile=#{server['profile']} --static=true --interface=#{server['network']['public']['interface']} --mac=#{server['network']['public']['mac']} --ip-address=#{server['network']['public']['ip']} --netmask=#{server['network']['public']['netmask']} --if-gateway=#{server['network']['public']['gateway']} --hostname=#{server['name']} --mtu=#{server['network']['public']['mtu']}
-      cobbler system edit --name=#{server['name']} --static=true --interface=#{server['network']['cluster']['interface']} --mac=#{server['network']['cluster']['mac']} --ip-address=#{server['network']['cluster']['ip']} --netmask=#{server['network']['cluster']['netmask']} --if-gateway=#{server['network']['cluster']['gateway']} --mtu=#{server['network']['cluster']['mtu']}
-    EOH
-    not_if "cobbler system list | grep #{server['name']}"
-    only_if "test -f /tmp/#{node['chef-bcs']['cobbler']['os']['distro']}"
+  if !server.include? 'bootstrap'
+    bash "add-to-cobbler" do
+      user 'root'
+      code <<-EOH
+        cobbler system add --name=#{server['name']} --profile=#{server['profile']} --static=true --interface=#{server['network']['public']['interface']} --mac=#{server['network']['public']['mac']} --ip-address=#{server['network']['public']['ip']} --netmask=#{server['network']['public']['netmask']} --if-gateway=#{server['network']['public']['gateway']} --hostname=#{server['name']} --mtu=#{server['network']['public']['mtu']}
+        cobbler system edit --name=#{server['name']} --static=true --interface=#{server['network']['cluster']['interface']} --mac=#{server['network']['cluster']['mac']} --ip-address=#{server['network']['cluster']['ip']} --netmask=#{server['network']['cluster']['netmask']} --if-gateway=#{server['network']['cluster']['gateway']} --mtu=#{server['network']['cluster']['mtu']}
+      EOH
+      not_if "cobbler system list | grep #{server['name']}"
+      only_if "test -f /tmp/#{node['chef-bcs']['cobbler']['os']['distro']}"
+    end
   end
 end
 

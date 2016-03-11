@@ -28,6 +28,7 @@ ceph_chef_admin_hosts_content = 'export CEPH_ADMIN_HOSTS=( '
 ceph_chef_mon_hosts_content = 'export CEPH_MON_HOSTS=( '
 ceph_chef_osd_hosts_content = 'export CEPH_OSD_HOSTS=( '
 ceph_chef_rgw_hosts_content = 'export CEPH_RGW_HOSTS=( '
+ceph_chef_hosts_content = 'export CEPH_CHEF_HOSTS=( '
 ceph_chef_bootstrap_content = 'export CEPH_CHEF_BOOTSTRAP='
 
 # Server list
@@ -47,6 +48,7 @@ node['chef-bcs']['cobbler']['servers'].each do | server |
     when 'rgw'
       ceph_chef_rgw_hosts_content += (server['name'] + ' ')
     end
+    ceph_chef_hosts_content += (server['name'] + ' ')
   end
 end
 
@@ -56,12 +58,13 @@ ceph_chef_admin_hosts_content += ')'
 ceph_chef_mon_hosts_content += ')'
 ceph_chef_osd_hosts_content += ')'
 ceph_chef_rgw_hosts_content += ')'
+ceph_chef_hosts_content += ')'
 
 user_rec = node['chef-bcs']['cobbler']['kickstart']['users'].first
 env = node['chef-bcs']['bootstrap']['env']
 
 # NOTE: file_name is also the variable names
-%w{ceph_chef_adc_hosts ceph_chef_admin_hosts ceph_chef_mon_hosts ceph_chef_osd_hosts ceph_chef_rgw_hosts ceph_chef_bootstrap}.each do | file_name |
+%w{ceph_chef_hosts ceph_chef_adc_hosts ceph_chef_admin_hosts ceph_chef_mon_hosts ceph_chef_osd_hosts ceph_chef_rgw_hosts ceph_chef_bootstrap}.each do | file_name |
   file "#{env}/#{file_name}.env" do
     case file_name
     when 'ceph_chef_adc_hosts'
@@ -76,6 +79,8 @@ env = node['chef-bcs']['bootstrap']['env']
       content "#{ceph_chef_rgw_hosts_content}"
     when 'ceph_chef_bootstrap'
       content "#{ceph_chef_bootstrap_content}"
+    when 'ceph_chef_hosts'
+      content "#{ceph_chef_hosts_content}"
     end
     mode '0755'
     owner user_rec['name']
