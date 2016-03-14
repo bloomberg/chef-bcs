@@ -14,8 +14,9 @@ rootpw --iscrypted {{ node.root_pwd }}
 user --groups={{ user.group }} --name={{ user.name }} --iscrypted --password={{ user.passwd }}
 
 # Static NETWORK
+# NOTE: Anaconda only allows for one DNS entry (last one wins if more than one)
 {% for int in interfaces %}
-network --onboot=yes --bootproto=static --device={{ int.device }} --mtu={{ int.mtu }} --noipv6 --activate --ip={{ int.ip }} --netmask={{ int.netmask }} --gateway={{ int.gateway }} --nameserver={{ nameservers[0] }} --nameserver={{ nameservers[1] }} --hostname={{ node.name }}.{{ node.domain }}
+network --onboot=yes --bootproto=static --device={{ int.device }} --mtu={{ int.mtu }} --noipv6 --activate --ip={{ int.ip }} --netmask={{ int.netmask }} --gateway={{ int.gateway }} --nameserver={{ nameservers[0] }} --hostname={{ node.name }}
 {% endfor %}
 
 # Important: The bootstrap partition schema is static to the given environment

@@ -93,13 +93,14 @@ end
 bash 'copy-chef-node' do
   user 'root'
   code <<-EOH
-    sudo cp /etc/chef/validation.pem /var/www/cobbler/pub/validation.pem
-    sudo chmod 0755 /var/www/cobbler/pub/validation.pem
+    sudo cp /etc/opscode/bcs-validator.pem /var/www/cobbler/pub/validation.pem
+    sudo chmod 0644 /var/www/cobbler/pub/validation.pem
   EOH
 end
 
 template '/var/www/cobbler/pub/client.rb' do
   source 'client.rb.erb'
+  mode '0644'
 end
 
 # NOTE: The kickstart process creates the directores, wgets the files to the node's /etc/chef and sets the permissions.

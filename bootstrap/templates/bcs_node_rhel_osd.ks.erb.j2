@@ -48,7 +48,7 @@ user --name=<%= usr['name'] %> <%= usr['passwd_type'] %> --password=<%= usr['pas
 <% end -%>
 
 # SELinux configuration
-selinux --disabled
+selinux --permissive
 
 # Do not configure the X Window System
 skipx
@@ -104,8 +104,6 @@ kexec-tools
 vim
 tmux
 git
-tftp-server
-dnsmasq
 %end
 
 %post --nochroot
@@ -197,7 +195,7 @@ rpm -Uvh /ceph-files/{{ chef.rpms.client }}
 # Set up the node for chef-client
 mkdir -p /etc/chef
 mkdir -p /var/log/chef
-wget http://{{ node.ip }}/cblr/pub/validation.pem -O /etc/chef/validation.pem
+wget http://{{ node.ip }}/cblr/pub/bcs-validator.pem -O /etc/chef/validation.pem
 wget http://{{ node.ip }}/cblr/pub/client.rb -O /etc/chef/client.rb
 chmod 0600 /etc/chef/validation.pem
 chmod 0644 /etc/chef/client.rb
@@ -211,7 +209,7 @@ rpm -Uvh /ceph-files/{{ chef.rpms.client }}
 # Set up the node for chef-client
 mkdir -p /etc/chef
 mkdir -p /var/log/chef
-wget http://{{ node.ip }}/cblr/pub/validation.pem -O /etc/chef/validation.pem
+wget http://{{ node.ip }}/cblr/pub/bcs-validator.pem -O /etc/chef/validation.pem
 wget http://{{ node.ip }}/cblr/pub/client.rb -O /etc/chef/client.rb
 chmod 0600 /etc/chef/validation.pem
 chmod 0644 /etc/chef/client.rb
