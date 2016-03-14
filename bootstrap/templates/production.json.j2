@@ -13,7 +13,7 @@
         "env": "{{ node.env }}",
         "interfaces": [
         {%- for item in interfaces %}
-          {"name": "{{ item.interface }}", "ip": "{{ item.ip }}", "netmask": "{{ item.netmask }}", "gateway": "{{ item.gateway }}"}{%- if not loop.last %},{% endif %}
+          {"name": "{{ item.device }}", "ip": "{{ item.ip }}", "netmask": "{{ item.netmask }}", "gateway": "{{ item.gateway }}"}{%- if not loop.last %},{% endif %}
         {%- endfor %}
         ]
       },
@@ -21,13 +21,13 @@
         "tag": "ceph-adc",
         "interface": "{{ adc.interface }}",
         "stats": {
-          "enable": {{ adc.haproxy.enable }},
+          "enable": {%- if adc.enable == True %} true, {% else %} false, {%- endif %}
           "user": "{{ adc.haproxy.user }}",
           "passwd": "{{ adc.haproxy.passwd }}",
           "port": {{ adc.haproxy.port }}
         },
         "bond": {
-          "enable": {{ bond.enable }},
+          "enable": {%- if bond.enable == True %} true, {% else %} false, {%- endif %}
           "name": "{{ bond.name }}",
           "type": "Ethernet",
           "mtu": {{ bond.mtu }},
@@ -36,8 +36,8 @@
           "nm_controlled": "no"
         },
         "connections": {
-          "max": {{ adc.max_connections }},
-          "balance": "{{ adc.balance }}"
+          "max": {{ adc.haproxy.max_connections }},
+          "balance": "{{ adc.haproxy.balance }}"
         },
         "ssl": {
           "path": "/etc/ssl/private",
@@ -107,19 +107,19 @@
                 {"role": "ceph-osd", "open": [], "ranges": [{"start": 6800, "end": 6872, "protocol": "tcp"}]}
               ]
             }
-          ],
+          ]
+        }
         {#- "NOTE1": "NOTE: Firewall open ports are accumulative for each node based on it's role. Role must match ceph-chef tags.", #}
         {#- "NOTE2": "NOTE: Range start = 0 then range is skipped else put in exact ranges.", #}
         {#- "NOTE3": "NOTE: OSDs start at 6800 and each OSD uses at least 3 ports. The end number should be high enough to account for this. MDS should match OSD.", #}
         {#- "NOTE4": "NOTE: If you run multiple instances of RGW then keep the port count in mind." #}
-        }
       },
       "system": {
         "pid_max": 4194303
       },
       "ipmi": {
         "user": "{{ ipmi.user }}",
-        "passwd": "{{ ipmi.passwd }}",
+        "passwd": "{{ ipmi.passwd }}"
         {#- "NOTE": "password of vbox is: $6$Salt$xvQkYaQ4urNWmnjpinAZSR/ZOaRy/aacKh4j18ayq/.mswLqleFZI5zaD1BCg2Fdzy1BjpBv9VIgVgt6YoA8T0" #}
       },
       "cobbler": {
@@ -127,11 +127,10 @@
         "pxe_interface": "{{ cobbler.interface }}",
         "server": "{{ cobbler.server }}",
         "kickstart": {
-          {#- "NOTE": "password vagrant is: $6$Salt$6AyUczFy6SgV8A2wKAKfA9drpzrUsTGPJ3QjcWBbgS97BxBO.C7ZcBFALRiRkKfi9x8MK2SHet38BCQWS9LsR/", #}
           "root": {
-            "passwd": "{{ cobbler.kickstart.root }}",
+            "passwd": "{{ cobbler.kickstart.root.passwd }}",
             "passwd_type": "--iscrypted",
-            "key": "{{ cobbler.kickstart.key }}"
+            "key": "{{ cobbler.kickstart.root.key }}"
           },
           "file": {
             "osd": "bcs_node_rhel_osd.ks",
@@ -150,7 +149,7 @@
               "shell": "/bin/bash",
               "comment": "{{ user.comment }}",
               "groups": "{{ user.group }}",
-              "sudo": {{ user.sudo }}
+              "sudo": true
             }
           ]
         },
@@ -186,12 +185,12 @@
         {#- "NOTE1": "NOTE: Each subnet represents a routable rack so dhcp will need to manage each subnet with the TOR using IP-helper for dhcp requests by nodes in the given rack.", #}
         {#- "NOTE2": "NOTE: You could just have one subnet for a single L2 span set of racks.", #}
         {#- "NOTE3": "NOTE: /27 for subnet mask of each rack. DNS could be added to each subnet entry above but the global DNS entry below is good enough for this.", #}
-        "partition_option": "ignoredisk --only-use=sda",
+        {#- "partition_option": "ignoredisk --only-use=sda", #}
         "partitions": [
-          {"part": "/boot", "fstype": "xfs", "size": 1024, "options": "--ondisk=sda"},
-          {"part": "/", "fstype": "xfs", "size": 30000, "options": "--ondisk=sda"},
-          {"part": "/var/lib", "fstype": "xfs", "size": 40000, "options": "--ondisk=sda"},
-          {"part": "/opt", "fstype": "xfs", "size": 20000, "options": "--ondisk=sda"},
+          {"part": "/boot", "fstype": "xfs", "size": 1024, "options": "--ondisk=sdm"},
+          {"part": "/", "fstype": "xfs", "size": 30000, "options": "--ondisk=sdm"},
+          {"part": "/var/lib", "fstype": "xfs", "size": 40000, "options": "--ondisk=sdm"},
+          {"part": "/opt", "fstype": "xfs", "size": 20000, "options": "--ondisk=sdm"},
           {"part": "swap", "fstype": "swap", "size": 20000, "options": ""}
         ],
         {#- "NOTE4": "NOTE: Partitions are for OSD nodes. All other partitions are coded into the given ks file.", #}
@@ -209,17 +208,17 @@
         },
         "redhat": {
           "management": {
-            "type": "{{ cobbler.kickstart.redhat.management.type }}",
+            "type": {%- if cobbler.kickstart.redhat.management.type == True %} true, {% else %} false, {%- endif %}
             "server": "{{ cobbler.kickstart.redhat.management.server }}",
             "key": "{{ cobbler.kickstart.redhat.management.key }}"
           }
         },
-        "repo_mirror": {{ cobbler.kickstart.repo_mirror }}
+        "repo_mirror": false
       },
       "ceph": {
         "cluster": "ceph",
         "repo": {
-          "create": {{ ceph.repo.create }},
+          "create": false,
           "version": {
             "name": "hammer",
             "branch": "stable",
@@ -321,7 +320,7 @@
       "server_url": "{{ chef.server }}",
       "cache_path": "/var/chef/cache",
       "backup_path": "/var/chef/backup",
-      "validation_client_name": "chef-validator",
+      "validation_client_name": "bcs-validator",
       "run_path": "/var/chef"
     }
   }

@@ -1,0 +1,4 @@
+chef_server_url "https://#{node['chef-bcs']['bootstrap']['name']}/organizations/bcs"
+log_location '/var/log/chef/client.log'
+validation_client_name "bcs-validator"
+verify_api_cert true

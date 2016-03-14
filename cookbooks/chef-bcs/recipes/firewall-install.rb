@@ -20,10 +20,10 @@
 if node['chef-bcs']['init_style'] != 'upstart'
   package 'firewalld'
 
-  service 'firewalld' do
-    provider Chef::Provider::Service::Redhat
-    supports :status => true
-    action [:enable, :start]
+  include_recipe 'chef-bcs::firewall-start'
+
+  execute 'firewalld-enable' do
+    command 'sudo systemctl enable firewalld'
   end
 else
 end

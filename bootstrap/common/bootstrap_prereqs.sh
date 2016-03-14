@@ -61,11 +61,9 @@ if [[ ! -z $COBBLER_BOOTSTRAP_ISO ]]; then
   download_file cobbler/loaders/grub-x86_64.efi http://cobbler.github.io/loaders/grub-0.97-x86_64.efi
 fi
 
-# TODO: Add different OS support
 # Obtain Chef client and server RPMs.
-# knife actor map issue with latest version so reverting back to previous
-CHEF_CLIENT_RPM=chef-12.6.0-1.el7.x86_64.rpm
-CHEF_SERVER_RPM=chef-server-core-12.4.1-1.el7.x86_64.rpm
+export CHEF_CLIENT_RPM=chef-12.8.1-1.el7.x86_64.rpm
+export CHEF_SERVER_RPM=chef-server-core-12.4.1-1.el7.x86_64.rpm
 download_file $CHEF_CLIENT_RPM https://opscode-omnibus-packages.s3.amazonaws.com/el/7/x86_64/$CHEF_CLIENT_RPM
 download_file $CHEF_SERVER_RPM https://web-dl.packagecloud.io/chef/stable/packages/el/7/$CHEF_SERVER_RPM
 

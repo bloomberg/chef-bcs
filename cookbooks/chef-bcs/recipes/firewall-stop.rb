@@ -17,8 +17,6 @@
 # limitations under the License.
 #
 
-service 'firewalld' do
-  provider Chef::Provider::Service::Redhat
-  supports :status => true
-  action [:stop]
+execute 'firewalld-stop' do
+  command 'sudo systemctl stop firewalld'
 end

@@ -50,7 +50,7 @@ bash 'profile-update-cobbler' do
 end
 
 # Update the Red Hat Satellite/Capsule/RHN info
-if node['chef-bcs']['cobbler']['os']['breed'] == 'redhat' && node['chef-bcs']['cobbler']['redhat']['management']['type'] == 'on'
+if node['chef-bcs']['cobbler']['os']['breed'] == 'redhat' && node['chef-bcs']['cobbler']['redhat']['management']['type']
   bash 'cobbler-rhel-mgt' do
     user 'root'
     code <<-EOH
@@ -64,8 +64,8 @@ end
 # Set up a default system - you will need to add the information via cobbler system edit on the cli to match your environment
 # Also, do cobbler system add for every ceph node with mac, IP, etc OR modify the json data used by cobbler and then restart cobbler
 node['chef-bcs']['cobbler']['servers'].each do | server |
-  if !server.include? 'bootstrap'
-    bash "add-to-cobbler" do
+  if !server.roles.include? 'bootstrap'
+    bash 'add-to-cobbler' do
       user 'root'
       code <<-EOH
         cobbler system add --name=#{server['name']} --profile=#{server['profile']} --static=true --interface=#{server['network']['public']['interface']} --mac=#{server['network']['public']['mac']} --ip-address=#{server['network']['public']['ip']} --netmask=#{server['network']['public']['netmask']} --if-gateway=#{server['network']['public']['gateway']} --hostname=#{server['name']} --mtu=#{server['network']['public']['mtu']}
@@ -82,3 +82,25 @@ execute 'cobbler-sync' do
   command lazy{ "cobbler sync" }
   only_if "test -f /tmp/#{node['chef-bcs']['cobbler']['os']['distro']}"
 end
+
+# NOTE: The /tmp/postinstall must exist
+execute 'tar-postinstall' do
+  command lazy { "tar -zcvf /var/www/cobbler/pub/postinstall.tar.gz /tmp/postinstall/" }
+  not_if "test -f /var/www/cobbler/pub/postinstall.tar.gz"
+end
+
+# Get the validate.pem and install client.rb into /var/www/cobbler/pub
+bash 'copy-chef-node' do
+  user 'root'
+  code <<-EOH
+    sudo cp /etc/chef/validation.pem /var/www/cobbler/pub/validation.pem
+    sudo chmod 0755 /var/www/cobbler/pub/validation.pem
+  EOH
+end
+
+template '/var/www/cobbler/pub/client.rb' do
+  source 'client.rb.erb'
+end
+
+# NOTE: The kickstart process creates the directores, wgets the files to the node's /etc/chef and sets the permissions.
+# It then runs chef-client to verify

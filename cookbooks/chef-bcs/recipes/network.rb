@@ -21,6 +21,8 @@
 # NOTE: If using VirtualBox then keep the mtu at 1500. There seems to be odd behavior on the cluster adapter if set to 9000.
 # This does not apply to real nics.
 
+# NOTE: TODO: Need to look at 1U and 2U version since the interface names are different. The good news is Cobbler handles
+# it so it's really no longer needed except maybe for maintenance.
 execute 'network-public' do
   command lazy { "ip link set dev #{node['chef-bcs']['network']['public']['interface']} mtu #{node['chef-bcs']['network']['public']['mtu']}" }
   not_if "ip link show dev #{node['chef-bcs']['network']['public']['interface']} | grep 'mtu #{node['chef-bcs']['network']['public']['mtu']}'"

@@ -5,20 +5,30 @@
 
 ########## MODIFY SECTION ##########
 
+# Raid 1
 part raid.01 --size=1024  --ondisk=sda
-part raid.02 --size=10000 --ondisk=sda
-part raid.03 --size=20000 --ondisk=sda
-part raid.04 --size=8000  --ondisk=sda
+part raid.02 --size=20000 --ondisk=sda
+part raid.03 --size=30000 --ondisk=sda
+part raid.04 --size=50000 --ondisk=sda
+part raid.05 --size=30000 --ondisk=sda
+part raid.06 --size=60000 --ondisk=sda
+part raid.07 --size=20000 --ondisk=sda
 
-part raid.05 --size=1024  --ondisk=sdb
-part raid.06 --size=10000 --ondisk=sdb
-part raid.07 --size=20000 --ondisk=sdb
-part raid.08 --size=8000  --ondisk=sdb
+part raid.08 --size=1024  --ondisk=sdb
+part raid.09 --size=20000 --ondisk=sdb
+part raid.10 --size=30000 --ondisk=sdb
+part raid.11 --size=50000 --ondisk=sdb
+part raid.12 --size=30000 --ondisk=sdb
+part raid.13 --size=60000 --ondisk=sdb
+part raid.14 --size=20000 --ondisk=sdb
 
-raid /boot    --level=RAID1 --device=md0 --fstype=xfs  raid.01 raid.05
-raid /        --level=RAID1 --device=md1 --fstype=xfs  raid.02 raid.06
-raid /var/lib --level=RAID1 --device=md2 --fstype=xfs  raid.03 raid.07
-raid swap     --level=RAID1 --device=md3 --fstype=swap raid.04 raid.08
+raid /boot      --level=RAID1 --device=md0 --fstype=xfs  raid.01 raid.08
+raid /          --level=RAID1 --device=md1 --fstype=xfs  raid.02 raid.09
+raid /var/lib   --level=RAID1 --device=md2 --fstype=xfs  raid.03 raid.10
+raid /var/www   --level=RAID1 --device=md3 --fstype=xfs  raid.04 raid.11
+raid /opt       --level=RAID1 --device=md4 --fstype=xfs  raid.05 raid.12
+raid /var/chef  --level=RAID1 --device=md5 --fstype=xfs  raid.06 raid.13
+raid swap       --level=RAID1 --device=md6 --fstype=swap raid.07 raid.14
 
 ####################################
 # Whatever is not found below then Cobbler 'fills in' the missing pieces such as networking.
@@ -125,10 +135,6 @@ $SNIPPET('log_ks_post_nochroot')
 # Logging is set up if needed
 exec 1>/mnt/sysimage/root/kickstart-stage1.log 2>&1
 
-echo "==> copying files from media to install drive..."
-cp -r /run/install/repo/postinstall /mnt/sysimage/tmp
-find /mnt/sysimage/tmp -name TRANS.TBL -exec rm -f {} \;
-
 mkdir /mnt/sysimage/ceph-files
 mkdir /mnt/sysimage/ceph-host
 
@@ -156,6 +162,11 @@ $SNIPPET('kickstart_done')
 #!/bin/sh
 set -x
 
+# With Cobbler, you can't simply cp files in --nochroot like you can with a mount device
+wget http://{{ node.ip }}/cblr/pub/postinstall.tar.gz -O /tmp/postinstall.tar.gz
+tar -zxvf /tmp/postinstall.tar.gz -C /
+find /tmp -name TRANS.TBL -exec rm -f {} \;
+
 groupadd {{ user.name }}
 useradd {{ user.name }} -g {{ user.name }} -G wheel
 
@@ -166,6 +177,7 @@ chown -R {{ user.name }}:{{ user.name }} /ceph-files
 chown -R {{ user.name }}:{{ user.name }} /ceph-host
 
 cat /ceph-host/bootstrap/data/environment/{{ node.environment }}/hosts >> /etc/hosts
+cp /ceph-files/gems/netaddr-1.5.0.gem /tmp/.
 
 # Allow root login to begin with. Chef recipe will disable later in process.
 sed -i "s/#PermitRootLogin yes/PermitRootLogin yes/" /etc/ssh/sshd_config
@@ -184,11 +196,12 @@ echo "%{{ user.name }} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/{{ user.name }
 sed -i "s/^[^#].*requiretty/#Defaults requiretty/" /etc/sudoers
 echo "{{ user.name }} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/{{ user.name }}
 
-{% if cobbler.kickstart.redhat.management.type %}
+{%- if cobbler.kickstart.redhat.management.type %}
 {{ cobbler.kickstart.redhat.management.commands.C1 }}
 {{ cobbler.kickstart.redhat.management.commands.C2 }}
 {{ cobbler.kickstart.redhat.management.commands.C3 }}
 {{ cobbler.kickstart.redhat.management.commands.C4 }}
+yum update -y
 # Go ahead and create a script in /tmp if the network has issues during the process.
 cat <<EOM >/tmp/rhelsub.sh
 service network restart
@@ -200,5 +213,35 @@ yum update -y
 EOM
 chmod +x /tmp/rhelsub.sh
 {% endif %}
+
+rpm -Uvh /ceph-files/{{ chef.rpms.client }}
+
+# Set up the node for chef-client
+mkdir -p /etc/chef
+mkdir -p /var/log/chef
+wget http://{{ node.ip }}/cblr/pub/client.pem -O /etc/chef/client.pem
+wget http://{{ node.ip }}/cblr/pub/validation.pem -O /etc/chef/validation.pem
+wget http://{{ node.ip }}/cblr/pub/client.rb -O /etc/chef/client.rb
+chmod 0600 /etc/chef/validation.pem
+chmod 0644 /etc/chef/client.rb
+knife ssl fetch -c /etc/chef/client.rb
+chef-client
+
+cat <<EOM >/tmp/chef-enroll.sh
+yum update -y
+rpm -Uvh /ceph-files/{{ chef.rpms.client }}
+
+# Set up the node for chef-client
+mkdir -p /etc/chef
+mkdir -p /var/log/chef
+wget http://{{ node.ip }}/cblr/pub/client.pem -O /etc/chef/client.pem
+wget http://{{ node.ip }}/cblr/pub/validation.pem -O /etc/chef/validation.pem
+wget http://{{ node.ip }}/cblr/pub/client.rb -O /etc/chef/client.rb
+chmod 0600 /etc/chef/validation.pem
+chmod 0644 /etc/chef/client.rb
+knife ssl fetch -c /etc/chef/client.rb
+chef-client
+EOM
+
 # End final steps
 %end

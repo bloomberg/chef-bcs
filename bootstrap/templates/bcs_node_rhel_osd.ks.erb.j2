@@ -9,8 +9,7 @@ eula --agreed
 
 # System bootloader configuration
 # Use grub2-mkpasswd-pbkdf2 to generate cryptic password for security
-# bootloader --append=" crashkernel=auto" --location=mbr --boot-drive=sda --iscrypted --password={{ bootloader_pwd }}
-bootloader --append=" crashkernel=auto" --location=mbr --boot-drive=sda <%= node['chef-bcs']['cobbler']['kickstart']['bootloader']['passwd_type'] %> <%= node['chef-bcs']['cobbler']['kickstart']['bootloader']['passwd'] %>
+bootloader --append=" crashkernel=auto" --location=mbr --boot-drive=sdm <%= node['chef-bcs']['cobbler']['kickstart']['bootloader']['passwd_type'] %> <%= node['chef-bcs']['cobbler']['kickstart']['bootloader']['passwd'] %>
 
 # Partition clearing information
 clearpart --all --initlabel
@@ -114,10 +113,6 @@ $SNIPPET('log_ks_post_nochroot')
 # Logging is set up if needed
 exec 1>/mnt/sysimage/root/kickstart-stage1.log 2>&1
 
-echo "==> copying files from media to install drive..."
-cp -r /run/install/repo/postinstall /mnt/sysimage/tmp
-find /mnt/sysimage/tmp -name TRANS.TBL -exec rm -f {} \;
-
 mkdir /mnt/sysimage/ceph-files
 mkdir /mnt/sysimage/ceph-host
 
@@ -145,6 +140,11 @@ $SNIPPET('kickstart_done')
 #!/bin/sh
 set -x
 
+# With Cobbler, you can't simply cp files in --nochroot like you can with a mount device
+wget http://{{ node.ip }}/cblr/pub/postinstall.tar.gz -O /tmp/postinstall.tar.gz
+tar -zxvf /tmp/postinstall.tar.gz -C /
+find /tmp -name TRANS.TBL -exec rm -f {} \;
+
 groupadd {{ user.name }}
 useradd {{ user.name }} -g {{ user.name }} -G wheel
 
@@ -155,6 +155,7 @@ chown -R {{ user.name }}:{{ user.name }} /ceph-files
 chown -R {{ user.name }}:{{ user.name }} /ceph-host
 
 cat /ceph-host/bootstrap/data/environment/{{ node.environment }}/hosts >> /etc/hosts
+cp /ceph-files/gems/netaddr-1.5.0.gem /tmp/.
 
 # Allow root login to begin with. Chef recipe will disable later in process.
 sed -i "s/#PermitRootLogin yes/PermitRootLogin yes/" /etc/ssh/sshd_config
@@ -173,11 +174,12 @@ echo "%{{ user.name }} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/{{ user.name }
 sed -i "s/^[^#].*requiretty/#Defaults requiretty/" /etc/sudoers
 echo "{{ user.name }} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/{{ user.name }}
 
-{% if cobbler.kickstart.redhat.management.type %}
+{%- if cobbler.kickstart.redhat.management.type %}
 {{ cobbler.kickstart.redhat.management.commands.C1 }}
 {{ cobbler.kickstart.redhat.management.commands.C2 }}
 {{ cobbler.kickstart.redhat.management.commands.C3 }}
 {{ cobbler.kickstart.redhat.management.commands.C4 }}
+yum update -y
 # Go ahead and create a script in /tmp if the network has issues during the process.
 cat <<EOM >/tmp/rhelsub.sh
 service network restart
@@ -189,5 +191,33 @@ yum update -y
 EOM
 chmod +x /tmp/rhelsub.sh
 {% endif %}
+
+rpm -Uvh /ceph-files/{{ chef.rpms.client }}
+
+# Set up the node for chef-client
+mkdir -p /etc/chef
+mkdir -p /var/log/chef
+wget http://{{ node.ip }}/cblr/pub/validation.pem -O /etc/chef/validation.pem
+wget http://{{ node.ip }}/cblr/pub/client.rb -O /etc/chef/client.rb
+chmod 0600 /etc/chef/validation.pem
+chmod 0644 /etc/chef/client.rb
+knife ssl fetch -c /etc/chef/client.rb
+chef-client
+
+cat <<EOM >/tmp/chef-enroll.sh
+yum update -y
+rpm -Uvh /ceph-files/{{ chef.rpms.client }}
+
+# Set up the node for chef-client
+mkdir -p /etc/chef
+mkdir -p /var/log/chef
+wget http://{{ node.ip }}/cblr/pub/validation.pem -O /etc/chef/validation.pem
+wget http://{{ node.ip }}/cblr/pub/client.rb -O /etc/chef/client.rb
+chmod 0600 /etc/chef/validation.pem
+chmod 0644 /etc/chef/client.rb
+knife ssl fetch -c /etc/chef/client.rb
+chef-client
+EOM
+
 # End final steps
 %end
