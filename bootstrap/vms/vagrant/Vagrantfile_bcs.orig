@@ -16,6 +16,9 @@
 # limitations under the License.
 #
 
+# BCS
+# IMPORTANT: This Vagrantfile must be copied FROM Vagrantfile_bcs
+
 # This is a Vagrantfile to automatically provision a local ceph cluster.
 
 # NOTE: At the time this project started, the Vagrant fedora plugin seemed to have a bug in it's networking
@@ -78,14 +81,14 @@ unless $http_proxy_server.nil? or $http_proxy_server.empty?
         $bootstrap_node_name = servers.select { |k| k["roles"] == ["bootstrap"] }[0]["name"]
         $proxy_configuration_script << <<-EOH
             echo 'Defaults    env_keep += "http_proxy https_proxy no_proxy SSL_CERT_FILE"' | sudo tee -a /etc/sudoers
-            echo 'export http_proxy=http://#{$http_proxy_server}' | sudo tee -a /etc/profile
-            echo 'export https_proxy=https://#{$https_proxy_server}' | sudo tee -a /etc/profile
+            echo 'export http_proxy=#{$http_proxy_server}' | sudo tee -a /etc/profile
+            echo 'export https_proxy=#{$https_proxy_server}' | sudo tee -a /etc/profile
             echo 'export no_proxy=127.0.0.1,#{$bootstrap_node_name}.#{$domain}' | sudo tee -a /etc/profile
-            echo 'proxy=http://#{$http_proxy_server};' | sudo tee -a /etc/yum.conf
+            echo 'proxy=#{$http_proxy_server};' | sudo tee -a /etc/yum.conf
             echo 'export http_proxy=#{$http_proxy_server}' | tee -a $HOME/proxy_config.sh
         EOH
     end
-    $proxy_string = "export CEPH_CHEF_HTTP_PROXY=http://#{$http_proxy_server}\nexport CEPH_CHEF_HTTPS_PROXY=https://#{$https_proxy_server}\n"
+    $proxy_string = "export CEPH_CHEF_HTTP_PROXY=#{$http_proxy_server}\nexport CEPH_CHEF_HTTPS_PROXY=#{$https_proxy_server}\n"
 end
 
 # custom SSL CA cert support
@@ -149,6 +152,7 @@ $mon_hosts_string = "export CEPH_MON_HOSTS=( "
 $mds_hosts_string = "export CEPH_MDS_HOSTS=( "
 $rgw_hosts_string = "export CEPH_RGW_HOSTS=( "
 $admin_hosts_string = "export CEPH_ADMIN_HOSTS=( "
+$adc_hosts_string = "export CEPH_ADC_HOSTS=( "
 
 # admin_hosts also contain the ceph-rest-api node
 
@@ -204,6 +208,14 @@ servers.each do |server|
   end
 end
 $admin_hosts_string  += ")\n"
+
+# Build adc hosts File
+servers.each do |server|
+  if server['roles'].include? 'adc'
+    $adc_hosts_string += "#{server['name']} "
+  end
+end
+$adc_hosts_string  += ")\n"
 
 # End of environment related file builds.
 
@@ -346,6 +358,7 @@ Vagrant.configure("2") do |config|
             File.open("#{$path}/ceph_chef_mds_hosts.env", "w") { |file| file.write($mds_hosts_string) }
             File.open("#{$path}/ceph_chef_rgw_hosts.env", "w") { |file| file.write($rgw_hosts_string) }
             File.open("#{$path}/ceph_chef_admin_hosts.env", "w") { |file| file.write($admin_hosts_string) }
+            File.open("#{$path}/ceph_chef_adc_hosts.env", "w") { |file| file.write($adc_hosts_string) }
         end
 
       end # config.vm.define
