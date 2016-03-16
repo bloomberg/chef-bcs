@@ -14,6 +14,7 @@
     - osd
     - rgw
     - admin
+    - adc
   front_end_ip: 10.121.1.3
   back_end_ip: 10.121.2.3
 - name: ceph-vm2
@@ -22,11 +23,13 @@
     - osd
     - rgw
     - admin
+    - adc
   front_end_ip: 10.121.1.4
   back_end_ip: 10.121.2.4
 - name: ceph-vm3
   roles:
     - mon
     - osd
+    - adc
   front_end_ip: 10.121.1.5
   back_end_ip: 10.121.2.5

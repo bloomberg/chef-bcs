@@ -3,6 +3,11 @@
 ## Start:
 Simply call **./CEPH_UP** in *this* directory to start the build process.
 
+NOTE: If you're behind a proxy then call ./CEPH_UP with a -p option like so:
+./CEPH_UP -p http://proxy.whatever_my_domain.com:81
+
+Make sure to include the trailing port number if different than the default of 80.
+
 ## Possible issues and work arounds
 ## Network:
 This is VirtualBox related. Scenario: If you build the VMs while connected to one network and then later try to do things that use the network (yum installs etc) then you may see that there appears to be no connection. This usually relates to the bridge device on the VMs. The easiest way around it is to run the following from your laptop/host:

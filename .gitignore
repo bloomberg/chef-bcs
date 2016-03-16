@@ -14,8 +14,7 @@
 # limitations under the License.
 #
 
-/bootstrap/data/environment/*
-!/bootstrap/data/environment/test-laptop/*
+.DS_Store
 ceph-chef/
 .idea/
 .iml/
