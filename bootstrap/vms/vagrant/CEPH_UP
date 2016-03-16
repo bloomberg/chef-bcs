@@ -37,7 +37,7 @@ echo "--------------------------------------------"
 echo "Bootstrapping local CEPH environment using Vagrant..."
 echo
 
-while getopts cbsvdo:t: opt; do
+while getopts cbsvdp:o:t: opt; do
     case $opt in
         b)
             BUILD_VMS_ONLY=1
@@ -51,6 +51,10 @@ while getopts cbsvdo:t: opt; do
             ;;
         o)
             BOOTSTRAP_OS=$OPTARG
+            ;;
+        p)
+            BOOTSTRAP_HTTP_PROXY=$OPTARG
+            BOOTSTRAP_HTTPS_PROXY=$OPTARG
             ;;
         s)
             BOOTSTRAP_SKIP_VMS=1
@@ -75,6 +79,9 @@ cp Vagrantfile_bcs Vagrantfile
 
 export CHEF_KNIFE_DEBUG=${CHEF_KNIFE_DEBUG:-""}
 export CHEF_CLIENT_DEBUG=${CHEF_CLIENT_DEBUG:-""}
+
+export BOOTSTRAP_HTTP_PROXY=${BOOTSTRAP_HTTP_PROXY:-}
+export BOOTSTRAP_HTTPS_PROXY=${BOOTSTRAP_HTTPS_PROXY:-}
 
 # Override for other environments like production, staging etc.
 export BOOTSTRAP_CHEF_ENV=${BOOTSTRAP_CHEF_ENV:-"vagrant"}

@@ -11,3 +11,5 @@ Once you place the cert(s) in this directory then you *must* update /bootstrap/v
 **ssl_ca_intermediate_file_path:**
 
 Also, you may need to update the proxy items in the same file to represent your proxy settings if you use proxies.
+
+The *.pem file(s) need to be copied into this directory. The .gitignore will not push the certs which is a good thing (please do not attempt to push any *.pem or *.crt files upstream)!
