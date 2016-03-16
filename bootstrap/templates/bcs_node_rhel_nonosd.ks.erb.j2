@@ -1,0 +1,248 @@
+####################################
+# kickstart template for Chef-BCS Nodes that are NON-OSD nodes. If the node is a converged node where the node serves
+# multiple roles such as OSD, MON, RGW then the other kickstart for OSD should be used. This is for stand alone
+# MON, MDS, RGW nodes.
+
+########## MODIFY SECTION ##########
+
+# Raid 1
+part raid.01 --size=1024  --ondisk=sda
+part raid.02 --size=20000 --ondisk=sda
+part raid.03 --size=30000 --ondisk=sda
+part raid.04 --size=50000 --ondisk=sda
+part raid.05 --size=30000 --ondisk=sda
+part raid.06 --size=60000 --ondisk=sda
+part raid.07 --size=20000 --ondisk=sda
+
+part raid.08 --size=1024  --ondisk=sdb
+part raid.09 --size=20000 --ondisk=sdb
+part raid.10 --size=30000 --ondisk=sdb
+part raid.11 --size=50000 --ondisk=sdb
+part raid.12 --size=30000 --ondisk=sdb
+part raid.13 --size=60000 --ondisk=sdb
+part raid.14 --size=20000 --ondisk=sdb
+
+raid /boot      --level=RAID1 --device=md0 --fstype=xfs  raid.01 raid.08
+raid /          --level=RAID1 --device=md1 --fstype=xfs  raid.02 raid.09
+raid /var/lib   --level=RAID1 --device=md2 --fstype=xfs  raid.03 raid.10
+raid /var/www   --level=RAID1 --device=md3 --fstype=xfs  raid.04 raid.11
+raid /opt       --level=RAID1 --device=md4 --fstype=xfs  raid.05 raid.12
+raid /var/chef  --level=RAID1 --device=md5 --fstype=xfs  raid.06 raid.13
+raid swap       --level=RAID1 --device=md6 --fstype=swap raid.07 raid.14
+
+####################################
+# Whatever is not found below then Cobbler 'fills in' the missing pieces such as networking.
+
+# System authorization information
+auth  --enableshadow  --passalgo=sha512
+
+eula --agreed
+
+# System bootloader configuration
+# Use grub2-mkpasswd-pbkdf2 to generate cryptic password for security
+# bootloader --append=" crashkernel=auto" --location=mbr --boot-drive=sda --iscrypted --password={{ bootloader_pwd }}
+bootloader --location=mbr <%= node['chef-bcs']['cobbler']['kickstart']['bootloader']['passwd_type'] %> <%= node['chef-bcs']['cobbler']['kickstart']['bootloader']['passwd'] %>
+
+# Partition clearing information
+clearpart --all --initlabel
+
+# Use text mode install
+text
+
+# Firewall configuration
+firewall --disable
+
+# Run the Setup Agent on first boot
+firstboot --disable
+
+# System keyboard
+keyboard us
+
+# System language
+lang en_US
+
+# If any cobbler repo definitions were referenced in the kickstart profile, include them here.
+$yum_repo_stanza
+# Network information
+$SNIPPET('network_config')
+
+# Reboot after installation
+reboot
+
+# To create encrypted pwd: python -c 'import crypt; print(crypt.crypt("password", "$6$Salt"))' - Make 'password' whatever password you want and then run the python script
+# For example: vagrant password would be $6$Salt$6AyUczFy6SgV8A2wKAKfA9drpzrUsTGPJ3QjcWBbgS97BxBO.C7ZcBFALRiRkKfi9x8MK2SHet38BCQWS9LsR/
+#Root password
+rootpw <%= node['chef-bcs']['cobbler']['kickstart']['root']['passwd_type'] %> <%= node['chef-bcs']['cobbler']['kickstart']['root']['passwd'] %>
+
+#User(s)
+<% node['chef-bcs']['cobbler']['kickstart']['users'].each do | usr | %>
+user --name=<%= usr['name'] %> <%= usr['passwd_type'] %> --password=<%= usr['passwd'] %> --shell=<%= usr['shell'] %> --gecos="<%= usr['comment'] %>" --groups=<%= usr['groups'] %>
+<% end -%>
+
+# SELinux configuration
+selinux --permissive
+
+# Do not configure the X Window System
+skipx
+
+# System timezone
+timezone UTC --isUtc --ntpservers={{ ntp[0] }},{{ ntp[1] }}
+
+# Install OS instead of upgrade
+install
+
+# Use network installation
+url --url=$tree
+
+# Clear the Master Boot Record
+zerombr
+
+%pre
+$SNIPPET('log_ks_pre')
+$SNIPPET('autoinstall_start')
+$SNIPPET('pre_install_network_config')
+# Enable installation monitoring
+$SNIPPET('pre_anamon')
+%end
+
+%packages --nobase --ignoremissing
+<% if node['chef-bcs']['cobbler']['os']['name'] == 'centos-7' %>
+# CentOS
+@Infrastructure Server
+# CentOS end
+<% else %>
+# RHEL begin
+@^infrastructure-server-environment
+# RHEL end
+<% end -%>
+wget
+curl
+iputils
+net-tools
+ntp
+ntpdate
+parted
+kexec-tools
+vim
+tmux
+git
+%end
+
+%post --nochroot
+$SNIPPET('log_ks_post_nochroot')
+# Logging is set up if needed
+exec 1>/mnt/sysimage/root/kickstart-stage1.log 2>&1
+
+mkdir /mnt/sysimage/ceph-files
+mkdir /mnt/sysimage/ceph-host
+
+%end
+
+%post --log=/root/kickstart-stage2.log
+$SNIPPET('log_ks_post')
+
+# Start yum configuration
+$yum_config_stanza
+# End yum configuration
+
+$SNIPPET('post_install_kernel_options')
+$SNIPPET('post_install_network_config')
+$SNIPPET('download_config_files')
+$SNIPPET('koan_environment')
+$SNIPPET('redhat_register')
+$SNIPPET('cobbler_register')
+# Enable post-install boot notification
+$SNIPPET('post_anamon')
+# Start final steps
+# Sets the --netboot flag for the host on cobbler
+$SNIPPET('kickstart_done')
+
+#!/bin/sh
+set -x
+
+# With Cobbler, you can't simply cp files in --nochroot like you can with a mount device
+wget http://{{ node.ip }}/cblr/pub/postinstall.tar.gz -O /tmp/postinstall.tar.gz
+tar -zxvf /tmp/postinstall.tar.gz -C /
+find /tmp -name TRANS.TBL -exec rm -f {} \;
+
+groupadd {{ user.name }}
+useradd {{ user.name }} -g {{ user.name }} -G wheel
+
+cp -R /tmp/postinstall/ceph-files/* /ceph-files/.
+cp -R /tmp/postinstall/ceph-host/* /ceph-host/.
+
+chown -R {{ user.name }}:{{ user.name }} /ceph-files
+chown -R {{ user.name }}:{{ user.name }} /ceph-host
+
+cat /ceph-host/bootstrap/data/environment/{{ node.environment }}/hosts >> /etc/hosts
+cp /ceph-files/gems/netaddr-1.5.1.gem /tmp/.
+chown {{ user.name }}:{{ user.name }} /tmp/netaddr-1.5.1.gem
+
+# Allow root login to begin with. Chef recipe will disable later in process.
+sed -i "s/#PermitRootLogin yes/PermitRootLogin yes/" /etc/ssh/sshd_config
+sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
+
+# Add a public key here to authorized_keys but make sure to set permission to 0600
+mkdir --mode=0700 -p /home/{{ user.name }}/.ssh
+cat <<EOM >/home/{{ user.name }}/.ssh/authorized_keys
+{{ user.key }}
+EOM
+chmod 0600 /home/{{ user.name }}/.ssh/authorized_keys
+chown -R {{ user.name }}:{{ user.group }} /home/{{ user.name }}/.ssh
+
+# Setup sudoer
+echo "%{{ user.name }} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/{{ user.name }}
+sed -i "s/^[^#].*requiretty/#Defaults requiretty/" /etc/sudoers
+echo "{{ user.name }} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/{{ user.name }}
+
+{%- if cobbler.kickstart.redhat.management.type %}
+{{ cobbler.kickstart.redhat.management.commands.C1 }}
+{{ cobbler.kickstart.redhat.management.commands.C2 }}
+{{ cobbler.kickstart.redhat.management.commands.C3 }}
+{{ cobbler.kickstart.redhat.management.commands.C4 }}
+yum update -y
+# Go ahead and create a script in /tmp if the network has issues during the process.
+cat <<EOM >/tmp/rhelsub.sh
+service network restart
+{{ cobbler.kickstart.redhat.management.commands.C1 }}
+{{ cobbler.kickstart.redhat.management.commands.C2 }}
+{{ cobbler.kickstart.redhat.management.commands.C3 }}
+{{ cobbler.kickstart.redhat.management.commands.C4 }}
+yum update -y
+EOM
+chmod +x /tmp/rhelsub.sh
+{% endif %}
+
+rpm -Uvh /ceph-files/{{ chef.rpms.client }}
+
+# Set up the node for chef-client
+mkdir -p /etc/chef
+mkdir -p /var/log/chef
+wget http://{{ node.ip }}/cblr/pub/validation.pem -O /etc/chef/validation.pem
+wget http://{{ node.ip }}/cblr/pub/client.rb -O /etc/chef/client.rb
+chmod 0600 /etc/chef/validation.pem
+chmod 0644 /etc/chef/client.rb
+knife ssl fetch -c /etc/chef/client.rb
+chef-client
+/opt/chef/embedded/bin/gem install --force --local /tmp/netaddr-1.5.1.gem
+
+cat <<EOM >/tmp/chef-enroll.sh
+yum update -y
+rpm -Uvh /ceph-files/{{ chef.rpms.client }}
+
+# Set up the node for chef-client
+mkdir -p /etc/chef
+mkdir -p /var/log/chef
+wget http://{{ node.ip }}/cblr/pub/validation.pem -O /etc/chef/validation.pem
+wget http://{{ node.ip }}/cblr/pub/client.rb -O /etc/chef/client.rb
+chmod 0600 /etc/chef/validation.pem
+chmod 0644 /etc/chef/client.rb
+knife ssl fetch -c /etc/chef/client.rb
+chef-client
+/opt/chef/embedded/bin/gem install --force --local /tmp/netaddr-1.5.1.gem
+EOM
+
+chmod +x /tmp/chef-enroll.sh
+
+# End final steps
+%end

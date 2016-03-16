@@ -7,6 +7,69 @@
   "chef_type": "environment",
   "override_attributes": {
     "chef-bcs": {
+      "bootstrap": {
+        "name": "ceph-bootstrap",
+        "env": "/home/vagrant/chef-bcs/environments",
+        "interfaces": [
+          {"name": "enp0s8", "ip": "10.121.1.2", "netmask": "255.255.255.0", "gateway": ""},
+          {"name": "enp0s9", "ip": "10.121.2.2", "netmask": "255.255.255.0", "gateway": ""}
+        ]
+      },
+      "adc": {
+        "tag": "ceph-adc",
+        "interface": "enp0s8",
+        "stats": {
+          "enable": true,
+          "user": "haproxy",
+          "passwd": "haproxy",
+          "port": 1936
+        },
+        "bond": {
+          "enable": false,
+          "name": "bond0",
+          "type": "Ethernet",
+          "mtu": 1500,
+          "interfaces": ["enp0s8", "enp0s9"],
+          "options": "mode=4 miimon=100 xmit_hash_policy=layer2+3",
+          "vbox_options": "mode=1 miimon=100 fail_over_mac=1",
+          "nm_controlled": "no"
+        },
+        "connections": {
+          "max": 8000,
+          "balance": "roundrobin"
+        },
+        "ssl": {
+          "path": "/etc/ssl/private",
+          "pem": "s3.adc.pem"
+        },
+        "vip": {
+          "port": {
+            "ssl": 443,
+            "non_ssl": 80
+          }
+        },
+        "vips": [
+          {"name": "admin", "ip": "10.121.16.17", "cidr": 28, "interface": "enp0s8"},
+          {"name": "prod", "ip": "10.121.16.18", "cidr": 28, "interface": "enp0s8"},
+          {"name": "dev", "ip": "10.121.16.19", "cidr": 28, "interface": "enp0s8"}
+        ],
+        "NOTE-VIP": "VIPS are 10.121.16.16/28 range (.17 - .30). Advertised via BGP",
+        "backend": {
+          "servers": [
+            {"name": "ceph-vm1", "weight": 6, "port": 8080, "options": "check inter 2s rise 2 fall 3"},
+            {"name": "ceph-vm2", "weight": 3, "port": 8080, "options": "check inter 2s rise 2 fall 3"}
+          ]
+        }
+      },
+      "keepalived": {
+        "passwd": "keepalived",
+        "checks": true,
+        "servers": [
+          {"name": "ceph-vm1", "weight": 5, "interface": "enp0s8", "priority": 98, "router-id": 25},
+          {"name": "ceph-vm2", "weight": 5, "interface": "enp0s8", "priority": 100, "router-id": 50},
+          {"name": "ceph-vm3", "weight": 5, "interface": "enp0s8", "priority": 99, "router-id": 75}
+        ]
+      },
       "chef": {
         "owner": "vagrant",
         "group": "vagrant"
@@ -24,20 +87,22 @@
             {
               "name": "public",
               "ports": [
-                {"role": "ceph-bootstrap", "open": [80, 443, 69, 53], "ranges": [{"start": 25150, "end": 25152}]},
-                {"role": "ceph-mon", "open": [6789], "ranges": [{"start": 0, "end": 0}]},
-                {"role": "ceph-osd", "open": [], "ranges": [{"start": 6800, "end": 6872}]},
-                {"role": "ceph-rgw", "open": [80, 443], "ranges": [{"start": 8080, "end": 8084}]},
-                {"role": "ceph-restapi", "open": [5000, 5080], "ranges": [{"start": 0, "end": 0}]},
-                {"role": "ceph-admin", "open": [], "ranges": [{"start": 0, "end": 0}]},
-                {"role": "ceph-mds", "open": [6800], "ranges": [{"start": 6800, "end": 6872}]},
-                {"role": "ceph-rbd", "open": [], "ranges": [{"start": 0, "end": 0}]}
+                {"role": "ceph-bootstrap", "open": [{"port": 123, "protocol": "udp"}, {"port": 80, "protocol": "tcp"}, {"port": 443, "protocol": "tcp"}, {"port": 67, "protocol": "udp"}, {"port": 69, "protocol": "udp"}, {"port": 21, "protocol": "tcp"}, {"port": 4011, "protocol": "udp"}, {"port": 53, "protocol": "udp"}], "ranges": [{"start": 25150, "end": 25152, "protocol": "tcp"}]},
+                {"role": "ceph-mon", "open": [{"port": 6789, "protocol": "tcp"}], "ranges": [{"start": 0, "end": 0, "protocol": "tcp"}]},
+                {"role": "ceph-osd", "open": [], "ranges": [{"start": 6800, "end": 6872, "protocol": "tcp"}]},
+                {"role": "ceph-rgw", "open": [8080], "ranges": [{"start": 0, "end": 0, "protocol": "tcp"}]},
+                {"role": "ceph-restapi", "open": [{"port": 5080, "protocol": "tcp"}], "ranges": [{"start": 0, "end": 0, "protocol": "tcp"}]},
+                {"role": "ceph-admin", "open": [], "ranges": [{"start": 0, "end": 0, "protocol": "tcp"}]},
+                {"role": "ceph-mds", "open": [], "ranges": [{"start": 6800, "end": 6872, "protocol": "tcp"}]},
+                {"role": "ceph-rbd", "open": [], "ranges": [{"start": 0, "end": 0, "protocol": "tcp"}]},
+                {"role": "haproxy", "open": [{"port": 80, "protocol": "tcp"}, {"port": 443, "protocol": "tcp"},{"port": 1936, "protocol": "tcp"}], "ranges": [{"start": 0, "end": 0, "protocol": "tcp"}]},
+                {"role": "keepalived", "open": [{"port": 112, "protocol": "tcp"}], "ranges": [{"start": 0, "end": 0, "protocol": "tcp"}]}
               ]
             },
             {
               "name": "cluster",
               "ports": [
-                {"role": "ceph-osd", "open": [], "ranges": [{"start": 6800, "end": 6872}]}
+                {"role": "ceph-osd", "open": [], "ranges": [{"start": 6800, "end": 6872, "protocol": "tcp"}]}
               ]
             }
           ],
@@ -111,48 +176,96 @@
           {"name": "ceph_osd_node", "file_type": "osd", "comment": "OSD type nodes either dedicated OSD or converged with other services like MON and RGW."},
           {"name": "ceph_non_osd_node", "file_type": "nonosd", "comment": "NON-OSD type nodes. Services like MON, RGW or MDS."}
         ],
-        "systems": [
+        "servers": [
           {
-            "name": "ceph-mon1",
-            "profile": "ceph_non_osd_node",
+            "name": "ceph-bootstrap",
+            "roles": ["bootstrap", "adc"],
+            "profile": "",
             "network": {
               "public": {
-                "interface": "enp0s8",
+                "interface": "enp0s3",
                 "mac": "08:00:27:E3:84:01",
                 "ip": "10.121.1.3",
                 "netmask": "255.255.255.0",
                 "gateway": "10.121.1.2",
-                "mtu": 9000
+                "mtu": 1500
               },
               "cluster": {
-                "interface": "enp0s9",
-                "mac": "08:00:27:86:A4:54",
+                "interface": "enp0s8",
+                "mac": "08:00:27:3E:CB:B0",
                 "ip": "10.121.2.3",
                 "netmask": "255.255.255.0",
                 "gateway": "10.121.2.2",
-                "mtu": 9000
+                "mtu": 1500
               }
             }
           },
           {
-            "name": "ceph-mon2",
+            "name": "ceph-vm1",
+            "roles": ["mon", "rgw", "osd", "adc", "admin"],
             "profile": "ceph_non_osd_node",
             "network": {
               "public": {
+                "interface": "enp0s3",
+                "mac": "08:00:27:E3:84:01",
+                "ip": "10.121.1.3",
+                "netmask": "255.255.255.0",
+                "gateway": "10.121.1.2",
+                "mtu": 1500
+              },
+              "cluster": {
                 "interface": "enp0s8",
-                "mac": "08:00:27:2A:BF:BD",
+                "mac": "08:00:27:3E:CB:B0",
+                "ip": "10.121.2.3",
+                "netmask": "255.255.255.0",
+                "gateway": "10.121.2.2",
+                "mtu": 1500
+              }
+            }
+          },
+          {
+            "name": "ceph-vm2",
+            "roles": ["mon", "rgw", "osd", "adc", "admin"],
+            "profile": "ceph_non_osd_node",
+            "network": {
+              "public": {
+                "interface": "enp0s3",
+                "mac": "08:00:27:EB:EC:61",
                 "ip": "10.121.1.4",
                 "netmask": "255.255.255.0",
                 "gateway": "10.121.1.2",
-                "mtu": 9000
+                "mtu": 1500
               },
               "cluster": {
-                "interface": "enp0s9",
-                "mac": "08:00:27:14:D5:01",
+                "interface": "enp0s8",
+                "mac": "08:00:27:C5:9F:40",
                 "ip": "10.121.2.4",
                 "netmask": "255.255.255.0",
                 "gateway": "10.121.2.2",
-                "mtu": 9000
+                "mtu": 1500
+              }
+            }
+          },
+          {
+            "name": "ceph-vm3",
+            "roles": ["mon", "rgw", "osd", "adc", "admin"],
+            "profile": "ceph_non_osd_node",
+            "network": {
+              "public": {
+                "interface": "enp0s3",
+                "mac": "08:00:27:8B:9F:3F",
+                "ip": "10.121.1.5",
+                "netmask": "255.255.255.0",
+                "gateway": "10.121.1.2",
+                "mtu": 1500
+              },
+              "cluster": {
+                "interface": "enp0s8",
+                "mac": "08:00:27:1B:3B:E7",
+                "ip": "10.121.2.5",
+                "netmask": "255.255.255.0",
+                "gateway": "10.121.2.2",
+                "mtu": 1500
               }
             }
           }
@@ -164,7 +277,7 @@
             "gateway": "10.121.1.2"
           },
           "subnets":[
-            {"subnet": "10.121.1.0", "tag": "rack1", "dhcp_range": ["10.121.1.3", "10.121.1.254"], "netmask": "255.255.255.0", "router": "10.121.1.2"}
+            {"subnet": "10.121.1.0", "tag": "rack1", "dhcp_range": ["10.121.1.10", "10.121.1.254"], "netmask": "255.255.255.0", "router": "10.121.1.2"}
           ]
          },
         "NOTE1": "NOTE: Each subnet represents a routable rack so dhcp will need to manage each subnet with the TOR using IP-helper for dhcp requests by nodes in the given rack.",
@@ -184,10 +297,10 @@
           "xmlrpc": 25151
         },
         "os": {
-          "name": "centos-7",
+          "name": "rhel-7.2",
           "version": "7.2",
           "arch": "x86_64",
-          "distro": "centos-7-x86_64-minimal.iso",
+          "distro": "rhel-server-7.2-x86_64-dvd.iso",
           "breed": "redhat"
         },
         "redhat": {
@@ -202,11 +315,12 @@
       "ceph": {
         "cluster": "ceph",
         "repo": {
+          "create": true,
           "version": {
             "name": "hammer",
             "branch": "stable",
             "revision": "0.el7",
-            "number": "0.94.5",
+            "number": "0.94.6",
             "arch": "x86_64"
           }
         },
@@ -235,7 +349,7 @@
           "niceness": -10
         },
         "radosgw": {
-          "port": 80,
+          "port": 8080,
           "keystone": {
             "auth": false,
             "admin": {

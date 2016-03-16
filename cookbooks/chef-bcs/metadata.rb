@@ -7,10 +7,10 @@ long_description 'Installs/Configures chef-bcs - requires github.com/ceph/ceph-c
 version '0.9.7'
 
 depends "chef-client", ">= 2.2.2"
-depends "cron", ">= 1.2.2"
+depends "cron", ">= 1.7.4"
 depends "ntp", ">= 1.10.0"
 depends "ceph-chef", ">= 0.9.3"
-depends "firewall", ">= 2.4"
+# depends "firewall", ">= 2.4"
 depends "sudo", ">= 2.7.2"
 
 supports 'redhat', '>= 7.1'

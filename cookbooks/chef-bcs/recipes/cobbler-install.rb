@@ -45,6 +45,7 @@ else
   package 'pykickstart'
   package 'xinetd'
   package 'createrepo'
+  package 'fence-agents'  # power mgt for cobbler
 end
 
 package 'cobbler'
@@ -133,6 +134,10 @@ if ENV.has_key?('COBBLER_BOOTSTRAP_ISO')
     group 'root'
     mode 00444
   end
+end
+
+cookbook_file '/var/www/cobbler/pub/operations.pub' do
+  source 'operations.pub'
 end
 
 # Load the loaders simply for completness so the only thing that should ever run on the cli is the following:

@@ -36,10 +36,11 @@ else
     action [:enable, :start]
   end
   # Normally tftp will start with xinetd.
-  service 'xinetd' do
-    action [:enable, :start]
-    provider Chef::Provider::Service::Init::Redhat
-    supports :status => true, :restart => true
+  execute 'xinetd-enable' do
+    command 'sudo systemctl enable xinetd'
+  end
+  execute 'xinetd-start' do
+    command 'sudo systemctl start xinetd'
   end
   # xinetd - tftp is managed by it but there can be an issue on some systemd systems so try to start it again.
   # NOTE: tftp.socket gets enabled on some systems but tftp.service does not thus on reboot tftp may not start. If

@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Author: Chris Jones <cjones303@bloomberg.net>
-# Copyright 2015, Bloomberg Finance L.P.
+# Copyright 2016, Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -50,6 +50,11 @@ for vm in ${CEPH_ADMIN_HOSTS[@]}; do
   # NOTE: ceph-restapi can be split out later if desired
   do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE tag create $vm.$BOOTSTRAP_DOMAIN 'ceph-restapi' $CHEF_KNIFE_DEBUG"
 done
+
+# Added a tag to the last vm (can come back and change the name to a var later) for an ADC (haproxy/keepalived)
+do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE tag create ceph-vm1.ceph.example.com 'ceph-adc' $CHEF_KNIFE_DEBUG"
+do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE tag create ceph-vm2.ceph.example.com 'ceph-adc' $CHEF_KNIFE_DEBUG"
+do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE tag create ceph-vm3.ceph.example.com 'ceph-adc' $CHEF_KNIFE_DEBUG"
 
 # Just use the first VM as a radosgw node
 #do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE tag create ${CEPH_CHEF_HOSTS[@]:1:1}.$BOOTSTRAP_DOMAIN 'ceph-rgw'"

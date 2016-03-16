@@ -308,15 +308,6 @@ pxe_template_dir: "/etc/cobbler/pxe"
 # Path to where system consoles are
 consoles: "/var/consoles"
 
-# if this setting is set to 1, cobbler systems that pxe boot
-# will request at the end of their installation to toggle the
-# --netboot-enabled record in the cobbler system record.  This eliminates
-# the potential for a PXE boot loop if the system is set to PXE
-# first in it's BIOS order.  Enable this if PXE is first in your BIOS
-# boot order, otherwise leave this disabled.   See the manpage
-# for --netboot-enabled.
-pxe_just_once: 1
-
 # if this setting is set to one, triggers will be executed when systems
 # will request to toggle the --netboot-enabled record at the end of their installation.
 #nopxe_with_triggers: 1

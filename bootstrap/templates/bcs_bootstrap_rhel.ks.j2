@@ -1,0 +1,231 @@
+#######################################
+# Static for the given environment
+# kickstart file for Chef-BCS Bootstrap
+
+########## MODIFY SECTION ##########
+# To create encrypted pwd: python -c 'import crypt; print(crypt.crypt("password", "$6$Salt"))'
+# Change 'password' to whatever password you like.
+
+# Root password
+rootpw --iscrypted {{ node.root_pwd }}
+
+# User
+# Change pwd 'operations' to anything you like
+user --groups={{ user.group }} --name={{ user.name }} --iscrypted --password={{ user.passwd }}
+
+# Static NETWORK
+# NOTE: Anaconda only allows for one DNS entry (last one wins if more than one)
+{% for int in interfaces %}
+network --onboot=yes --bootproto=static --device={{ int.device }} --mtu={{ int.mtu }} --noipv6 --activate --ip={{ int.ip }} --netmask={{ int.netmask }} --gateway={{ int.gateway }} --nameserver={{ nameservers[0] }} --hostname={{ node.name }}
+{% endfor %}
+
+# Important: The bootstrap partition schema is static to the given environment
+# Raid 1
+part raid.01 --size=1024  --ondisk=sda
+part raid.02 --size=20000 --ondisk=sda
+part raid.03 --size=30000 --ondisk=sda
+part raid.04 --size=50000 --ondisk=sda
+part raid.05 --size=30000 --ondisk=sda
+part raid.06 --size=60000 --ondisk=sda
+part raid.07 --size=20000 --ondisk=sda
+
+part raid.08 --size=1024  --ondisk=sdb
+part raid.09 --size=20000 --ondisk=sdb
+part raid.10 --size=30000 --ondisk=sdb
+part raid.11 --size=50000 --ondisk=sdb
+part raid.12 --size=30000 --ondisk=sdb
+part raid.13 --size=60000 --ondisk=sdb
+part raid.14 --size=20000 --ondisk=sdb
+
+raid /boot      --level=RAID1 --device=md0 --fstype=xfs  raid.01 raid.08
+raid /          --level=RAID1 --device=md1 --fstype=xfs  raid.02 raid.09
+raid /var/lib   --level=RAID1 --device=md2 --fstype=xfs  raid.03 raid.10
+raid /var/www   --level=RAID1 --device=md3 --fstype=xfs  raid.04 raid.11
+raid /opt       --level=RAID1 --device=md4 --fstype=xfs  raid.05 raid.12
+raid /var/chef  --level=RAID1 --device=md5 --fstype=xfs  raid.06 raid.13
+raid swap       --level=RAID1 --device=md6 --fstype=swap raid.07 raid.14
+
+####################################
+
+# Install OS instead of upgrade
+# Bootstrap installs from mounted iso, not netboot like nodes kickstart
+install
+cdrom
+
+# System authorization information
+auth  --enableshadow  --passalgo=sha512
+
+# End-user agreement
+eula --agreed
+
+# System bootloader configuration
+# Use grub2-mkpasswd-pbkdf2 to generate cryptic password for security
+# bootloader --append=" crashkernel=auto" --location=mbr --boot-drive=sda --iscrypted --password={{ bootloader_pwd }}
+bootloader --append=" crashkernel=auto" --location=mbr --driveorder=sda,sdb
+
+# Partition clearing information
+clearpart --all --initlabel
+
+# Use text mode install
+text
+
+# Firewall configuration
+firewall --disabled
+
+# Run the Setup Agent on first boot
+firstboot --disable
+
+# System keyboard
+keyboard us
+
+# System language
+lang en_US
+
+# Reboot after installation
+reboot --eject
+
+# SELinux configuration
+selinux --disabled
+
+# Do not configure the X Window System
+skipx
+
+# System timezone
+timezone UTC --isUtc
+
+# Clear the Master Boot Record
+zerombr
+
+%pre
+%end
+
+%packages
+@^infrastructure-server-environment
+kexec-tools
+ipmitool
+rsync
+yum-utils
+createrepo
+vim
+git
+wget
+curl
+ntp
+tftp-server
+dnsmasq
+tmux
+genisoimage
+anaconda
+%end
+
+%post --nochroot
+# NOTE: This is the script that copies the data (i.e., ceph-files, etc) in the /tmp/build/postinstall directory of the
+# initial VM Build Server
+
+#!/bin/sh
+set -x -v
+exec 1>/mnt/sysimage/root/kickstart-stage1.log 2>&1
+
+echo "==> copying files from media to install drive..."
+cp -r /run/install/repo/postinstall /mnt/sysimage/tmp
+find /mnt/sysimage/tmp -name TRANS.TBL -exec rm -f {} \;
+
+mkdir /mnt/sysimage/ceph-files
+mkdir /mnt/sysimage/ceph-host
+mkdir -p /mnt/sysimage/tmp/build/iso
+
+rsync -av /run/install/repo/ /mnt/sysimage/tmp/build/iso/
+
+%end
+
+%post --log=/root/kickstart-stage2.log
+
+#!/bin/sh
+set -x
+
+# Start yum configuration
+$yum_config_stanza
+# End yum configuration
+
+# Start final steps
+groupadd {{ user.name }}
+useradd {{ user.name }} -g {{ user.name }} -G wheel
+
+# Note: The postinstall directory remains but can be removed if desired.
+cp -R /tmp/postinstall/ceph-files/* /ceph-files/.
+cp -R /tmp/postinstall/ceph-host/* /ceph-host/.
+
+chown -R {{ user.name }}:{{ user.name }} /ceph-files
+chown -R {{ user.name }}:{{ user.name }} /ceph-host
+
+cat /ceph-host/bootstrap/data/environment/{{ node.environment }}/hosts >> /etc/hosts
+
+# Allow root login to begin with. Chef recipe will disable later in process.
+sed -i "s/#PermitRootLogin yes/PermitRootLogin yes/" /etc/ssh/sshd_config
+sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
+
+# Add a public key here to authorized_keys but make sure to set permission to 0600
+mkdir --mode=0700 -p /home/{{ user.name }}/.ssh
+cat <<EOM >/home/{{ user.name }}/.ssh/authorized_keys
+{{ user.key }}
+EOM
+cp /ceph-host/bootstrap/data/environment/{{ node.environment }}/{{ user.private_key }} /home/{{ user.name }}/.ssh/id_rsa
+chmod 0600 /home/{{ user.name }}/.ssh/authorized_keys
+chmod 0600 /home/{{ user.name }}/.ssh/id_rsa
+chown -R {{ user.name }}:{{ user.group }} /home/{{ user.name }}/.ssh
+
+ln -s /ceph-host/bootstrap/data/environment/{{ node.environment }}/bootstrap_chef.sh /home/{{ user.name }}/bootstrap_chef.sh
+ln -s /ceph-host/bootstrap/data/environment/{{ node.environment_short }}/scripts/bootstrap_chef_nodes.sh /home/{{ user.name }}/bootstrap_chef_nodes.sh
+ln -s /ceph-host/bootstrap/data/environment/{{ node.environment_short }}/scripts/chef_create_tags.sh /home/{{ user.name }}/chef_create_tags.sh
+ln -s /ceph-host/bootstrap/data/environment/{{ node.environment_short }}/scripts/chef_adc.sh /home/{{ user.name }}/chef_adc.sh
+ln -s /ceph-host/bootstrap/data/environment/{{ node.environment_short }}/scripts/chef_finish.sh /home/{{ user.name }}/chef_finish.sh
+ln -s /ceph-host/bootstrap/data/environment/{{ node.environment_short }}/scripts/chef_mon.sh /home/{{ user.name }}/chef_mon.sh
+ln -s /ceph-host/bootstrap/data/environment/{{ node.environment_short }}/scripts/chef_osd.sh /home/{{ user.name }}/chef_osd.sh
+ln -s /ceph-host/bootstrap/data/environment/{{ node.environment_short }}/scripts/chef_pools.sh /home/{{ user.name }}/chef_pools.sh
+ln -s /ceph-host/bootstrap/data/environment/{{ node.environment_short }}/scripts/chef_restapi.sh /home/{{ user.name }}/chef_restapi.sh
+ln -s /ceph-host/bootstrap/data/environment/{{ node.environment_short }}/scripts/chef_rgw.sh /home/{{ user.name }}/chef_rgw.sh
+ln -s /ceph-host/bootstrap/data/environment/{{ node.environment_short }}/scripts/chef_tunables.sh /home/{{ user.name }}/chef_tunables.sh
+ln -s /ceph-host/bootstrap/data/environment/{{ node.environment_short }}/scripts/rechef_nodes.sh /home/{{ user.name }}/rechef_nodes.sh
+ln -s /ceph-host/bootstrap/data/environment/{{ node.environment_short }}/scripts/reset_pxe_boot.sh /home/{{ user.name }}/reset_pxe_boot.sh
+ln -s /ceph-host/bootstrap/data/environment/{{ node.environment_short }}/scripts/resync_ntp.sh /home/{{ user.name }}/resync_ntp.sh
+ln -s /ceph-host/bootstrap/data/environment/{{ node.environment_short }}/scripts/bootstrap_aio.sh /home/{{ user.name }}/bootstrap_aio.sh
+
+chown -h {{ user.name }}:{{ user.group }} /home/{{ user.name }}/*.sh
+
+# Setup sudoer
+echo "%{{ user.name }} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/{{ user.name }}
+sed -i "s/^[^#].*requiretty/#Defaults requiretty/" /etc/sudoers
+echo "{{ user.name }} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/{{ user.name }}
+
+{% if cobbler.kickstart.redhat.management.type %}
+{{ cobbler.kickstart.redhat.management.commands.C1 }}
+{{ cobbler.kickstart.redhat.management.commands.C2 }}
+{{ cobbler.kickstart.redhat.management.commands.C3 }}
+{{ cobbler.kickstart.redhat.management.commands.C4 }}
+# Go ahead and create a script in /tmp if the network has issues during the process.
+cat <<EOM >/tmp/rhelsub.sh
+service network restart
+{{ cobbler.kickstart.redhat.management.commands.C1 }}
+{{ cobbler.kickstart.redhat.management.commands.C2 }}
+{{ cobbler.kickstart.redhat.management.commands.C3 }}
+{{ cobbler.kickstart.redhat.management.commands.C4 }}
+yum update -y
+EOM
+chmod +x /tmp/rhelsub.sh
+{% endif %}
+
+# Build ISO to be used for Cobbler
+rm -rf /tmp/build/iso/ks
+find /tmp/build/iso -name TRANS.TBL -exec rm -f {} \;
+cp /tmp/postinstall/ceph-host/bootstrap/templates/isolinux.cfg /tmp/build/iso/isolinux/isolinux.cfg
+# TODAY=$(date +'%Y-%m-%d')
+rm -rf /tmp/build/iso/.rr_moved
+# mkisofs
+genisoimage -r -J -N -d -hide-rr-moved -R -T -no-emul-boot -boot-load-size 4 -boot-info-table -V "{{ ISO.volume_id }}" -p "{{ ISO.packer }}" -A "{{ ISO.volume_id }}" -b isolinux/isolinux.bin -c isolinux/boot.cat -x "lost+found" -eltorito-alt-boot -e images/efiboot.img -no-emul-boot -o /tmp/{{ cobbler.kickstart.os.distro }} /tmp/build/iso
+implantisomd5 /tmp/{{ cobbler.kickstart.os.distro }}
+
+chown -R {{ user.name }}:{{ user.group }} /tmp/postinstall
+chown {{ user.name }}:{{ user.group }} /tmp/{{ cobbler.kickstart.os.distro }}
+
+# End final steps
+%end

@@ -22,6 +22,270 @@ require 'base64'
 require 'thread'
 require 'ipaddr'
 
+def is_bootstrap_node
+  val = false
+  if node['hostname'] == node['chef-bcs']['bootstrap']['name']
+    val = true
+  end
+  val
+end
+
+def get_ip(interface)
+  val = nil
+  if is_bootstrap_node
+    node['chef-bcs']['bootstrap']['interfaces'].each do | intf |
+      if interface == intf
+        val = intf['ip']
+        break
+      end
+    end
+  else
+    servers = node['chef-bcs']['cobbler']['servers']
+    servers.each do | server |
+      if server['name'] == node['hostname']
+        if interface == server['network']['public']['interface']
+          val = server['network']['public']['ip']
+        else
+          val = server['network']['cluster']['ip']
+        end
+        break
+      end
+    end
+  end
+  val
+end
+
+def get_gateway(interface)
+  val = nil
+  if is_bootstrap_node
+    node['chef-bcs']['bootstrap']['interfaces'].each do | intf |
+      if interface == intf
+        val = intf['gateway']
+        break
+      end
+    end
+  else
+    servers = node['chef-bcs']['cobbler']['servers']
+    servers.each do | server |
+      if server['name'] == node['hostname']
+        if interface == server['network']['public']['interface']
+          val = server['network']['public']['gateway']
+        else
+          val = server['network']['cluster']['gateway']
+        end
+        break
+      end
+    end
+  end
+  val
+end
+
+def get_netmask(interface)
+  val = nil
+  if is_bootstrap_node
+    node['chef-bcs']['bootstrap']['interfaces'].each do | intf |
+      if interface == intf
+        val = intf['netmask']
+        break
+      end
+    end
+  else
+    servers = node['chef-bcs']['cobbler']['servers']
+    servers.each do | server |
+      if server['name'] == node['hostname']
+        if interface == server['network']['public']['interface']
+          val = server['network']['public']['netmask']
+        else
+          val = server['network']['cluster']['netmask']
+        end
+        break
+      end
+    end
+  end
+  val
+end
+
+# Bonding...
+# Bond IP will be the public ip
+def get_bond_ip
+  val = nil
+  if is_bootstrap_node
+    interface = node['chef-bcs']['bootstrap']['interfaces'].first
+    val = interface['ip']
+  else
+    servers = node['chef-bcs']['cobbler']['servers']
+    servers.each do | server |
+      if server['name'] == node['hostname']
+        val = server['network']['public']['ip']
+        break
+      end
+    end
+  end
+  val
+end
+
+def get_bond_gateway
+  val = nil
+  if is_bootstrap_node
+    interface = node['chef-bcs']['bootstrap']['interfaces'].first
+    val = interface['gateway']
+  else
+    servers = node['chef-bcs']['cobbler']['servers']
+    servers.each do | server |
+      if server['name'] == node['hostname']
+        # IMPORTANT - VirtualBox environment should be named vagrant.json or vbox.json
+        # Don't put a GATEWAY value in for a VirtualBox environment
+        if node.chef_environment == 'vagrant' || node.chef_environment == 'vbox'
+          val = ''
+        else
+          val = server['network']['public']['gateway']
+        end
+        break
+      end
+    end
+  end
+  val
+end
+
+def get_bond_netmask
+  val = nil
+  if is_bootstrap_node
+    interface = node['chef-bcs']['bootstrap']['interfaces'].first
+    val = interface['netmask']
+  else
+    servers = node['chef-bcs']['cobbler']['servers']
+    servers.each do | server |
+      if server['name'] == node['hostname']
+        val = server['network']['public']['netmask']
+        break
+      end
+    end
+  end
+  val
+end
+
+# ADC - Application Delivery Controller (load balancer)
+def is_adc_node
+  val = false
+  nodes = adc_nodes
+  nodes.each do |n|
+    if n['hostname'] == node['hostname']
+      val = true
+      break
+    end
+  end
+  val
+end
+
+def adc_nodes
+  results = search(:node, "tags:#{node['chef-bcs']['adc']['tag']}")
+  results.map! { |x| x['hostname'] == node['hostname'] ? node : x }
+  if !results.include?(node) && node.run_list.roles.include?(node['chef-bcs']['adc']['tag'])
+    results.push(node)
+  end
+  results.sort! { |a, b| a['hostname'] <=> b['hostname'] }
+end
+
+# BGP uses the keepalived servers which always use the "public" interface
+def get_bgp_interface_ip
+  val = nil
+  if is_adc_node
+    server = get_keepalived_server
+    val = server['ip']
+  end
+  val
+end
+
+def get_server
+  val = nil
+  servers = node['chef-bcs']['cobbler']['servers']
+  servers.each do | server |
+    if server['name'] == node['hostname']
+      val = server
+      break
+    end
+  end
+  val
+end
+
+def get_keepalived_server
+  val = nil
+  servers = node['chef-bcs']['keepalived']['servers']
+  servers.each do | server |
+    if server['name'] == node['hostname']
+      val = server
+      break
+    end
+  end
+  val
+end
+
+def get_adc_backend_nodes
+  results = []
+  rgw_nodes = radosgw_nodes
+
+  servers = node['chef-bcs']['cobbler']['servers']
+  rgw_nodes.each do | rgw |
+    servers.each do | server |
+      if server['name'] == rgw['hostname']
+        svr = {}
+        svr['name'] = server['name']
+        svr['ip'] = server['network']['public']['ip']
+        svr['weight'] = get_backend_int_attr(server['name'], 'weight')
+        svr['options'] = get_backend_str_attr(server['name'], 'options')
+        results.push(svr)
+      end
+    end
+  end
+
+  results
+end
+
+def get_backend_int_attr(name, attr)
+  val = 0
+  backend_nodes = node['chef-bcs']['adc']['backend']['servers']
+  backend_nodes.each do | backend |
+    if backend['name'] == name
+      val = backend[attr]
+      break
+    end
+  end
+  val
+end
+
+def get_backend_str_attr(name, attr)
+  val = ''
+  backend_nodes = node['chef-bcs']['adc']['backend']['servers']
+  backend_nodes.each do | backend |
+    if backend['name'] == name
+      val = backend[attr]
+      break
+    end
+  end
+  val
+end
+
+def is_radosgw_node
+  val = false
+  nodes = radosgw_nodes
+  nodes.each do |n|
+    if n['hostname'] == node['hostname']
+      val = true
+      break
+    end
+  end
+  val
+end
+
+def radosgw_nodes
+  results = search(:node, "tags:#{node['ceph']['radosgw']['tag']}")
+  results.map! { |x| x['hostname'] == node['hostname'] ? node : x }
+  if !results.include?(node) && node.run_list.roles.include?(node['ceph']['radosgw']['role'])
+    results.push(node)
+  end
+  results.sort! { |a, b| a['hostname'] <=> b['hostname'] }
+end
+
 def init_config
     if not Chef::DataBag.list.key?('configs')
         Chef::Log.info("************ Creating data_bag \"configs\"")

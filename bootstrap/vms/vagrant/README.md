@@ -1,7 +1,7 @@
 # Important
 
 ## Start:
-Simply call **./VAGRANT_UP** in *this* directory to start the build process.
+Simply call **./CEPH_UP** in *this* directory to start the build process.
 
 ## Possible issues and work arounds
 ## Network:
@@ -26,7 +26,7 @@ This script is what dynamically builds the network devices for the VMs so simply
 
   **vagrant plugin uninstall vagrant-vbguest**
 
- Now rerun **./VAGRANT_UP** in the following directory:
+ Now rerun **./CEPH_UP** in the following directory:
 
  **[chef-bcs root-dir]/bootstrap/vms/vagrant**
 

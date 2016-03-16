@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Author: Chris Jones <cjones303@bloomberg.net>
-# Copyright 2015, Bloomberg Finance L.P.
+# Copyright 2016, Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,10 +16,15 @@
 # limitations under the License.
 #
 
-set -e
+# Reverse cloning of cloned VMs so as to make them active in a clean state (same as the point where they were cloned).
+
+# NOTE: MUST execute from VAGRANT directory of project
 
 source vagrant_base.sh
 
-for vm in ${ceph_vms[@]}; do
-  do_on_node $vm "sudo chef-client"
+# This ONLY bootstraps Chef on the working vms and sets up authorization via actor maps.
+
+# augment the previously configured nodes with our newly uploaded environments and roles
+for vm in ${CEPH_CHEF_HOSTS[@]}; do
+  do_on_node $vm "sudo chef-client $CHEF_CLIENT_DEBUG"
 done

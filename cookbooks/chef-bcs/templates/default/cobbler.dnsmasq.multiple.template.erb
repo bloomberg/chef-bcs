@@ -23,7 +23,7 @@ dhcp-boot=net:ia64,$elilo
 
 # Multiple subnets (each rack) that will be answered on one interface
 <% node['chef-bcs']['cobbler']['dhcp']['subnets'].each do |subnet| %>
-dhcp-range=<%= subnet['tag'] %>,<%= subnet['dhcp_range'].join(',') %>
+dhcp-range=<%= subnet['tag'] %>,<%= subnet['dhcp_range'].join(',') %>,<%= subnet['netmask'] %>
 dhcp-option=<%= subnet['tag'] %>,3,<%= subnet['router'] %>
 <% end -%>
 

@@ -18,13 +18,15 @@
 #
 
 # NOTE: May want to move mount and import to install later...
+# cobbler distro edit --name=#{node['chef-bcs']['cobbler']['os']['name']}-#{node['chef-bcs']['cobbler']['os']['arch']} --kopts="ksdevice= inst.repo=http://#{node['chef-bcs']['cobbler']['server']}/cblr/ks_mirror/#{node['chef-bcs']['cobbler']['os']['name']}"
 
 bash 'import-distro-distribution-cobbler' do
   user 'root'
   code <<-EOH
-      mount -o loop /tmp/#{node['chef-bcs']['cobbler']['os']['distro']} /mnt
-      cobbler import --name=#{node['chef-bcs']['cobbler']['os']['name']} --path=/mnt --breed=#{node['chef-bcs']['cobbler']['os']['breed']} --arch=#{node['chef-bcs']['cobbler']['os']['arch']}
-      umount /mnt
+    mount -o loop /tmp/#{node['chef-bcs']['cobbler']['os']['distro']} /mnt
+    cobbler import --name=#{node['chef-bcs']['cobbler']['os']['name']} --path=/mnt --breed=#{node['chef-bcs']['cobbler']['os']['breed']} --arch=#{node['chef-bcs']['cobbler']['os']['arch']}
+    cobbler distro edit --name=#{node['chef-bcs']['cobbler']['os']['name']}-#{node['chef-bcs']['cobbler']['os']['arch']} --kopts="ksdevice= inst.repo=http://#{node['chef-bcs']['cobbler']['server']}/cblr/ks_mirror/#{node['chef-bcs']['cobbler']['os']['name']}-#{node['chef-bcs']['cobbler']['os']['arch']}"
+    umount /mnt
   EOH
   not_if "cobbler distro list | grep #{node['chef-bcs']['cobbler']['os']['name']}"
   only_if "test -f /tmp/#{node['chef-bcs']['cobbler']['os']['distro']}"
@@ -39,7 +41,7 @@ bash 'profile-update-cobbler' do
   code <<-EOH
     cobbler profile edit --name=#{node['chef-bcs']['cobbler']['os']['name']}-#{node['chef-bcs']['cobbler']['os']['arch']} --kickstart=/var/lib/cobbler/kickstarts/#{node['chef-bcs']['cobbler']['kickstart']['file']["#{node['chef-bcs']['cobbler']['profiles'][0]['file_type']}"]} --kopts="interface=auto"
     cobbler profile rename --name=#{node['chef-bcs']['cobbler']['os']['name']}-#{node['chef-bcs']['cobbler']['os']['arch']} --newname=#{node['chef-bcs']['cobbler']['profiles'][0]['name']}
-    cobbler profile edit --name=#{node['chef-bcs']['cobbler']['profiles'][0]['name']} --comment="#{node['chef-bcs']['cobbler']['profiles'][0]['comment']}" --name-servers="#{node['chef-bcs']['dns']['servers'].join(' ')}"
+    cobbler profile edit --name=#{node['chef-bcs']['cobbler']['profiles'][0]['name']} --netboot-enabled=true --comment="#{node['chef-bcs']['cobbler']['profiles'][0]['comment']}" --name-servers="#{node['chef-bcs']['dns']['servers'].join(' ')}"
     cobbler profile copy --name=#{node['chef-bcs']['cobbler']['profiles'][0]['name']} --newname=#{node['chef-bcs']['cobbler']['profiles'][1]['name']}
     cobbler profile edit --name=#{node['chef-bcs']['cobbler']['profiles'][1]['name']} --kickstart=/var/lib/cobbler/kickstarts/#{node['chef-bcs']['cobbler']['kickstart']['file']["#{node['chef-bcs']['cobbler']['profiles'][1]['file_type']}"]}
   EOH
@@ -48,7 +50,7 @@ bash 'profile-update-cobbler' do
 end
 
 # Update the Red Hat Satellite/Capsule/RHN info
-if node['chef-bcs']['cobbler']['os']['breed'] == 'redhat' && node['chef-bcs']['cobbler']['redhat']['management']['type'] == 'on'
+if node['chef-bcs']['cobbler']['os']['breed'] == 'redhat' && node['chef-bcs']['cobbler']['redhat']['management']['type']
   bash 'cobbler-rhel-mgt' do
     user 'root'
     code <<-EOH
@@ -61,15 +63,17 @@ end
 
 # Set up a default system - you will need to add the information via cobbler system edit on the cli to match your environment
 # Also, do cobbler system add for every ceph node with mac, IP, etc OR modify the json data used by cobbler and then restart cobbler
-node['chef-bcs']['cobbler']['systems'].each do | system |
-  bash "add-to-cobbler" do
-    user 'root'
-    code <<-EOH
-      cobbler system add --name=#{system['name']} --profile=#{system['profile']} --static=true --interface=#{system['network']['public']['interface']} --ip-address=#{system['network']['public']['ip']} --netmask=#{system['network']['public']['netmask']} --if-gateway=#{system['network']['public']['gateway']} --hostname=#{system['name']} --mtu=#{system['network']['public']['mtu']}
-      cobbler system edit --name=#{system['name']} --static=true --interface=#{system['network']['cluster']['interface']} --ip-address=#{system['network']['cluster']['ip']} --netmask=#{system['network']['cluster']['netmask']} --if-gateway=#{system['network']['cluster']['gateway']} --mtu=#{system['network']['cluster']['mtu']}
-    EOH
-    not_if "cobbler system list | grep #{system['name']}"
-    only_if "test -f /tmp/#{node['chef-bcs']['cobbler']['os']['distro']}"
+node['chef-bcs']['cobbler']['servers'].each do | server |
+  if !server.roles.include? 'bootstrap'
+    bash 'add-to-cobbler' do
+      user 'root'
+      code <<-EOH
+        cobbler system add --name=#{server['name']} --profile=#{server['profile']} --static=true --interface=#{server['network']['public']['interface']} --mac=#{server['network']['public']['mac']} --ip-address=#{server['network']['public']['ip']} --netmask=#{server['network']['public']['netmask']} --if-gateway=#{server['network']['public']['gateway']} --hostname=#{server['name']} --mtu=#{server['network']['public']['mtu']}
+        cobbler system edit --name=#{server['name']} --static=true --interface=#{server['network']['cluster']['interface']} --mac=#{server['network']['cluster']['mac']} --ip-address=#{server['network']['cluster']['ip']} --netmask=#{server['network']['cluster']['netmask']} --if-gateway=#{server['network']['cluster']['gateway']} --mtu=#{server['network']['cluster']['mtu']}
+      EOH
+      not_if "cobbler system list | grep #{server['name']}"
+      only_if "test -f /tmp/#{node['chef-bcs']['cobbler']['os']['distro']}"
+    end
   end
 end
 
@@ -78,3 +82,30 @@ execute 'cobbler-sync' do
   command lazy{ "cobbler sync" }
   only_if "test -f /tmp/#{node['chef-bcs']['cobbler']['os']['distro']}"
 end
+
+# NOTE: The items below can fail but also means it will have to be updated manually. This
+# NOTE: The /tmp/postinstall must exist
+execute 'tar-postinstall' do
+  command lazy { "tar -zcvf /var/www/cobbler/pub/postinstall.tar.gz /tmp/postinstall/" }
+  not_if "test -f /var/www/cobbler/pub/postinstall.tar.gz"
+  ignore_failure true
+end
+
+# Get the validate.pem and install client.rb into /var/www/cobbler/pub
+bash 'copy-chef-node' do
+  user 'root'
+  code <<-EOH
+    sudo cp /etc/opscode/bcs-validator.pem /var/www/cobbler/pub/validation.pem
+    sudo chmod 0644 /var/www/cobbler/pub/validation.pem
+  EOH
+  ignore_failure true
+end
+
+template '/var/www/cobbler/pub/client.rb' do
+  source 'client.rb.erb'
+  mode '0644'
+  ignore_failure true
+end
+
+# NOTE: The kickstart process creates the directores, wgets the files to the node's /etc/chef and sets the permissions.
+# It then runs chef-client to verify

@@ -16,10 +16,10 @@ The current version is focused on installing and configuring Ceph for CentOS and
 ## Instructions
 1. Fork/clone repo
 2. Navigate to [whatever path]/ceph-bcs/bootstrap/vms/vagrant directory
-3. Launch Vagrant version to see how it works and to do development and testing by issuing **./VAGRANT_UP** command (in /bootstrap/vms/vagrant directory)
+3. Launch Vagrant version to see how it works and to do development and testing by issuing **./CEPH_UP** command (in /bootstrap/vms/vagrant directory)
 
 ## Process (Vagrant)
-After launching **./VAGRANT_UP** the process will do the following:
+After launching **./CEPH_UP** the process will do the following:
 
 1. Download CentOS 7.1 box version from Chef Bento upstream
 2. Download required cookbooks including ceph-chef which is the most important
@@ -76,7 +76,7 @@ NOTE: These names can be changed in the [wherever root dir]/bootstrap/vms/server
 
 **<wherever repo>/bootstrap/vms/vagrant**
 
-Note: The only one you must call is VAGRANT_UP which starts the whole process from creation of VMs to running Ceph cluster
+Note: The only one you must call is CEPH_UP which starts the whole process from creation of VMs to running Ceph cluster
 
 For documentation on how to use this cookbook, refer to the **[USAGE](#usage)** section.
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright 2015, Bloomberg Finance L.P.
+# Copyright 2016, Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -46,10 +46,10 @@ function node_modify_network_interfaces {
     #    sudo nmcli c modify $_uuid connection.id 'mgt-enp0s8'
     # fi
     if [[ $_device == "enp0s8" || ($_device == "--" && $_name == "Wired connection 1") ]]; then
-        sudo nmcli c modify $_uuid connection.id 'cfe-enp0s8'
+        sudo nmcli c modify $_uuid connection.id 'enp0s8'
     fi
     if [[ $_device == "enp0s9" || ($_device == "--" && $_name == "Wired connection 2") ]]; then
-        sudo nmcli c modify $_uuid connection.id 'cbe-enp0s9'
+        sudo nmcli c modify $_uuid connection.id 'enp0s9'
     fi
   done
   IFS=$IFS_OLD
@@ -62,23 +62,23 @@ function node_update_network_ips {
   # sudo nmcli c mod mgt-enp0s8 ipv4.method manual
   # sudo nmcli c mod mgt-enp0s8 ipv4.dns "8.8.8.8 8.8.4.4"
 
-  sudo nmcli c mod cfe-enp0s8 ipv4.addresses ${CEPH_ADAPTER_IPS[0]}/${CEPH_ADAPTER_IPS[2]} ipv4.gateway ${CEPH_ADAPTER_IPS[3]}
-  sudo nmcli c mod cfe-enp0s8 ipv4.method manual
-  sudo nmcli c mod cfe-enp0s8 ipv4.dns "${CEPH_CHEF_DNS[0]} ${CEPH_CHEF_DNS[1]}"
+  sudo nmcli c mod enp0s8 ipv4.addresses ${CEPH_ADAPTER_IPS[0]}/${CEPH_ADAPTER_IPS[2]} ipv4.gateway ${CEPH_ADAPTER_IPS[3]}
+  sudo nmcli c mod enp0s8 ipv4.method manual
+  sudo nmcli c mod enp0s8 ipv4.dns "${CEPH_CHEF_DNS[0]} ${CEPH_CHEF_DNS[1]}"
 
-  sudo nmcli c mod cbe-enp0s9 ipv4.addresses ${CEPH_ADAPTER_IPS[1]}/${CEPH_ADAPTER_IPS[2]} ipv4.gateway ${CEPH_ADAPTER_IPS[4]}
-  sudo nmcli c mod cbe-enp0s9 ipv4.method manual
-  sudo nmcli c mod cbe-enp0s9 ipv4.dns "${CEPH_CHEF_DNS[0]} ${CEPH_CHEF_DNS[1]}"
+  sudo nmcli c mod enp0s9 ipv4.addresses ${CEPH_ADAPTER_IPS[1]}/${CEPH_ADAPTER_IPS[2]} ipv4.gateway ${CEPH_ADAPTER_IPS[4]}
+  sudo nmcli c mod enp0s9 ipv4.method manual
+  sudo nmcli c mod enp0s9 ipv4.dns "${CEPH_CHEF_DNS[0]} ${CEPH_CHEF_DNS[1]}"
 
   # sudo nmcli c up mgt-enp0s8
-  sudo nmcli c up cfe-enp0s8
-  sudo nmcli c up cbe-enp0s9
+  sudo nmcli c up enp0s8
+  sudo nmcli c up enp0s9
 }
 
 function node_remove_new_network_connections {
   # sudo nmcli con delete mgt-enp0s8
-  sudo nmcli con delete cfe-enp0s8
-  sudo nmcli con delete cbe-enp0s9
+  sudo nmcli con delete enp0s8
+  sudo nmcli con delete enp0s9
 }
 
 function node_remove_default_network_connections {
@@ -89,6 +89,6 @@ function node_remove_default_network_connections {
 
 function node_add_network_connections {
   # sudo nmcli con add type ethernet con-name mgt-enp0s8 ifname enp0s8
-  sudo nmcli con add type ethernet con-name cfe-enp0s8 ifname enp0s8
-  sudo nmcli con add type ethernet con-name cbe-enp0s9 ifname enp0s9
+  sudo nmcli con add type ethernet con-name enp0s8 ifname enp0s8
+  sudo nmcli con add type ethernet con-name enp0s9 ifname enp0s9
 }

@@ -17,7 +17,6 @@
 # limitations under the License.
 #
 
-# Stop the firewall
-firewall 'default' do
-  action :restart
+execute 'firewalld-start' do
+  command 'sudo systemctl start firewalld'
 end

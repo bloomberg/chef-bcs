@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright 2015, Bloomberg Finance L.P.
+# Copyright 2016, Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -45,16 +45,24 @@ download_file() {
   fi
 }
 
+ftp_file() {
+  FILE=$1
+  URL=$2
+
+  if [[ ! -f $BOOTSTRAP_CACHE_DIR/$FILE && ! -f $BOOTSTRAP_CACHE_DIR/${FILE}_downloaded ]]; then
+    echo $FILE
+    rm -f $BOOTSTRAP_CACHE_DIR/$FILE
+    wget $URL -O $BOOTSTRAP_CACHE_DIR/$FILE
+    touch $BOOTSTRAP_CACHE_DIR/${FILE}_downloaded
+  fi
+}
+
 # Obtain an RHEL 7.2 image to be used for PXE booting in production.
 if [[ ! -z $COBBLER_BOOTSTRAP_ISO ]]; then
-  # This cmd only works for non-rhel distros. Redhat has timed urls for downloads you could login to the rhn access portal
-  # and get the url and then update $COBBLER_REMOTE_URL_ISO or copy the ISO to cobber/isos.
-  substring=http
-  if [ "${COBBLER_REMOTE_URL_ISO/$substring}" = "$COBBLER_REMOTE_URL_ISO" ] ; then
-    cp $COBBLER_REMOTE_URL_ISO $BOOTSTRAP_CACHE_DIR/cobbler/isos/$COBBLER_BOOTSTRAP_ISO
-    echo "$COBBLER_REMOTE_URL_ISO"
-  else
+  if [[ $COBBLER_DOWNLOAD_ISO -eq 1 ]]; then
+    set +e
     download_file cobbler/isos/$COBBLER_BOOTSTRAP_ISO $COBBLER_REMOTE_URL_ISO
+    set -e
   fi
 fi
 
@@ -65,19 +73,20 @@ if [[ ! -z $COBBLER_BOOTSTRAP_ISO ]]; then
   download_file cobbler/loaders/grub-x86_64.efi http://cobbler.github.io/loaders/grub-0.97-x86_64.efi
 fi
 
-# TODO: Add different OS support
 # Obtain Chef client and server RPMs.
-# knife actor map issue with latest version so reverting back to previous
-CHEF_CLIENT_RPM=chef-12.6.0-1.el7.x86_64.rpm
-CHEF_SERVER_RPM=chef-server-core-12.4.1-1.el7.x86_64.rpm
+export CHEF_CLIENT_RPM=chef-12.8.1-1.el7.x86_64.rpm
+export CHEF_SERVER_RPM=chef-server-core-12.4.1-1.el7.x86_64.rpm
 download_file $CHEF_CLIENT_RPM https://opscode-omnibus-packages.s3.amazonaws.com/el/7/x86_64/$CHEF_CLIENT_RPM
 download_file $CHEF_SERVER_RPM https://web-dl.packagecloud.io/chef/stable/packages/el/7/$CHEF_SERVER_RPM
+
+# BIRD is a little different :)
+ftp_file bird-1.5.0-1.x86_64.rpm ftp://bird.network.cz/pub/bird/redhat/bird-1.5.0-1.x86_64.rpm
 
 # Pull needed *cookbooks* from the Chef Supermarket.
 mkdir -p $BOOTSTRAP_CACHE_DIR/{cookbooks,gems}
 
 # Most important cookbook
-download_file cookbooks/ceph-chef-0.9.8.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/ceph-chef/versions/0.9.8/download
+download_file cookbooks/ceph-chef-0.9.11.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/ceph-chef/versions/0.9.11/download
 
 download_file cookbooks/poise-2.6.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/poise/versions/2.6.0/download
 download_file cookbooks/chef-client-4.3.3.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/chef-client/versions/4.3.3/download
@@ -96,7 +105,7 @@ download_file cookbooks/sudo-2.9.0.tar.gz http://cookbooks.opscode.com/api/v1/co
 
 # Gems
 # REQUIRED for ceph-chef cookbook - must be installed before doing 'sudo chef-client' on any node
-download_file gems/netaddr-1.5.0.gem https://rubygems.org/downloads/netaddr-1.5.0.gem
+download_file gems/netaddr-1.5.1.gem https://rubygems.org/downloads/netaddr-1.5.1.gem
 
 # Pull knife-acl gem.
 # 0.0.12
@@ -108,3 +117,6 @@ mkdir -p $BOOTSTRAP_CACHE_DIR/gems
 for GEM in ${GEMS[@]}; do
   download_file gems/$GEM.gem https://rubygems.global.ssl.fastly.net/gems/$GEM.gem
 done
+
+# If you just want all of the latest rpms
+# wget -r -l1 -np http://download.ceph.com/rpm-hammer/el7/x86_64/ -P . -A "*0.94.6*"

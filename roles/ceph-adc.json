@@ -1,0 +1,15 @@
+{
+    "name": "ceph-adc",
+    "default_attributes": {
+    },
+    "json_class": "Chef::Role",
+    "run_list": [
+      "recipe[chef-bcs::haproxy]",
+      "recipe[chef-bcs::keepalived]",
+      "recipe[chef-bcs::bgp]"
+    ],
+    "description": "ADC (Load Balancer) for ceph cluster",
+    "chef_type": "role",
+    "override_attributes": {
+    }
+}

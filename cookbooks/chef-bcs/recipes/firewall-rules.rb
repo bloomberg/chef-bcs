@@ -26,32 +26,33 @@
 # rules
 # By default there are no icmp blocks. If you want to enable icmp blocks (pings...) then add the block here.
 
-# NOTE: These rules should ALWAYS be present.
-firewall_rule 'ssh' do
-  port     22
-  command  :allow
-end
-
-firewall_rule 'ntp' do
-  command  :allow
-end
-
 # IMPORTANT: ALL nodes have a public network (no dedicated management network) including the bootstrap node in this
 # example. You can change this to fit your needs.
-firewall_rule 'public' do
-  interface "#{node['chef-bcs']['network']['public']['interface']}"
-  permanent true
-end
+# firewall_rule 'public' do
+#   interface "#{node['chef-bcs']['network']['public']['interface']}"
+#   permanent true
+# end
 
-firewall_rule 'cluster' do
-  interface "#{node['chef-bcs']['network']['cluster']['interface']}"
-  command  :allow
-end
+# firewall_rule 'cluster' do
+#   interface "#{node['chef-bcs']['network']['cluster']['interface']}"
+#   command  :allow
+# end
 
 # Set the firewall rules for whatever tags are associated for the given node.
 
+# NOTE: Protocol numbers can be found at http://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml
+# tcp - 6, udp - 17
+
+bash 'set-default-zone' do
+  user 'root'
+  code <<-EOH
+    firewall-cmd --set-default-zone=public
+  EOH
+end
+
 node['chef-bcs']['security']['firewall']['interfaces'].each do | interface |
   # Build port list
+  unique_ports = []
   ports = []
   ranges = []
 
@@ -61,34 +62,84 @@ node['chef-bcs']['security']['firewall']['interfaces'].each do | interface |
         ports << port['open']
       end
 
+      # Ranges are ALL tcp types
       port['ranges'].each do | range |
         if range['start'] > 0
-          start_range = range['start']
-          end_range = range['end']
-          ranges << (start_range..end_range)
+          ranges << range
+          #start_range = range['start']
+          #end_range = range['end']
+          #ranges << (start_range..end_range)
         end
       end
     end
   end
 
   if ports.any?
-    firewall_rule interface['name'] do
-      interface "#{node['chef-bcs']['network'][interface['name']]['interface']}"
-      port ports.uniq.flatten
-      command :allow
-    end
+    unique_ports = ports.flatten.uniq
+  end
+
+  unique_ports.each do | uport |
+#    firewall_rule interface['name'] do
+#      interface "#{node['chef-bcs']['network'][interface['name']]['interface']}"
+#      port uport['port']
+#      protocol uport['protocol']
+#      permanent true
+#      command :allow
+#    end
+
+    #protocol = 'tcp'
+    #if uport['protocol'] == 17
+    #  protocol = 'udp'
+    #end
+
+    cmd = shell_out("firewall-cmd --permanent --add-port=#{uport['port']}/#{uport['protocol']}")
+    puts "Port: #{uport['port']}/#{uport['protocol']} " + cmd.stdout
   end
 
   ranges.each do | range |
-    firewall_rule interface['name'] do
-      interface "#{node['chef-bcs']['network'][interface['name']]['interface']}"
-      port range
-      command :allow
-    end
+#    firewall_rule interface['name'] do
+#      interface "#{node['chef-bcs']['network'][interface['name']]['interface']}"
+#      port range
+#      permanent true
+#      command :allow
+#    end
+    #protocol = 'tcp'
+    #if range['protocol'] == 17
+    #  protocol = 'udp'
+    #end
+
+    cmd = shell_out("firewall-cmd --permanent --add-port=#{range['start']}-#{range['end']}/#{range['protocol']}")
+    puts "Range: #{range['start']}-#{range['end']}/#{range['protocol']} " + cmd.stdout
+
   end
 end
 
+node['chef-bcs']['network']['public']['cidr'].each do | cidr |
+  cmd = shell_out("firewall-cmd --permanent --zone=internal --add-source=#{cidr}")
+  puts "Adding 'internal' source IP range: #{cidr} " + cmd.stdout
+end
+
+node['chef-bcs']['network']['cluster']['cidr'].each do | cidr |
+  cmd = shell_out("firewall-cmd --permanent --zone=internal --add-source=#{cidr}")
+  puts "Adding 'internal' source IP range: #{cidr} " + cmd.stdout
+end
+
+# NOTE: These rules should ALWAYS be present.
+# firewall_rule 'ssh' do
+#   port     22
+#   command  :allow
+# end
+
 # Force the rules etc to be saved
-firewall 'default' do
-  action :save
+# firewall 'default' do
+#   action :save
+# end
+
+bash 'ssh-and-reload' do
+  user 'root'
+  code <<-EOH
+    firewall-cmd --permanent --zone=public --add-port=22/tcp
+    firewall-cmd --permanent --zone=internal --add-port=22/tcp
+    firewall-cmd --reload
+  EOH
 end

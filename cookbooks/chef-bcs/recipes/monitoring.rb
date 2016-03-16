@@ -1,7 +1,6 @@
 #
 # Author:: Chris Jones <cjones303@bloomberg.net>
 # Cookbook Name:: chef-bcs
-# Recipe:: restapi-firewall
 #
 # Copyright 2016, Bloomberg Finance L.P.
 #
@@ -18,19 +17,13 @@
 # limitations under the License.
 #
 
-# FirewallD rules for restapi
-# open standard http port to tcp traffic only; insert as first rule
-# 443 is not required since civetweb does not terminate SSL. Use anyone of the following to terminate SSL traffic:
-# Hardware load balancer
-# Software load balancer
-# Proxy like NGINX or something that can terminate SSL and then proxy on to rgw
-# Can also tighten even further by only allowing traffic from upstream load balancer etc...
-firewall_rule 'http' do
-  port node['chef-bcs']['ceph']['restapi']['port']
-  protocol :tcp
-  command :allow
-end
+# Monitoring recipe:
+# Installs Diamond, collectd, zabbix-agent
+# Will also need Splunk's rpm
+#
+# collectd and zabbix are upstream in the RHN repos - zabbix needs to be 2.4 or higher - current repo version is 2.2
+# Diamond needs to be installed differently
 
-firewall 'default' do
-  action :save
-end
+# Splunk needs keys etc
+#
+#

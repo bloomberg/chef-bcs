@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright 2015, Bloomberg Finance L.P.
+# Copyright 2016, Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -34,10 +34,10 @@ echo " \____|_| |_|\___|_|       |____/ \____|____/ "
 echo
 echo "Chef-BCS Vagrant Bootstrap"
 echo "--------------------------------------------"
-echo "Bootstrapping local Vagrant environment..."
+echo "Bootstrapping local CEPH environment using Vagrant..."
 echo
 
-while getopts cbsvdot opt; do
+while getopts cbsvdo:t: opt; do
     case $opt in
         b)
             BUILD_VMS_ONLY=1
@@ -67,6 +67,12 @@ done
 
 source ../base_environment.sh
 
+# IMPORTANT!!!!!
+# Copy over the Vagrantfile_bcs to Vagrantfile
+# There are two Vagrantfile* files. One for building the build environment (Vagrant_build_env) and one for
+# building the BCS cluster (Vagrantfile_bcs) for testing.
+cp Vagrantfile_bcs Vagrantfile
+
 export CHEF_KNIFE_DEBUG=${CHEF_KNIFE_DEBUG:-""}
 export CHEF_CLIENT_DEBUG=${CHEF_CLIENT_DEBUG:-""}
 
@@ -83,6 +89,9 @@ export BUILD_VMS_ONLY=${BUILD_VMS_ONLY:-0}
 export BOOTSTRAP_SKIP_VMS=${BOOTSTRAP_SKIP_VMS:-0}
 # Vagrant debug flag
 export BOOTSTRAP_VAGRANT_DEBUG=${BOOTSTRAP_VAGRANT_DEBUG:-0}
+
+# Force the banner to show
+export DONT_SHOW_BANNER=0
 
 # Perform preflight checks to validate environment sanity as much as possible.
 echo "Performing preflight environment validation..."
@@ -131,6 +140,7 @@ if [[ $BOOTSTRAP_TYPE == "vagrant" ]]; then
     echo "--------------------------------"
   fi
 
+  # Added here to refresh the environment vars only
   source vagrant_base.sh
 
   echo "You can access the vms using the following:"

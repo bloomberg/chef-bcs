@@ -1,3 +1,4 @@
+####################################
 # kickstart template for Chef-BCS Nodes that are NON-OSD nodes. If the node is a converged node where the node serves
 # multiple roles such as OSD, MON, RGW then the other kickstart for OSD should be used. This is for stand alone
 # MON, MDS, RGW nodes.
@@ -30,7 +31,7 @@ eula --agreed
 # System bootloader configuration
 # Use grub2-mkpasswd-pbkdf2 to generate cryptic password for security
 # bootloader --append=" crashkernel=auto" --location=mbr --boot-drive=sda --iscrypted --password={{ bootloader_pwd }}
-bootloader --append=" crashkernel=auto" --location=mbr --boot-drive=sda <%= node['chef-bcs']['cobbler']['kickstart']['bootloader']['passwd_type'] %> <%= node['chef-bcs']['cobbler']['kickstart']['bootloader']['passwd'] %>
+bootloader --location=mbr <%= node['chef-bcs']['cobbler']['kickstart']['bootloader']['passwd_type'] %> <%= node['chef-bcs']['cobbler']['kickstart']['bootloader']['passwd'] %>
 
 # Partition clearing information
 clearpart --all --initlabel
@@ -94,22 +95,27 @@ $SNIPPET('pre_install_network_config')
 $SNIPPET('pre_anamon')
 %end
 
-%packages
+%packages --nobase --ignoremissing
 <% if node['chef-bcs']['cobbler']['os']['name'] == 'centos-7' %>
 # CentOS
-@^Infrastructure Server
+@Infrastructure Server
 # CentOS end
 <% else %>
 # RHEL begin
 @^infrastructure-server-environment
 # RHEL end
 <% end -%>
-kexec-tools
-vim
-git
 wget
 curl
+iputils
+net-tools
 ntp
+ntpdate
+parted
+kexec-tools
+vim
+tmux
+git
 tftp-server
 dnsmasq
 %end
@@ -121,13 +127,8 @@ exec 1>/mnt/sysimage/root/kickstart-stage1.log 2>&1
 
 %end
 
-%post
+%post --log=/root/kickstart-stage2.log
 $SNIPPET('log_ks_post')
-exec 1>/mnt/sysimage/root/kickstart-stage2.log 2>&1
-
-# Allow root login to begin with. Chef recipe will disable later in process.
-sed -i "s/#PermitRootLogin yes/PermitRootLogin yes/" /etc/ssh/sshd_config
-sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
 
 # Start yum configuration
 $yum_config_stanza
@@ -142,6 +143,15 @@ $SNIPPET('cobbler_register')
 # Enable post-install boot notification
 $SNIPPET('post_anamon')
 # Start final steps
+# Sets the --netboot flag for the host on cobbler
+$SNIPPET('kickstart_done')
+
+#!/bin/sh
+set -x
+
+# Allow root login to begin with. Chef recipe will disable later in process.
+sed -i "s/#PermitRootLogin yes/PermitRootLogin yes/" /etc/ssh/sshd_config
+sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
 
 <% node['chef-bcs']['cobbler']['kickstart']['users'].each do | usr | %>
 <% if usr['key'] %>
@@ -154,10 +164,8 @@ chown <%= usr['name'] %>:<%= usr['name'] %> -R /home/<%= usr['name'] %>/.ssh
 <% if usr['sudo'] %>
 echo "%<%= usr['name'] %> ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/<%= usr['name'] %>
 sed -i "s/^[^#].*requiretty/#Defaults requiretty/" /etc/sudoers
+echo "<%= usr['name'] %> ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/<%= usr['name'] %>
 <% end %>
 <% end -%>
 
-# Sets the --netboot flag for the host on cobbler
-$SNIPPET('kickstart_done')
-# End final steps
 %end

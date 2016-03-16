@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright 2015, Bloomberg Finance L.P.
+# Copyright 2016, Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -54,13 +54,9 @@ else
   set +e
 fi
 
-# This script does a lot of stuff:
-# - installs Chef Server on the ceph-bootstrap node
-# - installs Chef client on all nodes
-
 # It would be more efficient as something executed in one shot on each node, but
 # doing it this way makes it easy to orchestrate operations between nodes. It will be
-# overhauled at some point to not be Vagrant-specific.
+# overhauled at some point.
 
 do_on_node() {
   echo

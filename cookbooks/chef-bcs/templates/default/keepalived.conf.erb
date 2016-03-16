@@ -1,0 +1,61 @@
+################################################
+# Auto generated
+################################################
+
+global_defs {
+  router_id <%= node['hostname'] %>
+}
+
+# fall - takes this many tries before going into a fail state
+# rise - takes this many tries before going into an active state
+vrrp_script chk_haproxy {
+  script "killall -0 haproxy"
+  interval 2
+  weight 2
+  #fall 2
+  #rise 1
+  # NOTE: Can add a script here or in a vrrp_instance below to keep resources off until required.
+  # For example, dynamically stop a service if no longer master and start secondary services that can run etc.
+}
+
+# Set the sync group so that all of the VIPs are moved if something happens to anyone of them.
+vrrp_sync_group VG1 {
+  group {
+    <% node['chef-bcs']['adc']['vips'].each_with_index do | vip, index | %>
+    vrrp_inst_<%= 100 + index %>
+    <% end -%>
+  }
+}
+
+# Have an instance per VIP
+<% node['chef-bcs']['adc']['vips'].each_with_index do | vip, index | %>
+# Network tier: <%= vip['name'] %>
+vrrp_instance <%= 100 + index %> {
+  virtual_router_id <%= 100 + index %>
+
+  # for electing MASTER, highest priority wins.
+  priority  <%= @server['priority'] %>
+  # Setting state to BACKUP and nopreempt says to not switch to higher priority node until something happens
+  state     BACKUP
+  nopreempt
+
+  # Advert interval
+  advert_int 1
+
+  interface <%= vip['interface'] %>
+
+  virtual_ipaddress {
+    <%="#{vip['ip']} dev #{vip['interface']}"%>
+  }
+  track_script {
+<% if node['chef-bcs']['keepalived']['checks'] %>
+    chk_haproxy
+<% end -%>
+  }
+  authentication {
+    auth_type PASS
+    auth_pass <%= node['chef-bcs']['keepalived']['passwd'] %>
+  }
+}
+
+<% end %>
