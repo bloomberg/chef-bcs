@@ -22,7 +22,7 @@ vagrant:
     cpus: 2
     vram: 16
     drive_size: 20480
-    # If proxies are used then the following syntax is used: <proxy node>:<port> <-- Note NO http(s):// prefix
+    # If proxies are used then the following syntax is used: http://<proxy node>:<port>
     http_proxy:
     https_proxy:
     # Important: CA cert directory *must* reside in the root of the project. Put cert(s) in that directory.
