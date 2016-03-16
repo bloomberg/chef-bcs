@@ -259,6 +259,7 @@ if [[ $BUILD_VMS_ONLY -eq 0 ]]; then
 
   # Build base.sh script
   do_on_node $vm "sudo /ceph-host/bootstrap/templates/jinja_render.py -d /ceph-host/bootstrap/data/environment/$BUILD_ENV/base-seed.yaml -i /ceph-host/bootstrap/data/environment/$env/base.sh.j2 -o /tmp/build/iso/postinstall/ceph-host/bootstrap/data/environment/$env/scripts/base.sh"
+  do_on_node $vm "sudo chmod +x /tmp/build/iso/postinstall/ceph-host/bootstrap/data/environment/$env/scripts/base.sh"
 
   # Build Data - isolinux.cfg
   do_on_node $vm "sudo /ceph-host/bootstrap/templates/jinja_render.py -d /ceph-host/bootstrap/data/environment/$BUILD_ENV/base-seed.yaml -i /ceph-host/bootstrap/templates/isolinux.cfg.j2 -o /tmp/build/iso/isolinux/isolinux.cfg"

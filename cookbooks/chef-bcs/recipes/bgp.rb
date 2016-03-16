@@ -17,38 +17,32 @@
 # limitations under the License.
 #
 
-package 'keepalived' do
+# NOTE: ipv4 forwarding rule is applied in the keepalived recipe which is needed for bgp
+
+package 'bird' do
   action :upgrade
 end
 
+# The above package should be 1.5.0 or higher but I have seen 1.4.5 in older repos. The rpm is included in
+# /ceph-files/ with the latest version of bird so that it can be installed instead if needed.
+
 # Set the config
-# NOTE: If the virtual_router_id is
-template "/etc/keepalived/keepalived.conf" do
-  source 'keepalived.conf.erb'
+template "/etc/bird.conf" do
+  source 'bird.conf.erb'
   variables lazy {
     {
-      :adc_nodes => adc_nodes,
-      :server => get_keepalived_server
+      :interface_ip => get_bgp_interface_ip
     }
   }
 end
 
-# All for binding additional IPs not found in ifcfg files.
-# Sets ipv4 forwarding rule 
-template "/etc/sysctl.d/99-sysctl.conf" do
-  source '99-sysctl.conf.erb'
-end
-
-execute 'update-sysctl' do
-  command 'sysctl -p'
-end
-
 if node['chef-bcs']['init_style'] == 'upstart'
 else
-  service 'keepalived' do
+  service 'bird' do
+    restart_command "service bird stop && service bird start && sleep 5"
     provider Chef::Provider::Service::Redhat
     action [:enable, :start]
     supports :restart => true, :status => true
-    subscribes :restart, "template[/etc/keepalived/keepalived.conf]"
+    subscribes :restart, "template[/etc/bird.conf]"
   end
 end

@@ -186,6 +186,16 @@ def adc_nodes
   results.sort! { |a, b| a['hostname'] <=> b['hostname'] }
 end
 
+# BGP uses the keepalived servers which always use the "public" interface
+def get_bgp_interface_ip
+  val = nil
+  if is_adc_node
+    server = get_keepalived_server
+    val = server['ip']
+  end
+  val
+end
+
 def get_server
   val = nil
   servers = node['chef-bcs']['cobbler']['servers']

@@ -41,9 +41,16 @@
         },
         "ssl": {
           "path": "/etc/ssl/private",
-          "pem": "s3.bcs.bloomberg.com.pem"
+          "endpoints": [
+          {%- for item in adc.haproxy.ssl.endpoints %}
+            {"url": "{{ item.url }}", "cert": "{{ item.cert }}" }{%- if not loop.last %},{% endif %}
+          {%- endfor %}
+          ]
         },
         "vip": {
+          "prefix": {{ vips.prefix }},
+          "netmask": {{ vips.netmask }},
+          "cidr": {{ vips.cidr }},
           "port": {
             "ssl": 443,
             "non_ssl": 80
@@ -51,10 +58,19 @@
         },
         "vips": [
         {%- for item in vips %}
-          {"name": "{{ item.name }}", "ip": "{{ item.ip }}", "cidr": {{ item.cidr }}, "interface": "{{ item.interface }}"}{%- if not loop.last %},{% endif %}
+          {"name": "{{ item.name }}", "ip": "{{ item.ip }}", "cidr": {{ vips.cidr }}, "interface": "{{ item.interface }}"}{%- if not loop.last %},{% endif %}
         {%- endfor %}
         ],
         {#- VIPS are 10.121.16.16/28 range (.17 - .30). Advertised via BGP or Static+BFD Beacon. #}
+        "bgp": {
+          "asn": {{ adc.bgp.asn }},
+          "interface": "{{ adc.bgp.interface }}",
+          "peers": [
+            {%- for item in adc.bgp.peers %}
+              {"name": "{{ item.name }}", "label": "{{ item.label }}", "ip": "{{ item.ip }}"}{%- if not loop.last %},{% endif %}
+            {%- endfor %}
+          ]
+        }
         "backend": {
           "servers": [
           {%- for item in backend.servers %}

@@ -83,10 +83,12 @@ execute 'cobbler-sync' do
   only_if "test -f /tmp/#{node['chef-bcs']['cobbler']['os']['distro']}"
 end
 
+# NOTE: The items below can fail but also means it will have to be updated manually. This
 # NOTE: The /tmp/postinstall must exist
 execute 'tar-postinstall' do
   command lazy { "tar -zcvf /var/www/cobbler/pub/postinstall.tar.gz /tmp/postinstall/" }
   not_if "test -f /var/www/cobbler/pub/postinstall.tar.gz"
+  ignore_failure true
 end
 
 # Get the validate.pem and install client.rb into /var/www/cobbler/pub
@@ -96,11 +98,13 @@ bash 'copy-chef-node' do
     sudo cp /etc/opscode/bcs-validator.pem /var/www/cobbler/pub/validation.pem
     sudo chmod 0644 /var/www/cobbler/pub/validation.pem
   EOH
+  ignore_failure true
 end
 
 template '/var/www/cobbler/pub/client.rb' do
   source 'client.rb.erb'
   mode '0644'
+  ignore_failure true
 end
 
 # NOTE: The kickstart process creates the directores, wgets the files to the node's /etc/chef and sets the permissions.

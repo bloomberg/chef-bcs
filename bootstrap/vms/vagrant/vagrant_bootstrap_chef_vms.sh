@@ -37,8 +37,8 @@ for vm in ${ceph_vms[@]}; do
   # directory this script is located in. This will clean any network issues. Same holds true for other VMs.
   do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE bootstrap -x vagrant --bootstrap-no-proxy '$CEPH_CHEF_BOOTSTRAP.$BOOTSTRAP_DOMAIN,$vm.$BOOTSTRAP_DOMAIN' $KNIFE_HTTP_PROXY_PARAM -P vagrant --sudo $vm.$BOOTSTRAP_DOMAIN $CHEF_KNIFE_DEBUG"
 
-  # REQUIRED gems: netaddr-1.5.0 for ceph-chef Cookbook
-  do_on_node $vm "sudo cp /ceph-files/gems/netaddr-1.5.0.gem /tmp/."
+  # REQUIRED gems: netaddr-1.5.1 for ceph-chef Cookbook
+  do_on_node $vm "sudo cp /ceph-files/gems/netaddr-1.5.1.gem /tmp/."
 done
 
 # augment the previously configured nodes with our newly uploaded environments and roles

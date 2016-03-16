@@ -45,6 +45,18 @@ download_file() {
   fi
 }
 
+ftp_file() {
+  FILE=$1
+  URL=$2
+
+  if [[ ! -f $BOOTSTRAP_CACHE_DIR/$FILE && ! -f $BOOTSTRAP_CACHE_DIR/${FILE}_downloaded ]]; then
+    echo $FILE
+    rm -f $BOOTSTRAP_CACHE_DIR/$FILE
+    wget $URL -O $BOOTSTRAP_CACHE_DIR/$FILE
+    touch $BOOTSTRAP_CACHE_DIR/${FILE}_downloaded
+  fi
+}
+
 # Obtain an RHEL 7.2 image to be used for PXE booting in production.
 if [[ ! -z $COBBLER_BOOTSTRAP_ISO ]]; then
   if [[ $COBBLER_DOWNLOAD_ISO -eq 1 ]]; then
@@ -67,11 +79,14 @@ export CHEF_SERVER_RPM=chef-server-core-12.4.1-1.el7.x86_64.rpm
 download_file $CHEF_CLIENT_RPM https://opscode-omnibus-packages.s3.amazonaws.com/el/7/x86_64/$CHEF_CLIENT_RPM
 download_file $CHEF_SERVER_RPM https://web-dl.packagecloud.io/chef/stable/packages/el/7/$CHEF_SERVER_RPM
 
+# BIRD is a little different :)
+ftp_file bird-1.5.0-1.x86_64.rpm ftp://bird.network.cz/pub/bird/redhat/bird-1.5.0-1.x86_64.rpm
+
 # Pull needed *cookbooks* from the Chef Supermarket.
 mkdir -p $BOOTSTRAP_CACHE_DIR/{cookbooks,gems}
 
 # Most important cookbook
-download_file cookbooks/ceph-chef-0.9.10.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/ceph-chef/versions/0.9.10/download
+download_file cookbooks/ceph-chef-0.9.11.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/ceph-chef/versions/0.9.11/download
 
 download_file cookbooks/poise-2.6.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/poise/versions/2.6.0/download
 download_file cookbooks/chef-client-4.3.3.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/chef-client/versions/4.3.3/download
@@ -90,7 +105,7 @@ download_file cookbooks/sudo-2.9.0.tar.gz http://cookbooks.opscode.com/api/v1/co
 
 # Gems
 # REQUIRED for ceph-chef cookbook - must be installed before doing 'sudo chef-client' on any node
-download_file gems/netaddr-1.5.0.gem https://rubygems.org/downloads/netaddr-1.5.0.gem
+download_file gems/netaddr-1.5.1.gem https://rubygems.org/downloads/netaddr-1.5.1.gem
 
 # Pull knife-acl gem.
 # 0.0.12

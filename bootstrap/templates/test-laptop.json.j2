@@ -43,6 +43,9 @@
           "pem": "s3.bcs.bloomberg.com.pem"
         },
         "vip": {
+        "prefix": {{ vips.prefix }},
+        "netmask": {{ vips.netmask }},
+        "cidr": {{ vips.cidr }},
           "port": {
             "ssl": 443,
             "non_ssl": 80
@@ -50,7 +53,7 @@
         },
         "vips": [
         {%- for item in vips %}
-          {"name": "{{ item.name }}", "ip": "{{ item.ip }}", "cidr": {{ item.cidr }}, "interface": "{{ item.interface }}"}{%- if not loop.last %},{% endif %}
+          {"name": "{{ item.name }}", "ip": "{{ item.ip }}", "cidr": {{ vips.cidr }}, "interface": "{{ item.interface }}"}{%- if not loop.last %},{% endif %}
         {%- endfor %}
         ],
         {# VIPS are 10.121.16.16/28 range (.17 - .30). Advertised via BGP or Static+BFD Beacon. #}
