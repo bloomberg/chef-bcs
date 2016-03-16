@@ -26,7 +26,7 @@ user:
   group: wheel
   comment: "Operations user"
   passwd: $6$Salt$3xxLPT099nzTbWkOS3CPNcar/zSLQ8BEgZdJk/AOkOb4V80sPepbraWcvrJvEEu6PswpKUw1WodWeiqRo1bw2/
-  key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDUOyIleeXtMVjz1YHMcg+VfWc4mhgRNGqYAzH9pYT3WYt7w3y/qYQKanbEy+Hf/mL6GDdTsRm8ql0MW6jeWaeVGCQDo1pJyEqrg4HJpJ5+u3suWlUE12JMb1cmBUBMSy7Wfly4iOB+RD53Ct3yisOAZnfmt72R5OAvN7ON4aJBbDUCRWnA/BhEPJOJxYamV5pVcfBApJWtMXzTmeLcwqstmQRHuC8QLzVN2N1+WbbE4ngoPAxyt6DxcnKpyVPZR2YTPbb6hjyB4OJemp0A1og32kA+KrksPo5x7HicWZ/Lrxga2Zjib7geB1c2pxc8FfFxwKlMVMwxovME1MhKk9T"
+  key: "<whatever your key is>"
   private_key: ""
   sudo: true
 # Bootstrap
