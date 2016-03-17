@@ -118,5 +118,33 @@ for GEM in ${GEMS[@]}; do
   download_file gems/$GEM.gem https://rubygems.global.ssl.fastly.net/gems/$GEM.gem
 done
 
-# If you just want all of the latest rpms
+# TODO: Need to clean up what is not needed below!
+
+# Obtain various items used for monitoring.
+# Remove obsolete kibana package
+rm -f $BOOTSTRAP_CACHE_DIR/kibana-4.0.2-linux-x64.tar.gz_downloaded $BOOTSTRAP_CACHE_DIR/kibana-4.0.2-linux-x64.tar.gz
+# Remove obsolete cached items for BrightCoveOS Diamond
+rm -rf $BOOTSTRAP_CACHE_DIR/diamond_downloaded $BOOTSTRAP_CACHE_DIR/diamond
+# unfortunately GitHub ZIP files do not contain the actual Git index, so we must use Git to clone here
+if [[ ! -f $BOOTSTRAP_CACHE_DIR/python-diamond_downloaded ]]; then
+  git clone https://github.com/python-diamond/Diamond $BOOTSTRAP_CACHE_DIR/python-diamond
+  touch $BOOTSTRAP_CACHE_DIR/python-diamond_downloaded
+fi
+if [[ ! -f $BOOTSTRAP_CACHE_DIR/elasticsearch-head_downloaded ]]; then
+  git clone https://github.com/mobz/elasticsearch-head $BOOTSTRAP_CACHE_DIR/elasticsearch-head
+  touch $BOOTSTRAP_CACHE_DIR/elasticsearch-head_downloaded
+fi
+
+download_file pyrabbit-1.0.1.tar.gz https://pypi.python.org/packages/source/p/pyrabbit/pyrabbit-1.0.1.tar.gz
+download_file requests-aws-0.1.6.tar.gz https://pypi.python.org/packages/source/r/requests-aws/requests-aws-0.1.6.tar.gz
+download_file pyzabbix-0.7.3.tar.gz https://pypi.python.org/packages/source/p/pyzabbix/pyzabbix-0.7.3.tar.gz
+download_file pagerduty-zabbix-proxy.py https://gist.githubusercontent.com/ryanhoskin/202a1497c97b0072a83a/raw/96e54cecdd78e7990bb2a6cc8f84070599bdaf06/pd-zabbix-proxy.py
+
+download_file carbon-0.9.13.tar.gz http://pypi.python.org/packages/source/c/carbon/carbon-0.9.13.tar.gz
+download_file whisper-0.9.13.tar.gz http://pypi.python.org/packages/source/w/whisper/whisper-0.9.13.tar.gz
+download_file graphite-web-0.9.13.tar.gz http://pypi.python.org/packages/source/g/graphite-web/graphite-web-0.9.13.tar.gz
+
+
+
+# IF you just want all of the latest rpms
 # wget -r -l1 -np http://download.ceph.com/rpm-hammer/el7/x86_64/ -P . -A "*0.94.6*"
