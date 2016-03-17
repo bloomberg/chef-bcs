@@ -39,6 +39,8 @@ for vm in ${ceph_vms[@]}; do
 
   # REQUIRED gems: netaddr-1.5.1 for ceph-chef Cookbook
   do_on_node $vm "sudo cp /ceph-files/gems/netaddr-1.5.1.gem /tmp/."
+  do_on_node $vm "sudo chown vagrant:vagrant /tmp/netaddr-1.5.1.gem"
+  do_on_node $vm "/opt/chef/embedded/bin/gem install --force --local /tmp/netaddr-1.5.1.gem"
 done
 
 # augment the previously configured nodes with our newly uploaded environments and roles
