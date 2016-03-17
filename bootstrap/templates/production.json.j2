@@ -8,6 +8,7 @@
   "chef_type": "environment",
   "override_attributes": {
     "chef-bcs": {
+      "environment": "production",
       "bootstrap": {
         "name": "{{ node.name }}",
         "env": "{{ node.env }}",
@@ -48,8 +49,8 @@
           ]
         },
         "vip": {
-          "prefix": {{ vips.prefix }},
-          "netmask": {{ vips.netmask }},
+          "prefix": "{{ vips.prefix }}",
+          "netmask": "{{ vips.netmask }}",
           "cidr": {{ vips.cidr }},
           "port": {
             "ssl": 443,
@@ -70,7 +71,7 @@
               {"name": "{{ item.name }}", "label": "{{ item.label }}", "ip": "{{ item.ip }}"}{%- if not loop.last %},{% endif %}
             {%- endfor %}
           ]
-        }
+        },
         "backend": {
           "servers": [
           {%- for item in backend.servers %}

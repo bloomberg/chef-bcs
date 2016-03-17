@@ -7,6 +7,7 @@
   "chef_type": "environment",
   "override_attributes": {
     "chef-bcs": {
+      "environment": "vagrant",
       "bootstrap": {
         "name": "ceph-bootstrap",
         "env": "/home/vagrant/chef-bcs/environments",
@@ -40,9 +41,14 @@
         },
         "ssl": {
           "path": "/etc/ssl/private",
-          "pem": "s3.adc.pem"
+          "endpoints": [
+            {"url": "s3.vagrant.ceph.example.com", "cert": "s3.vagrant.ceph.example.com.crt"}
+          ]
         },
         "vip": {
+          "prefix": "10.121.16.16",
+          "netmask": "255.255.255.240",
+          "cidr": 28,
           "port": {
             "ssl": 443,
             "non_ssl": 80
@@ -54,6 +60,13 @@
           {"name": "dev", "ip": "10.121.16.19", "cidr": 28, "interface": "enp0s8"}
         ],
         "NOTE-VIP": "VIPS are 10.121.16.16/28 range (.17 - .30). Advertised via BGP",
+        "bgp": {
+          "asn": 65001,
+          "interface": "enp0s8",
+          "peers": [
+            {"name": "bgp_peer1", "label": "Peer 1", "ip": "10.121.16.8"}
+          ]
+        },
         "backend": {
           "servers": [
             {"name": "ceph-vm1", "weight": 6, "port": 8080, "options": "check inter 2s rise 2 fall 3"},
@@ -157,16 +170,6 @@
               "key": "ceph_bootstrap.pub",
               "shell": "/bin/bash",
               "comment": "Operations user",
-              "groups": "wheel",
-              "sudo": true
-            },
-            {
-              "name": "cjones303",
-              "passwd": "$6$Salt$6AyUczFy6SgV8A2wKAKfA9drpzrUsTGPJ3QjcWBbgS97BxBO.C7ZcBFALRiRkKfi9x8MK2SHet38BCQWS9LsR/",
-              "passwd_type": "--iscrypted",
-              "key": "ceph_bootstrap.pub",
-              "shell": "/bin/bash",
-              "comment": "Awesome - what more can be said?",
               "groups": "wheel",
               "sudo": true
             }
@@ -310,7 +313,7 @@
             "key": "cloud-object-store"
           }
         },
-        "repo_mirror": true
+        "repo_mirror": false
       },
       "ceph": {
         "cluster": "ceph",
