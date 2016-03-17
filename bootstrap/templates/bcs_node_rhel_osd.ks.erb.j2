@@ -191,6 +191,8 @@ EOM
 chmod +x /tmp/rhelsub.sh
 {% endif %}
 
+cp /ceph-host/bootstrap/data/environment/{{ node.environment }}/*.crt /tmp
+
 rpm -Uvh /ceph-files/{{ chef.rpms.client }}
 
 # Set up the node for chef-client
@@ -206,6 +208,8 @@ chef-client
 
 cat <<EOM >/tmp/chef-enroll.sh
 yum update -y
+cp /ceph-host/bootstrap/data/environment/{{ node.environment }}/*.crt /tmp
+
 rpm -Uvh /ceph-files/{{ chef.rpms.client }}
 
 # Set up the node for chef-client

@@ -43,11 +43,12 @@ frontend radosgw-http-<%="#{vip['name']}"%>
   option tcplog
   default_backend radosgw-http-backend
 
-#frontend radosgw-https-<%="#{vip['name']}"%>
-#  bind <%="#{vip['ip']}:#{node['chef-bcs']['adc']['vip']['port']['ssl']}"%> ssl crt <%="#{node['chef-bcs']['adc']['ssl']['path']}/#{node['chef-bcs']['adc']['ssl']['path']}" %>
-#  option tcplog
-#  default_backend radosgw-http-backend
-
+<% if vip['ssl'] %>
+frontend radosgw-https-<%="#{vip['name']}"%>
+  bind <%="#{vip['ip']}:#{node['chef-bcs']['adc']['vip']['port']['ssl']}"%> ssl crt <%="#{node['chef-bcs']['adc']['ssl']['path']}/#{vip['cert']}" %>
+  option tcplog
+  default_backend radosgw-http-backend
+<% end %>
 <% end %>
 
 # NOTE: Could try to have a vip related backend since vips represent network tiers. Try to have a different instance

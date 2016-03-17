@@ -21,15 +21,18 @@ package 'haproxy' do
   action :upgrade
 end
 
-bash "enable-defaults-haproxy" do
-  user "root"
+bash 'enable-defaults-haproxy' do
+  user 'root'
   code <<-EOH
-      sed --in-place '/^ENABLED=/d' /etc/default/haproxy
-      echo 'ENABLED=1' >> /etc/default/haproxy
+    sed --in-place '/^ENABLED=/d' /etc/default/haproxy
+    echo 'ENABLED=1' >> /etc/default/haproxy
   EOH
   not_if "grep -e '^ENABLED=1' /etc/default/haproxy"
 end
 
+#
+# SSL Certs are unique to your environment so copy them over from a secure location during init phase of collecting your pre-reqs
+#
 directory '/etc/ssl/private' do
   owner 'root'
   group 'root'
@@ -40,8 +43,15 @@ directory '/etc/ssl/private' do
 end
 
 
-# Add SSL PEM here
-
+bash 'copy-ssl-certs' do
+  user 'root'
+  code <<-EOH
+    sudo cp /tmp/*.crt #{node['chef-bcs']['adc']['ssl']['path']}/.
+    sudo chmod 0444 #{node['chef-bcs']['adc']['ssl']['path']}/*
+  EOH
+  only_if "test -f /tmp/*.crt"
+end
+# SSL End
 
 # Set the config
 template "/etc/haproxy/haproxy.cfg" do
