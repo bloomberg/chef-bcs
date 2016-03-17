@@ -30,7 +30,7 @@ protocol static static_vips {
   route <%= node['chef-bcs']['adc']['vip']['prefix'] %>:<%= node['chef-bcs']['adc']['vip']['netmask'] %> via <%= @interface_ip %>
 }
 
-<% node['chef-bcs']['adc']['bgp']['peers'].each do |peer|
+<% node['chef-bcs']['adc']['bgp']['peers'].each do |peer| %>
 protocol bgp peer['label'] {
   import none;
   description "#{peer['name']}";
@@ -41,4 +41,5 @@ protocol bgp peer['label'] {
   local as <%= node['chef-bcs']['adc']['bgp']['asn'] %>;
   neighbor peer['ip'] as <%= node['chef-bcs']['adc']['bgp']['asn'] %>;
 }
+
 <% end %>

@@ -57,7 +57,7 @@ set -e
 
 # CAN ONLY be ran from the /chef-bcs/bootstrap/vms/vagrant directory!
 
-while getopts bd:e:g:v opt; do
+while getopts bd:e:g:p:v opt; do
     case $opt in
         b)
             BUILD_VMS_ONLY=1
@@ -72,12 +72,19 @@ while getopts bd:e:g:v opt; do
         g)
             internal_git=$OPTARG
             ;;
+        p)
+            BOOTSTRAP_HTTP_PROXY=$OPTARG
+            BOOTSTRAP_HTTPS_PROXY=$OPTARG
+            ;;
         # verbose
         v)
             set -x
             ;;
     esac
 done
+
+export BOOTSTRAP_HTTP_PROXY=${BOOTSTRAP_HTTP_PROXY:-}
+export BOOTSTRAP_HTTPS_PROXY=${BOOTSTRAP_HTTPS_PROXY:-}
 
 # NOTE: Check your private data documentation for these values before running this!
 echo "Environment:"
