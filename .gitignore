@@ -15,6 +15,7 @@
 #
 
 /bootstrap/data/environment/
+
 .DS_Store
 ceph-chef/
 .idea/
