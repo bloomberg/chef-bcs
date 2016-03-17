@@ -30,6 +30,9 @@ bash 'enable-defaults-haproxy' do
   not_if "grep -e '^ENABLED=1' /etc/default/haproxy"
 end
 
+#
+# SSL Certs are unique to your environment so copy them over from a secure location during init phase of collecting your pre-reqs
+#
 directory '/etc/ssl/private' do
   owner 'root'
   group 'root'
@@ -39,9 +42,6 @@ directory '/etc/ssl/private' do
   not_if "test -d /etc/ssl/private"
 end
 
-#
-# SSL Certs are unique to your environment so copy them over from a secure location during init phase of collecting your pre-reqs
-#
 
 bash 'copy-ssl-certs' do
   user 'root'
@@ -51,6 +51,7 @@ bash 'copy-ssl-certs' do
   EOH
   only_if "test -f /tmp/*.crt"
 end
+# SSL End
 
 # Set the config
 template "/etc/haproxy/haproxy.cfg" do
