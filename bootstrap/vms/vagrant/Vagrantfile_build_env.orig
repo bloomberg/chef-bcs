@@ -29,10 +29,12 @@ require 'yaml'
 
 Vagrant.require_version ">= 1.7.4"
 
+# NOTE: (IMPORTANT)
+# NOTE: The repo_root should be the $BOOTSTRAP_CACHE_DIR so that it uses the cache path instead of wip repo
 if ENV['REPO_ROOT'].nil?
     $path = File.dirname(__FILE__) + "/.."
 else
-    $path = "#{ENV['REPO_ROOT']}/bootstrap/vms"
+    $path = "#{ENV['REPO_ROOT']}/build/github/combined/chef-bcs/bootstrap/vms"
 end
 
 environment = YAML.load_file("#{$path}/build_environment_config.yaml")
