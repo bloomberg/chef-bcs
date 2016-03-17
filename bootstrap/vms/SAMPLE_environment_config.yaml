@@ -1,0 +1,35 @@
+---
+# NOTE: Copy this SAMPLE_environment_config.yaml to environment_config.yaml and then update the following IF needed for your environment:
+# http_proxy, https_proxy, ssl_ca_file_path, ssl_ca_intermediate_file_path
+
+# Example of Vagrant specific environment configuration file. In production there should another one with 'production'
+# as the main type instead of 'vagrant'.
+# NOTE: The values below are Vagrant only. A production like version would only have values reflective of that
+# environment which may or may not contain some of the information below (i.e., http_proxy etc).
+vagrant:
+    box: bento/centos-7.1  # centos/7
+    lsb_name: centos
+    storage_controller: SATA Controller
+    domain: ceph.example.com
+    # Netmask and CIDR block suffix
+    net_mask:
+        - 255.255.255.0
+        - 24
+    # Must be two DNS entries. If you change this then make sure to change the Vagrantfile where it builds the dns info
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    front_end_adapter_ip: 10.121.1.1
+    back_end_adapter_ip: 10.121.2.1
+    memory: 2560
+    cpus: 2
+    vram: 16
+    drive_size: 20480
+    # If proxies are used then the following syntax is used: http://<proxy node>:<port> <-- Note put http or https if applicable
+    http_proxy:
+    https_proxy:
+    # Important: CA cert directory *must* reside in the root of the project. Put cert(s) in that directory.
+    # Also, you're not required to use an intermediate CA cert. If you don't use an intermediate cert, then leave it blank.
+    # Example: certs/my_firm_cert.pem and certs/my_firm_intermediate_cert.pem
+    ssl_ca_file_path:
+    ssl_ca_intermediate_file_path:

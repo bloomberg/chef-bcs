@@ -71,6 +71,11 @@ done
 
 source ../base_environment.sh
 
+# Check for an existing environment_config.yaml file in /bootstrap/vms. If one exists then do nothing else copy over SAMPLE_environment_config.yaml
+if [[ ! -f $REPO/bootstrap/vms/environment_config.yaml ]]; then
+  cp $REPO/bootstrap/vms/SAMPLE_environment_config.yaml $REPO/bootstrap/vms/environment_config.yaml
+fi
+
 # IMPORTANT!!!!!
 # Copy over the Vagrantfile_bcs to Vagrantfile
 # There are two Vagrantfile* files. One for building the build environment (Vagrant_build_env) and one for
