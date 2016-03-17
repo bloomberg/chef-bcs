@@ -61,6 +61,7 @@
         ],
         "NOTE-VIP": "VIPS are 10.121.16.16/28 range (.17 - .30). Advertised via BGP",
         "bgp": {
+          "enable": false,
           "asn": 65001,
           "interface": "enp0s8",
           "peers": [
