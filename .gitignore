@@ -16,7 +16,9 @@
 
 /bootstrap/data/environment/
 /bootstrap/vms/environment_config.yaml
+/bootstrap/vms/build_environment_config.yaml
 environment_config.yaml
+build_environment_config.yaml
 .DS_Store
 ceph-chef/
 .idea/

@@ -106,10 +106,9 @@ fi
 # NOTE IMPORTANT - These two scripts are *NOT* included in the public repo because they are specific to your *specific* environment.
 # You can comment them out or add two scripts that build your dns and hosts files.
 # If these two do not exist in your environment then the script will fail here!
+
+# NOTE: REPO_ROOT will change to the cache directory later in this process
 export REPO_ROOT=$(git rev-parse --show-toplevel)
-echo "Building DNS and hosts files..."
-/$REPO_ROOT/bootstrap/data/environment/$env/scripts/build_dns_file.sh $dc
-/$REPO_ROOT/bootstrap/data/environment/$env/scripts/build_hosts_file.sh $dc
 
 # Using environment vars from CEPH_UP :)
 
@@ -197,7 +196,8 @@ fi
 set +e
 rm -rf $BOOTSTRAP_CACHE_DIR/build/github/external
 rm -rf $BOOTSTRAP_CACHE_DIR/build/github/internal
-mkdir -p $BOOTSTRAP_CACHE_DIR/build/github/{external,internal}
+rm -rf $BOOTSTRAP_CACHE_DIR/build/github/combined
+mkdir -p $BOOTSTRAP_CACHE_DIR/build/github/{external,internal,combined}
 set -e
 
 git clone $GITHUB_EXTERNAL_REPO $BOOTSTRAP_CACHE_DIR/build/github/external/$GITHUB_REPO
@@ -208,6 +208,19 @@ if [[ ! -z $internal_git ]]; then
 git clone $GITHUB_INTERNAL_REPO $BOOTSTRAP_CACHE_DIR/build/github/internal/$GITHUB_REPO
 fi
 set -e
+
+# Overlay internal over external to form combined
+cp -r $BOOTSTRAP_CACHE_DIR/build/github/external $BOOTSTRAP_CACHE_DIR/build/github/combined
+cp -r $BOOTSTRAP_CACHE_DIR/build/github/internal $BOOTSTRAP_CACHE_DIR/build/github/combined
+
+echo "Building DNS and hosts files..."
+$BOOTSTRAP_CACHE_DIR/build/github/combined/$GITHUB_REPO/bootstrap/data/environment/$env/scripts/build_dns_file.sh $dc
+$BOOTSTRAP_CACHE_DIR/build/github/combined/$GITHUB_REPO/bootstrap/data/environment/$env/scripts/build_hosts_file.sh $dc
+
+# By changing the repo_root it forces the use of github and any internal git
+export REPO_ROOT=$BOOTSTRAP_CACHE_DIR
+
+# NOTE: (IMPORTANT) - Overlay the internal repo on the external repo in the cache path
 
 # An alternative to the above git clone is to have the clone somewhere on your system and then sym link to it instead :)
 
