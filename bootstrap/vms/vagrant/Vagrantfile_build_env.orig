@@ -16,7 +16,8 @@
 # limitations under the License.
 #
 
-# IMPORTANT - This is a Vagrantfile that *MUST* be copied to Vagrantfile_build_env for BUILD ENVIRONMENT
+# BUILD_ENV
+# IMPORTANT - This is a Vagrantfile that *MUST* be copied FROM Vagrantfile_build_env for BUILD ENVIRONMENT
 
 # NOTE: At the time this project started, the Vagrant fedora plugin seemed to have a bug in it's networking
 # where it overroad nic1 (nat) which caused ssh to fail. So, we had to create a way to update the consistent
@@ -75,14 +76,14 @@ unless $http_proxy_server.nil? or $http_proxy_server.empty?
         $bootstrap_node_name = servers.select { |k| k["roles"] == ["bootstrap"] }[0]["name"]
         $proxy_configuration_script << <<-EOH
             echo 'Defaults    env_keep += "http_proxy https_proxy no_proxy SSL_CERT_FILE"' | sudo tee -a /etc/sudoers
-            echo 'export http_proxy=http://#{$http_proxy_server}' | sudo tee -a /etc/profile
-            echo 'export https_proxy=https://#{$https_proxy_server}' | sudo tee -a /etc/profile
+            echo 'export http_proxy=#{$http_proxy_server}' | sudo tee -a /etc/profile
+            echo 'export https_proxy=#{$https_proxy_server}' | sudo tee -a /etc/profile
             echo 'export no_proxy=127.0.0.1,#{$bootstrap_node_name}.#{$domain}' | sudo tee -a /etc/profile
-            echo 'proxy=http://#{$http_proxy_server};' | sudo tee -a /etc/yum.conf
+            echo 'proxy=#{$http_proxy_server};' | sudo tee -a /etc/yum.conf
             echo 'export http_proxy=#{$http_proxy_server}' | tee -a $HOME/proxy_config.sh
         EOH
     end
-    $proxy_string = "export CEPH_CHEF_HTTP_PROXY=http://#{$http_proxy_server}\nexport CEPH_CHEF_HTTPS_PROXY=https://#{$https_proxy_server}\n"
+    $proxy_string = "export CEPH_CHEF_HTTP_PROXY=#{$http_proxy_server}\nexport CEPH_CHEF_HTTPS_PROXY=#{$https_proxy_server}\n"
 end
 
 # custom SSL CA cert support
@@ -120,8 +121,9 @@ end
 if $lsb_name == 'centos' or $lsb_name == 'rhel'
     $repos_script = <<-EOH
       sudo yum install -y kernel-devel-`uname -r` gcc make perl bzip2
-      sudo yum install -y epel-release rsync
-      sudo yum group install "Development tools"
+      sudo yum install -y epel-release rsync vim anaconda anaconda-help anaconda-runtime
+      sudo yum install -y createrepo /usr/bin/yumdownloader /usr/bin/mkisofs
+      sudo yum install -y python-pip python-jinja2
     EOH
 else
     $repos_script = <<-EOH
