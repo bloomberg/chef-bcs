@@ -86,7 +86,7 @@ download_file $CHEF_SERVER_RPM https://web-dl.packagecloud.io/chef/stable/packag
 mkdir -p $BOOTSTRAP_CACHE_DIR/{cookbooks,gems}
 
 # Most important cookbook
-download_file cookbooks/ceph-chef-0.9.11.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/ceph-chef/versions/0.9.11/download
+download_file cookbooks/ceph-chef-0.9.12.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/ceph-chef/versions/0.9.12/download
 
 download_file cookbooks/poise-2.6.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/poise/versions/2.6.0/download
 download_file cookbooks/chef-client-4.3.3.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/chef-client/versions/4.3.3/download
@@ -144,7 +144,8 @@ download_file carbon-0.9.13.tar.gz http://pypi.python.org/packages/source/c/carb
 download_file whisper-0.9.13.tar.gz http://pypi.python.org/packages/source/w/whisper/whisper-0.9.13.tar.gz
 download_file graphite-web-0.9.13.tar.gz http://pypi.python.org/packages/source/g/graphite-web/graphite-web-0.9.13.tar.gz
 
-
+# Zabbix Agent
+download_file zabbix-agent-2.4.7-1.el7.x86_64.rpm http://repo.zabbix.com/zabbix/2.4/rhel/7/x86_64/
 
 # IF you just want all of the latest rpms
 # wget -r -l1 -np http://download.ceph.com/rpm-hammer/el7/x86_64/ -P . -A "*0.94.6*"

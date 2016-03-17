@@ -226,8 +226,8 @@ end
 
 def get_adc_backend_nodes
   results = []
+  # RGW are backend nodes...
   rgw_nodes = radosgw_nodes
-
   servers = node['chef-bcs']['cobbler']['servers']
   rgw_nodes.each do | rgw |
     servers.each do | server |
@@ -235,6 +235,7 @@ def get_adc_backend_nodes
         svr = {}
         svr['name'] = server['name']
         svr['ip'] = server['network']['public']['ip']
+        svr['port'] = get_backend_int_attr(server['name'], 'port')
         svr['weight'] = get_backend_int_attr(server['name'], 'weight')
         svr['options'] = get_backend_str_attr(server['name'], 'options')
         results.push(svr)

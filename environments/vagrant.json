@@ -40,10 +40,7 @@
           "balance": "roundrobin"
         },
         "ssl": {
-          "path": "/etc/ssl/private",
-          "endpoints": [
-            {"url": "s3.vagrant.ceph.example.com", "cert": "s3.vagrant.ceph.example.com.crt"}
-          ]
+          "path": "/etc/ssl/private"
         },
         "vip": {
           "prefix": "10.121.16.16",
@@ -55,9 +52,9 @@
           }
         },
         "vips": [
-          {"name": "admin", "ip": "10.121.16.17", "cidr": 28, "interface": "enp0s8"},
-          {"name": "prod", "ip": "10.121.16.18", "cidr": 28, "interface": "enp0s8"},
-          {"name": "dev", "ip": "10.121.16.19", "cidr": 28, "interface": "enp0s8"}
+          {"name": "admin", "ip": "10.121.16.17", "cidr": 28, "interface": "enp0s8", "ssl": false, "cert": "", "url": "s3.vagrant.admin.ceph.example.com"},
+          {"name": "prod", "ip": "10.121.16.18", "cidr": 28, "interface": "enp0s8", "ssl": false, "cert": "s3.vagrant.ceph.example.com.crt", "url": "s3.vagrant.prod.ceph.example.com"},
+          {"name": "dev", "ip": "10.121.16.19", "cidr": 28, "interface": "enp0s8", "ssl": false, "cert": "s3.vagrant.ceph.example.com.crt", "url": "s3.vagrant.dev.ceph.example.com"}
         ],
         "NOTE-VIP": "VIPS are 10.121.16.16/28 range (.17 - .30). Advertised via BGP",
         "bgp": {
