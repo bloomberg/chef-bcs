@@ -16,7 +16,7 @@
 
 router id <%= @interface_ip %>;
 
-listen bgp address <%= node['chef-bcs']['adc']['bgp']['interface'] %>
+listen bgp address <%= @interface_ip %>;
 
 log "/var/log/bird.log" all;
 log syslog all;
@@ -27,19 +27,19 @@ protocol device {
 }
 
 protocol static static_vips {
-  route <%= node['chef-bcs']['adc']['vip']['prefix'] %>:<%= node['chef-bcs']['adc']['vip']['netmask'] %> via <%= @interface_ip %>
+  route <%= node['chef-bcs']['adc']['vip']['prefix'] %>:<%= node['chef-bcs']['adc']['vip']['netmask'] %> via <%= @interface_ip %>;
 }
 
 <% node['chef-bcs']['adc']['bgp']['peers'].each do |peer| %>
-protocol bgp peer['label'] {
+protocol bgp <%= peer['name'] %> {
   import none;
-  description "#{peer['name']}";
+  description "<%= peer['label'] %>";
   multihop;
   next hop self;
   graceful restart;
   export where proto = "static_vips";
   local as <%= node['chef-bcs']['adc']['bgp']['asn'] %>;
-  neighbor peer['ip'] as <%= node['chef-bcs']['adc']['bgp']['asn'] %>;
+  neighbor <%= peer['ip'] %> as <%= node['chef-bcs']['adc']['bgp']['asn'] %>;
 }
 
 <% end %>

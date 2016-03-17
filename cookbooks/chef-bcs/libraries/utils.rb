@@ -189,9 +189,13 @@ end
 # BGP uses the keepalived servers which always use the "public" interface
 def get_bgp_interface_ip
   val = nil
-  if is_adc_node
-    server = get_keepalived_server
-    val = server['ip']
+  server = get_keepalived_server
+  if server
+    # Always the 'public' interface
+    sys_server = get_server
+    if sys_server
+      val = sys_server['network']['public']['ip']
+    end
   end
   val
 end
