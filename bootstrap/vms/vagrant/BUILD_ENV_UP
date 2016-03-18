@@ -245,8 +245,8 @@ echo 'Setting REPO_ROOT...'
 export REPO_ROOT=$BOOTSTRAP_CACHE_DIR
 
 echo "Building DNS and hosts files..."
-#$BOOTSTRAP_CACHE_DIR/build/github/combined/$GITHUB_REPO/bootstrap/data/environment/$env/scripts/build_dns_file.sh $dc
-#$BOOTSTRAP_CACHE_DIR/build/github/combined/$GITHUB_REPO/bootstrap/data/environment/$env/scripts/build_hosts_file.sh $dc
+$BOOTSTRAP_CACHE_DIR/build/github/combined/$GITHUB_REPO/bootstrap/data/environment/$env/scripts/build_dns_file.sh $dc
+$BOOTSTRAP_CACHE_DIR/build/github/combined/$GITHUB_REPO/bootstrap/data/environment/$env/scripts/build_hosts_file.sh $dc
 
 # NOTE: (IMPORTANT) - Overlay the internal repo on the external repo in the cache path
 
@@ -299,7 +299,7 @@ if [[ $BUILD_VMS_ONLY -eq 0 ]]; then
   do_on_node $vm "sudo rsync -av /ceph-host/ /tmp/build/iso/postinstall/ceph-host/"
   do_on_node $vm "sudo find /tmp/build/iso/postinstall/ceph-files -name *_downloaded -exec rm -f {} \;"
   do_on_node $vm "sudo pip install --upgrade pip"
-  do_on_node $vm "sudo pip install pyyaml"
+  do_on_node $vm "sudo pip install --index-url=http://pypi.python.org/simple/ --trusted-host pypi.python.org pyyaml"
 
   # Build the initial bootstrap_chef.sh script in the data center specific folder
   do_on_node $vm "sudo /ceph-host/bootstrap/templates/jinja_render.py -d /ceph-host/bootstrap/data/environment/$BUILD_ENV/base-seed.yaml -i /ceph-host/bootstrap/data/environment/$env/bootstrap_chef.sh.j2 -o /tmp/build/iso/postinstall/ceph-host/bootstrap/data/environment/$env/$dc/bootstrap_chef.sh"
