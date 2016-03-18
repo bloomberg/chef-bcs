@@ -55,7 +55,7 @@ do_on_node $CEPH_CHEF_BOOTSTRAP "cd \$HOME && rsync -a /ceph-host/* ./chef-bcs"
 # add the dependency cookbooks from the file cache
 echo "Checking on dependency for cookbooks..."
 do_on_node $CEPH_CHEF_BOOTSTRAP "cp /ceph-files/cookbooks/*.tar.gz \$HOME/chef-bcs/cookbooks"
-do_on_node $CEPH_CHEF_BOOTSTRAP "cd \$HOME/chef-bcs/cookbooks && ls -1 *.tar.gz | xargs -I% tar xvzf %"
+do_on_node $CEPH_CHEF_BOOTSTRAP "cd \$HOME/chef-bcs/cookbooks && ls -1rtc *.tar.gz | xargs -t -I% tar xvzf %"
 do_on_node $CEPH_CHEF_BOOTSTRAP "cd \$HOME/chef-bcs/cookbooks && rm -f *.tar.gz"
 
 # NOTE: *HAVE* to load the files into files/ before cookbook upload
