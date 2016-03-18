@@ -49,17 +49,17 @@
           ]
         },
         "vip": {
-          "prefix": "{{ vips.prefix }}",
-          "netmask": "{{ vips.netmask }}",
-          "cidr": {{ vips.cidr }},
+          "prefix": "{{ vip.prefix }}",
+          "netmask": "{{ vip.netmask }}",
+          "cidr": {{ vip.cidr }},
           "port": {
             "ssl": 443,
             "non_ssl": 80
           }
         },
         "vips": [
-        {%- for item in vips %}
-          {"name": "{{ item.name }}", "ip": "{{ item.ip }}", "cidr": {{ vips.cidr }}, "interface": "{{ item.interface }}", "ssl": true, "cert": "{{ item.cert }}", "url": "{{ item.url }}"}{%- if not loop.last %},{% endif %}
+        {%- for item in vip.vips %}
+          {"name": "{{ item.name }}", "ip": "{{ item.ip }}", "cidr": {{ vip.cidr }}, "interface": "{{ item.interface }}", "ssl": true, "cert": "{{ item.cert }}", "url": "{{ item.url }}"}{%- if not loop.last %},{% endif %}
         {%- endfor %}
         ],
         {#- VIPS are 10.121.16.16/28 range (.17 - .30). Advertised via BGP or Static+BFD Beacon. #}
