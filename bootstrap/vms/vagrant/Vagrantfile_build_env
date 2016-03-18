@@ -75,7 +75,7 @@ $bootstrap_node_name = ""
 
 unless $http_proxy_server.nil? or $http_proxy_server.empty?
     if $lsb_name == 'centos' or $lsb_name == 'rhel'
-        $bootstrap_node_name = servers.select { |k| k["roles"] == ["bootstrap"] }[0]["name"]
+        $bootstrap_node_name = servers.select { |k| k["roles"] == ["build"] }[0]["name"]
         $proxy_configuration_script << <<-EOH
             echo 'Defaults    env_keep += "http_proxy https_proxy no_proxy SSL_CERT_FILE"' | sudo tee -a /etc/sudoers
             echo 'export http_proxy=#{$http_proxy_server}' | sudo tee -a /etc/profile
@@ -93,6 +93,8 @@ unless $ssl_ca_file.nil? or $ssl_ca_file.empty?
   if $lsb_name == 'centos' or $lsb_name == 'rhel'
     $proxy_configuration_script << <<-EOH
         echo "export SSL_CERT_FILE='/etc/pki/ca-trust/source/anchors/chef-bcs_ca_bundle.crt'" | sudo tee -a /etc/profile
+        echo "export PIP_CERT='/etc/pki/ca-trust/source/anchors/chef-bcs_ca_bundle.crt'" | sudo tee -a /etc/profile
+        echo "export CURL_CA_BUNDLE='/etc/pki/ca-trust/source/anchors/chef-bcs_ca_bundle.crt'" | sudo tee -a /etc/profile
         sudo cp /tmp/#{$ssl_ca_file} /etc/pki/ca-trust/source/anchors/
         cat /tmp/#{$ssl_ca_file} | sudo tee /etc/pki/ca-trust/source/anchors/chef-bcs_ca_bundle.crt
     EOH
