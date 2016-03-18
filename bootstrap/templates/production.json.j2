@@ -41,12 +41,7 @@
           "balance": "{{ adc.haproxy.balance }}"
         },
         "ssl": {
-          "path": "/etc/ssl/private",
-          "endpoints": [
-          {%- for item in adc.haproxy.ssl.endpoints %}
-            {"url": "{{ item.url }}", "cert": "{{ item.cert }}" }{%- if not loop.last %},{% endif %}
-          {%- endfor %}
-          ]
+          "path": "/etc/ssl/private"
         },
         "vip": {
           "prefix": "{{ vip.prefix }}",
