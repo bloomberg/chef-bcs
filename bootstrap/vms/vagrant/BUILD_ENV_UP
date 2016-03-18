@@ -15,6 +15,11 @@
 # limitations under the License.
 #
 
+########## IMPORTANT ##########
+# MUST create a github credential file *UNLESS* you are only using ONE set of github credentials. The process will
+# source the credential file before doing the internal git request and then set the previous credentials back after.
+###############################
+
 # This script builds the VirtualBox build VM required to build the bootstrap ISO. It must be ran from a desktop or
 # laptop or anywhere that has full Internet access.
 
@@ -57,30 +62,33 @@ set -e
 
 # CAN ONLY be ran from the /chef-bcs/bootstrap/vms/vagrant directory!
 
-while getopts bd:e:g:p:v opt; do
-    case $opt in
-        b)
-            BUILD_VMS_ONLY=1
-            ;;
-        d)
-            dc=$OPTARG
-            ;;
-        e)
-            env=$OPTARG
-            ;;
-        # internal_git is optional
-        g)
-            internal_git=$OPTARG
-            ;;
-        p)
-            BOOTSTRAP_HTTP_PROXY=$OPTARG
-            BOOTSTRAP_HTTPS_PROXY=$OPTARG
-            ;;
-        # verbose
-        v)
-            set -x
-            ;;
-    esac
+while getopts bc:d:e:g:p:v opt; do
+  case $opt in
+    b)
+        BUILD_VMS_ONLY=1
+        ;;
+    d)
+        dc=$OPTARG
+        ;;
+    e)
+        env=$OPTARG
+        ;;
+    # internal_git is optional
+    g)
+        internal_git=$OPTARG
+        ;;
+    c)
+        credential_file=$OPTARG
+        ;;
+    p)
+        BOOTSTRAP_HTTP_PROXY=$OPTARG
+        BOOTSTRAP_HTTPS_PROXY=$OPTARG
+        ;;
+    # verbose
+    v)
+        set -x
+        ;;
+  esac
 done
 
 export BOOTSTRAP_HTTP_PROXY=${BOOTSTRAP_HTTP_PROXY:-}
@@ -200,25 +208,45 @@ rm -rf $BOOTSTRAP_CACHE_DIR/build/github/combined
 mkdir -p $BOOTSTRAP_CACHE_DIR/build/github/{external,internal,combined}
 set -e
 
+# No need to reset the GITHUB metadata here
 git clone $GITHUB_EXTERNAL_REPO $BOOTSTRAP_CACHE_DIR/build/github/external/$GITHUB_REPO
+
+echo "Git (Internal): $GITHUB_INTERNAL_REPO"
 
 # May be there so ignore fail if not there.
 set +e
 if [[ ! -z $internal_git ]]; then
-git clone $GITHUB_INTERNAL_REPO $BOOTSTRAP_CACHE_DIR/build/github/internal/$GITHUB_REPO
+  GITHUB_EMAIL=$(git config --global user.email)
+  GITHUB_NAME=$(git config --global user.name)
+  GITHUB_HTTP_PROXY=$(git config --global http.proxy)
+  GITHUB_HTTPS_PROXY=$(git config --global https.proxy)
+
+  if [[ ! -z $credential_file ]]; then
+    source $credential_file
+  fi
+
+  git clone $GITHUB_INTERNAL_REPO $BOOTSTRAP_CACHE_DIR/build/github/internal/$GITHUB_REPO
+
+  if [[ ! -z $credential_file ]]; then
+    git config --global user.name $GITHUB_NAME
+    git config --global user.email $GITHUB_EMAIL
+    git config --global http.proxy $GITHUB_HTTP_PROXY
+    git config --global htpps.proxy $GITHUB_HTTPS_PROXY
+  fi
 fi
 set -e
 
 # Overlay internal over external to form combined
-cp -r $BOOTSTRAP_CACHE_DIR/build/github/external $BOOTSTRAP_CACHE_DIR/build/github/combined
-cp -r $BOOTSTRAP_CACHE_DIR/build/github/internal $BOOTSTRAP_CACHE_DIR/build/github/combined
-
-echo "Building DNS and hosts files..."
-$BOOTSTRAP_CACHE_DIR/build/github/combined/$GITHUB_REPO/bootstrap/data/environment/$env/scripts/build_dns_file.sh $dc
-$BOOTSTRAP_CACHE_DIR/build/github/combined/$GITHUB_REPO/bootstrap/data/environment/$env/scripts/build_hosts_file.sh $dc
+cp -r $BOOTSTRAP_CACHE_DIR/build/github/external/chef-bcs/ $BOOTSTRAP_CACHE_DIR/build/github/combined/chef-bcs/
+cp -r $BOOTSTRAP_CACHE_DIR/build/github/internal/chef-bcs/ $BOOTSTRAP_CACHE_DIR/build/github/combined/chef-bcs/
 
 # By changing the repo_root it forces the use of github and any internal git
+echo 'Setting REPO_ROOT...'
 export REPO_ROOT=$BOOTSTRAP_CACHE_DIR
+
+echo "Building DNS and hosts files..."
+#$BOOTSTRAP_CACHE_DIR/build/github/combined/$GITHUB_REPO/bootstrap/data/environment/$env/scripts/build_dns_file.sh $dc
+#$BOOTSTRAP_CACHE_DIR/build/github/combined/$GITHUB_REPO/bootstrap/data/environment/$env/scripts/build_hosts_file.sh $dc
 
 # NOTE: (IMPORTANT) - Overlay the internal repo on the external repo in the cache path
 
