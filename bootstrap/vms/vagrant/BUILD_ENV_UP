@@ -256,7 +256,7 @@ $BOOTSTRAP_CACHE_DIR/build/github/combined/$GITHUB_REPO/bootstrap/data/environme
 # Copy over the Vagrantfile_build_env to Vagrantfile
 # There are two Vagrantfile* files. One for building the build environment (Vagrant_build_env) and one for
 # building the BCS cluster (Vagrantfile_bcs) for testing.
-cp Vagrantfile_build_env Vagrantfile
+cp -p Vagrantfile_build_env Vagrantfile
 
 # Clean up old build vm
 # Since the earlier cp command copied the Vagrantfile_build_env to Vagrantfile then only that VM will be destroyed
@@ -344,6 +344,8 @@ if [[ $BUILD_VMS_ONLY -eq 0 ]]; then
   echo
   do_on_node $vm "cp /tmp/$CHEF_BCS_ENV-$COBBLER_BOOTSTRAP_ISO /ceph-files/build/iso/out/."
 fi
+
+cp -p Vagrantfile_bcs Vagrantfile
 
 echo
 echo "------------------------------------------"
