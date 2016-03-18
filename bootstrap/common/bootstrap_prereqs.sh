@@ -16,7 +16,7 @@
 #
 
 # Exit immediately if anything goes wrong!
-set -e
+set -eu
 
 # Check for required environment variables and exit if not all are set.
 FAILED_ENVVAR_CHECK=0
@@ -59,6 +59,19 @@ ftp_file() {
   fi
 }
 
+git_clone_or_update() {
+  local NAME=$1
+  local URL=$2
+
+  if [[ ! -f $BOOTSTRAP_CACHE_DIR/${NAME}_downloaded ]]; then
+    if [[ ! -d $BOOTSTRAP_CACHE_DIR/$NAME ]]; then
+      git clone $URL $BOOTSTRAP_CACHE_DIR/$NAME || true
+    else
+      ( cd $BOOTSTRAP_CACHE_DIR/$NAME && git pull --ff-only $URL )
+    fi
+    touch $BOOTSTRAP_CACHE_DIR/${NAME}_downloaded
+  fi
+}
 # Obtain an RHEL 7.2 image to be used for PXE booting in production.
 if [[ ! -z $COBBLER_BOOTSTRAP_ISO ]]; then
   if [[ $COBBLER_DOWNLOAD_ISO -eq 1 ]]; then
@@ -134,14 +147,8 @@ rm -f $BOOTSTRAP_CACHE_DIR/kibana-4.0.2-linux-x64.tar.gz_downloaded $BOOTSTRAP_C
 # Remove obsolete cached items for BrightCoveOS Diamond
 rm -rf $BOOTSTRAP_CACHE_DIR/diamond_downloaded $BOOTSTRAP_CACHE_DIR/diamond
 # unfortunately GitHub ZIP files do not contain the actual Git index, so we must use Git to clone here
-if [[ ! -f $BOOTSTRAP_CACHE_DIR/python-diamond_downloaded ]]; then
-  git clone https://github.com/python-diamond/Diamond $BOOTSTRAP_CACHE_DIR/python-diamond
-  touch $BOOTSTRAP_CACHE_DIR/python-diamond_downloaded
-fi
-if [[ ! -f $BOOTSTRAP_CACHE_DIR/elasticsearch-head_downloaded ]]; then
-  git clone https://github.com/mobz/elasticsearch-head $BOOTSTRAP_CACHE_DIR/elasticsearch-head
-  touch $BOOTSTRAP_CACHE_DIR/elasticsearch-head_downloaded
-fi
+git_clone_or_update python-diamond https://github.com/python-diamond/Diamond
+git_clone_or_update elasticsearch-head https://github.com/mobz/elasticsearch-head
 
 download_file pyrabbit-1.0.1.tar.gz https://pypi.python.org/packages/source/p/pyrabbit/pyrabbit-1.0.1.tar.gz
 download_file requests-aws-0.1.6.tar.gz https://pypi.python.org/packages/source/r/requests-aws/requests-aws-0.1.6.tar.gz
