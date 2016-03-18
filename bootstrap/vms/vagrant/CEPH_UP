@@ -73,7 +73,7 @@ source ../base_environment.sh
 
 # Check for an existing environment_config.yaml file in /bootstrap/vms. If one exists then do nothing else copy over SAMPLE_environment_config.yaml
 if [[ ! -f $REPO_ROOT/bootstrap/vms/environment_config.yaml ]]; then
-  cp $REPO_ROOT/bootstrap/vms/SAMPLE_environment_config.yaml $REPO/bootstrap/vms/environment_config.yaml
+  cp $REPO_ROOT/bootstrap/vms/SAMPLE_environment_config.yaml $REPO_ROOT/bootstrap/vms/environment_config.yaml
 fi
 
 # IMPORTANT!!!!!
