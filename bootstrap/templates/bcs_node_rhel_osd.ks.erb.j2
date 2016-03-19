@@ -104,6 +104,7 @@ kexec-tools
 vim
 tmux
 git
+fping
 %end
 
 %post --nochroot
@@ -225,6 +226,32 @@ chef-client
 EOM
 
 chmod +x /tmp/chef-enroll.sh
+
+# Sanity check for nics - Depending on nic, they may need a onetime restart so just do it and have it remove itself
+cat <<EOM >/etc/init.d/onetime.sh
+#!/bin/bash
+sudo service network restart
+# Delete me $0
+sudo systemctl disable onetime
+sudo rm /etc/systemd/system/onetime.service
+sudo rm -f /etc/init.d/onetime.sh
+EOM
+chmod +x /etc/init.d/onetime.sh
+
+# Create systemd unit file
+cat <<EOM >/etc/systemd/system/onetime.service
+[Unit]
+Description=Restart Network
+
+[Service]
+Type=oneshot
+ExecStart=/etc/init.d/onetime.sh
+
+[Install]
+WantedBy=multi-user.target
+EOM
+
+systemctl enable onetime
 
 # End final steps
 %end

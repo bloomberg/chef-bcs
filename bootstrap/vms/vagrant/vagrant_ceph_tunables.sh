@@ -18,6 +18,9 @@
 
 source vagrant_base.sh
 
+# IMPORTANT: DO NOT attempt to put the run_list all together!!! If that happens we then need to create checks, wait
+# and quorum checks!
+
 # Setup Ceph tunables
 # NOTE: Only needs to be done on first mon node
 do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE node run_list add ${CEPH_MON_HOSTS[@]:1:1}.$BOOTSTRAP_DOMAIN 'role[ceph-tunables]' $CHEF_KNIFE_DEBUG"

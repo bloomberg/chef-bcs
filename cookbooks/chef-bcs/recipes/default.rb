@@ -34,6 +34,7 @@ package 'curl'
 package 'bmon'
 # package 'conntrack'
 package 'tmux'
+package 'fping'
 
 # I/O troubleshooting tools
 package 'fio'

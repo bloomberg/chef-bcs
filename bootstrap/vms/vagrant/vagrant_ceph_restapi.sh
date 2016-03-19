@@ -18,6 +18,9 @@
 
 source vagrant_base.sh
 
+# IMPORTANT: DO NOT attempt to put the run_list all together!!! If that happens we then need to create checks, wait
+# and quorum checks!
+
 for vm in ${CEPH_ADMIN_HOSTS[@]}; do
   do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE node run_list add $vm.$BOOTSTRAP_DOMAIN 'role[ceph-restapi]' $CHEF_KNIFE_DEBUG"
   do_on_node $vm "sudo chef-client $CHEF_CLIENT_DEBUG -o 'role[ceph-restapi]'"

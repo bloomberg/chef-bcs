@@ -20,6 +20,9 @@
 
 source vagrant_base.sh
 
+# IMPORTANT: DO NOT attempt to put the run_list all together!!! If that happens we then need to create checks, wait
+# and quorum checks!
+
 # Set the environment for all of the nodes
 for vm in ${ceph_vms[@]}; do
   do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE node environment set $vm.$BOOTSTRAP_DOMAIN $BOOTSTRAP_CHEF_ENV $CHEF_KNIFE_DEBUG"

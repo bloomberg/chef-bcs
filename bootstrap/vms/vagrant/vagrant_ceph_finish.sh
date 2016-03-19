@@ -18,6 +18,9 @@
 
 source vagrant_base.sh
 
+# IMPORTANT: DO NOT attempt to put the run_list all together!!! If that happens we then need to create checks, wait
+# and quorum checks!
+
 for vm in ${ceph_vms[@]}; do
   do_on_node $vm "sudo chef-client $CHEF_CLIENT_DEBUG -o 'recipe[ceph-chef::finish]'"
 done
