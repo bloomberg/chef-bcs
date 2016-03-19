@@ -28,7 +28,7 @@ template "/etc/ssh/sshd_config" do
 end
 
 # Banner can be changed if desired
-template '/etc/banner' do
-  source 'motd.tail.erb'
-  mode 00640
-end
+# template '/etc/banner' do
+#   source 'motd.tail.erb'
+#   mode 00640
+# end

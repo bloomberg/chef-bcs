@@ -27,6 +27,9 @@ export BOOTSTRAP_CHEF_ENV=${BOOTSTRAP_CHEF_ENV:-"vagrant"}
 
 source ../base_environment.sh
 
+# IMPORTANT - DO NOT MAKE CHANGES unless to add new functionality that does not already exist. This process will
+# soon change to be like the bare metal build process.
+
 source $REPO_ROOT/bootstrap/vms/ceph_chef_bootstrap.env
 source $REPO_ROOT/bootstrap/vms/ceph_chef_dns.env
 source $REPO_ROOT/bootstrap/vms/ceph_chef_hosts.env

@@ -18,6 +18,9 @@
 
 source vagrant_base.sh
 
+# IMPORTANT: DO NOT attempt to put the run_list all together!!! If that happens we then need to create checks, wait
+# and quorum checks!
+
 # Handles the install, start and key gathering for Ceph Monitor nodes.
 # Step 1
 #for vm in ${ceph_vms[@]}; do

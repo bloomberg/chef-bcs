@@ -18,6 +18,9 @@
 
 source vagrant_base.sh
 
+# IMPORTANT: DO NOT attempt to put the run_list all together!!! If that happens we then need to create checks, wait
+# and quorum checks!
+
 # Step 1
 for vm in ${CEPH_OSD_HOSTS[@]}; do
   do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE node run_list add $vm.$BOOTSTRAP_DOMAIN 'role[ceph-osd-install]' $CHEF_KNIFE_DEBUG"
