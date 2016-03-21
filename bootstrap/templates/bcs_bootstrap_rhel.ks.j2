@@ -116,7 +116,6 @@ dnsmasq
 tmux
 genisoimage
 anaconda
-fping
 %end
 
 %post --nochroot
@@ -186,7 +185,7 @@ ln -s /ceph-host/bootstrap/data/environment/{{ node.environment_short }}/scripts
 ln -s /ceph-host/bootstrap/data/environment/{{ node.environment_short }}/scripts/ceph_osd.sh /home/{{ user.name }}/ceph_osd.sh
 ln -s /ceph-host/bootstrap/data/environment/{{ node.environment_short }}/scripts/ceph_pools.sh /home/{{ user.name }}/ceph_pools.sh
 ln -s /ceph-host/bootstrap/data/environment/{{ node.environment_short }}/scripts/ceph_restapi.sh /home/{{ user.name }}/ceph_restapi.sh
-ln -s /ceph-host/bootstrap/data/environment/{{ node.environment_short }}/scripts/ceph_rgw.sh /home/{{ user.name }}/chef_rgw.sh
+ln -s /ceph-host/bootstrap/data/environment/{{ node.environment_short }}/scripts/ceph_rgw.sh /home/{{ user.name }}/ceph_rgw.sh
 ln -s /ceph-host/bootstrap/data/environment/{{ node.environment_short }}/scripts/ceph_tunables.sh /home/{{ user.name }}/ceph_tunables.sh
 ln -s /ceph-host/bootstrap/data/environment/{{ node.environment_short }}/scripts/rechef_nodes.sh /home/{{ user.name }}/rechef_nodes.sh
 ln -s /ceph-host/bootstrap/data/environment/{{ node.environment_short }}/scripts/reset_pxe_boot.sh /home/{{ user.name }}/reset_pxe_boot.sh

@@ -27,6 +27,9 @@ ceph_chef_adc_hosts_content = 'export CEPH_ADC_HOSTS=( '
 ceph_chef_admin_hosts_content = 'export CEPH_ADMIN_HOSTS=( '
 ceph_chef_mon_hosts_content = 'export CEPH_MON_HOSTS=( '
 ceph_chef_osd_hosts_content = 'export CEPH_OSD_HOSTS=( '
+ceph_chef_osd_rack01_hosts_content = 'export CEPH_OSD_RACK01_HOSTS=( '
+ceph_chef_osd_rack02_hosts_content = 'export CEPH_OSD_RACK02_HOSTS=( '
+ceph_chef_osd_rack03_hosts_content = 'export CEPH_OSD_RACK03_HOSTS=( '
 ceph_chef_rgw_hosts_content = 'export CEPH_RGW_HOSTS=( '
 ceph_chef_hosts_content = 'export CEPH_CHEF_HOSTS=( '
 ceph_chef_bootstrap_content = 'export CEPH_CHEF_BOOTSTRAP='
@@ -45,6 +48,15 @@ node['chef-bcs']['cobbler']['servers'].each do | server |
       ceph_chef_mon_hosts_content += (server['name'] + ' ')
     when 'osd'
       ceph_chef_osd_hosts_content += (server['name'] + ' ')
+      if server['name'].include? 'r1n'
+        ceph_chef_osd_rack01_hosts_content += (server['name'] + ' ')
+      end
+      if server['name'].include? 'r2n'
+        ceph_chef_osd_rack02_hosts_content += (server['name'] + ' ')
+      end
+      if server['name'].include? 'r3n'
+        ceph_chef_osd_rack03_hosts_content += (server['name'] + ' ')
+      end
     when 'rgw'
       ceph_chef_rgw_hosts_content += (server['name'] + ' ')
     end
@@ -57,6 +69,9 @@ ceph_chef_adc_hosts_content += ')'
 ceph_chef_admin_hosts_content += ')'
 ceph_chef_mon_hosts_content += ')'
 ceph_chef_osd_hosts_content += ')'
+ceph_chef_osd_rack01_hosts_content += ')'
+ceph_chef_osd_rack02_hosts_content += ')'
+ceph_chef_osd_rack03_hosts_content += ')'
 ceph_chef_rgw_hosts_content += ')'
 ceph_chef_hosts_content += ')'
 
@@ -74,7 +89,7 @@ env = node['chef-bcs']['bootstrap']['env']
     when 'ceph_chef_mon_hosts'
       content "#{ceph_chef_mon_hosts_content}"
     when 'ceph_chef_osd_hosts'
-      content "#{ceph_chef_osd_hosts_content}"
+      content "#{ceph_chef_osd_hosts_content}\n#{ceph_chef_osd_rack01_hosts_content}\n#{ceph_chef_osd_rack02_hosts_content}\n#{ceph_chef_osd_rack03_hosts_content}"
     when 'ceph_chef_rgw_hosts'
       content "#{ceph_chef_rgw_hosts_content}"
     when 'ceph_chef_bootstrap'
