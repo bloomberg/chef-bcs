@@ -22,6 +22,56 @@ require 'base64'
 require 'thread'
 require 'ipaddr'
 
+def init_config
+    if not Chef::DataBag.list.key?('configs')
+        Chef::Log.info("************ Creating data_bag \"configs\"")
+        bag = Chef::DataBag.new
+        bag.name("configs")
+        bag.save
+    end rescue nil
+    begin
+        $dbi = Chef::DataBagItem.load('configs', node.chef_environment)
+        $edbi = Chef::EncryptedDataBagItem.load('configs', node.chef_environment) if node['chef-bcs']['enabled']['encrypt_data_bag']
+        Chef::Log.info("============ Loaded existing data_bag_item \"configs/#{node.chef_environment}\"")
+    rescue
+        $dbi = Chef::DataBagItem.new
+        $dbi.data_bag('configs')
+        $dbi.raw_data = { 'id' => node.chef_environment }
+        $dbi.save
+        $edbi = Chef::EncryptedDataBagItem.load('configs', node.chef_environment) if node['chef-bcs']['enabled']['encrypt_data_bag']
+        Chef::Log.info("++++++++++++ Created new data_bag_item \"configs/#{node.chef_environment}\"")
+    end
+end
+
+def set_item(key, value, force=false)
+    init_config if $dbi.nil?
+    if $dbi[key].nil? or force
+        $dbi[key] = (node['chef-bcs']['enabled']['encrypt_data_bag']) ? Chef::EncryptedDataBagItem.encrypt_value(value, Chef::EncryptedDataBagItem.load_secret) : value
+        $dbi.save
+        $edbi = Chef::EncryptedDataBagItem.load('configs', node.chef_environment) if node['chef-bcs']['enabled']['encrypt_data_bag']
+        Chef::Log.info("++++++++++++ Creating new item with key \"#{key}\"")
+        return value
+    else
+        Chef::Log.info("============ Loaded existing item with key \"#{key}\"")
+        return (node['chef-bcs']['enabled']['encrypt_data_bag']) ? $edbi[key] : $dbi[key]
+    end
+end
+
+def is_defined(key)
+    init_config if $dbi.nil?
+    Chef::Log.info("------------ Checking if key \"#{key}\" is defined")
+    result = (node['chef-bcs']['enabled']['encrypt_data_bag']) ? $edbi[key] : $dbi[key]
+    return !result.nil?
+end
+
+def get_item(key)
+    init_config if $dbi.nil?
+    Chef::Log.info("------------ Fetching value for key \"#{key}\"")
+    result = (node['chef-bcs']['enabled']['encrypt_data_bag']) ? $edbi[key] : $dbi[key]
+    raise "No config found for get_item(#{key})!!!" if result.nil?
+    return result
+end
+
 def is_bootstrap_node
   val = false
   if node['hostname'] == node['chef-bcs']['bootstrap']['name']
@@ -291,56 +341,6 @@ def radosgw_nodes
   results.sort! { |a, b| a['hostname'] <=> b['hostname'] }
 end
 
-def init_config
-    if not Chef::DataBag.list.key?('configs')
-        Chef::Log.info("************ Creating data_bag \"configs\"")
-        bag = Chef::DataBag.new
-        bag.name("configs")
-        bag.save
-    end rescue nil
-    begin
-        $dbi = Chef::DataBagItem.load('configs', node.chef_environment)
-        $edbi = Chef::EncryptedDataBagItem.load('configs', node.chef_environment) if node['chef-bcs']['enabled']['encrypt_data_bag']
-        Chef::Log.info("============ Loaded existing data_bag_item \"configs/#{node.chef_environment}\"")
-    rescue
-        $dbi = Chef::DataBagItem.new
-        $dbi.data_bag('configs')
-        $dbi.raw_data = { 'id' => node.chef_environment }
-        $dbi.save
-        $edbi = Chef::EncryptedDataBagItem.load('configs', node.chef_environment) if node['chef-bcs']['enabled']['encrypt_data_bag']
-        Chef::Log.info("++++++++++++ Created new data_bag_item \"configs/#{node.chef_environment}\"")
-    end
-end
-
-def make_config(key, value)
-    init_config if $dbi.nil?
-    if $dbi[key].nil?
-        $dbi[key] = (node['chef-bcs']['enabled']['encrypt_data_bag']) ? Chef::EncryptedDataBagItem.encrypt_value(value, Chef::EncryptedDataBagItem.load_secret) : value
-        $dbi.save
-        $edbi = Chef::EncryptedDataBagItem.load('configs', node.chef_environment) if node['chef-bcs']['enabled']['encrypt_data_bag']
-        Chef::Log.info("++++++++++++ Creating new item with key \"#{key}\"")
-        return value
-    else
-        Chef::Log.info("============ Loaded existing item with key \"#{key}\"")
-        return (node['chef-bcs']['enabled']['encrypt_data_bag']) ? $edbi[key] : $dbi[key]
-    end
-end
-
-def config_defined(key)
-    init_config if $dbi.nil?
-    Chef::Log.info("------------ Checking if key \"#{key}\" is defined")
-    result = (node['chef-bcs']['enabled']['encrypt_data_bag']) ? $edbi[key] : $dbi[key]
-    return !result.nil?
-end
-
-def get_config(key)
-    init_config if $dbi.nil?
-    Chef::Log.info("------------ Fetching value for key \"#{key}\"")
-    result = (node['chef-bcs']['enabled']['encrypt_data_bag']) ? $edbi[key] : $dbi[key]
-    raise "No config found for get_config(#{key})!!!" if result.nil?
-    return result
-end
-
 def search_nodes(key, value)
     if key == "recipe"
         results = search(:node, "recipes:ceph\\:\\:#{value} AND chef_environment:#{node.chef_environment}")
@@ -416,44 +416,4 @@ def secure_password_alphanum_upper(len=20)
         pw << alphanum_upper[raw_pw.bytes().to_a()[pw.length] % alphanum_upper.length]
     end
     pw
-end
-
-def ceph_keygen()
-    key = "\x01\x00"
-    key += ::OpenSSL::Random.random_bytes(8)
-    key += "\x10\x00"
-    key += ::OpenSSL::Random.random_bytes(16)
-    Base64.encode64(key).strip
-end
-
-# We do not have net/ping, so just call out to system and check err value.
-def ping_node(list_name, ping_node)
-    Open3.popen3("ping -c1 #{ping_node}") { |stdin, stdout, stderr, wait_thr|
-        rv = wait_thr.value
-        if rv == 0
-            Chef::Log.info("Success pinging #{ping_node}")
-            return
-        end
-        Chef::Log.warn("Failure pinging #{ping_node} - #{rv} - #{stdout.read} - #{stderr.read}")
-    }
-    raise ("Network test failed: #{list_name} unreachable")
-end
-
-def ping_node_list(list_name, ping_list, fast_exit=true)
-    success = false
-    ping_list.each do |ping_node|
-        Open3.popen3("ping -c1 #{ping_node}") { |stdin, stdout, stderr, wait_thr|
-            rv = wait_thr.value
-            if rv == 0
-                Chef::Log.info("Success pinging #{ping_node}")
-                return unless not fast_exit
-                success = true
-            else
-                Chef::Log.warn("Failure pinging #{ping_node} - #{rv} - #{stdout.read} - #{stderr.read}")
-            end
-        }
-    end
-    if not success
-        raise ("Network test failed: #{list_name} unreachable")
-    end
 end
