@@ -8,6 +8,7 @@
     "recipe[chef-bcs::repo]",
     "recipe[ceph-chef::repo]",
     "recipe[chef-bcs::ceph-osd]",
-    "recipe[ceph-chef::osd]"
+    "recipe[ceph-chef::osd]",
+    "role[monitoring]"
   ]
 }

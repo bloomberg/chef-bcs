@@ -1,0 +1,14 @@
+################################################
+# Auto generated
+################################################
+LoadPlugin "match_regex"
+PreCacheChain "PreCache"
+<Chain "PreCache">
+  <Rule "ignore_ceph_metrics">
+    <Match "regex">
+      Plugin "^ceph$"
+      Type "^ceph_rate"
+    </Match>
+    Target "stop"
+  </Rule>
+</Chain>

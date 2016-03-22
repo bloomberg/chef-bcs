@@ -1,0 +1,8 @@
+{
+  "name": "monitoring",
+  "json_class": "Chef::Role",
+  "description": "Monitoring for Chef-BCS",
+  "run_list": [
+    "recipe[chef-bcs::collectd]"
+  ]
+}

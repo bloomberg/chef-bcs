@@ -125,6 +125,9 @@ download_file cookbooks/chef_handler-1.3.0.tar.gz http://cookbooks.opscode.com/a
 download_file cookbooks/firewall-2.4.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/firewall/versions/2.4.0/download
 download_file cookbooks/chef-sugar-3.3.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/chef-sugar/versions/3.3.0/download
 download_file cookbooks/sudo-2.9.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/sudo/versions/2.9.0/download
+download_file cookbooks/collectd-2.2.2.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/collectd/versions/2.2.2/download
+download_file cookbooks/collectd_plugins-2.1.1.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/collectd_plugins/versions/2.1.1/download
+download_file cookbooks/poise-service-1.0.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/poise-service/versions/1.0.0/download
 
 # Gems
 # REQUIRED for ceph-chef cookbook - must be installed before doing 'sudo chef-client' on any node
@@ -143,26 +146,9 @@ done
 
 # TODO: Need to clean up what is not needed below!
 
-# Obtain various items used for monitoring.
-# Remove obsolete kibana package
-rm -f $BOOTSTRAP_CACHE_DIR/kibana-4.0.2-linux-x64.tar.gz_downloaded $BOOTSTRAP_CACHE_DIR/kibana-4.0.2-linux-x64.tar.gz
-# Remove obsolete cached items for BrightCoveOS Diamond
-rm -rf $BOOTSTRAP_CACHE_DIR/diamond_downloaded $BOOTSTRAP_CACHE_DIR/diamond
-# unfortunately GitHub ZIP files do not contain the actual Git index, so we must use Git to clone here
-git_clone_or_update python-diamond https://github.com/python-diamond/Diamond
-git_clone_or_update elasticsearch-head https://github.com/mobz/elasticsearch-head
-
-download_file pyrabbit-1.0.1.tar.gz https://pypi.python.org/packages/source/p/pyrabbit/pyrabbit-1.0.1.tar.gz
-download_file requests-aws-0.1.6.tar.gz https://pypi.python.org/packages/source/r/requests-aws/requests-aws-0.1.6.tar.gz
-download_file pyzabbix-0.7.3.tar.gz https://pypi.python.org/packages/source/p/pyzabbix/pyzabbix-0.7.3.tar.gz
-download_file pagerduty-zabbix-proxy.py https://gist.githubusercontent.com/ryanhoskin/202a1497c97b0072a83a/raw/96e54cecdd78e7990bb2a6cc8f84070599bdaf06/pd-zabbix-proxy.py
-
-download_file carbon-0.9.13.tar.gz http://pypi.python.org/packages/source/c/carbon/carbon-0.9.13.tar.gz
-download_file whisper-0.9.13.tar.gz http://pypi.python.org/packages/source/w/whisper/whisper-0.9.13.tar.gz
-download_file graphite-web-0.9.13.tar.gz http://pypi.python.org/packages/source/g/graphite-web/graphite-web-0.9.13.tar.gz
-
 # Zabbix Agent
 download_file zabbix-agent-2.4.7-1.el7.x86_64.rpm http://repo.zabbix.com/zabbix/2.4/rhel/7/x86_64/
 
 # IF you just want all of the latest rpms
+
 # wget -r -l1 -np http://download.ceph.com/rpm-hammer/el7/x86_64/ -P . -A "*0.94.6*"

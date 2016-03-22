@@ -108,6 +108,7 @@ The ceph cookbook requires the following cookbooks from Chef:
 https://supermarket.chef.io/
 
 * [poise](https://supermarket.chef.io/cookbooks/poise)
+* [poise-service](https://supermarket.chef.io/cookbooks/poise-service)
 * [apt](https://supermarket.chef.io/cookbooks/apt)
 * [apache2](https://supermarket.chef.io/cookbooks/apache2)
 * [yum](https://supermarket.chef.io/cookbooks/yum)
@@ -115,6 +116,7 @@ https://supermarket.chef.io/
 * [chef-client](https://supermarket.chef.io/cookbooks/chef-client)
 * [chef-handler](https://supermarket.chef.io/cookbooks/chef-handler)
 * [chef-sugar](https://supermarket.chef.io/cookbooks/chef-sugar)
+* [collectd](https://supermarket.chef.io/cookbooks/collectd)
 * [cron](https://supermarket.chef.io/cookbooks/cron)
 * [firewall](https://supermarket.chef.io/cookbooks/firewall)
 * [logrotate](https://supermarket.chef.io/cookbooks/logrotate)

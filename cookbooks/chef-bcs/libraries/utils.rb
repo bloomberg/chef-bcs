@@ -438,3 +438,17 @@ def secure_password_alphanum_upper(len=20)
     end
     pw
 end
+
+# get_ceph_sockets
+def get_ceph_sockets
+    h = Hash.new()
+    socket_basepath = '/var/run/ceph/'
+    sockets = Dir.glob(File.join(socket_basepath, 'ceph-{mon,osd}*.asok'))
+    if sockets.any?
+        sockets.each do |socket|
+            daemon = socket[/(mon|osd).*[0-9]/]
+            h[daemon] = socket
+        end
+    end
+    return h
+end
