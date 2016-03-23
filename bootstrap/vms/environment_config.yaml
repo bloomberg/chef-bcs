@@ -24,7 +24,7 @@ vagrant:
     drive_size: 20480
     # If proxies are used then the following syntax is used: http://<proxy node>:<port> <-- Note put http or https if applicable
     http_proxy:
-    https_proxy: 
+    https_proxy:
     # Important: CA cert directory *must* reside in the root of the project. Put cert(s) in that directory.
     # Also, you're not required to use an intermediate CA cert. If you don't use an intermediate cert, then leave it blank.
     # Example: certs/my_firm_cert.pem and certs/my_firm_intermediate_cert.pem

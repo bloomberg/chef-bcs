@@ -35,6 +35,8 @@ package 'bmon'
 # package 'conntrack'
 package 'tmux'
 package 'fping'
+# Used to help find sensor issues on nodes if BMC doesn't show much
+package 'lm_sensors'
 
 # I/O troubleshooting tools
 package 'fio'
@@ -82,3 +84,5 @@ end
 
 # Set ntp servers
 node.default['ntp']['servers'] = node['chef-bcs']['ntp']['servers']
+
+node.default['ceph']['repo']['create'] = node['chef-bcs']['ceph']['repo']['create']
