@@ -21,7 +21,7 @@
 # the default of erroring out on anything that comes up such as 'already installed' etc. If nothing is passed in
 # then the default is assumed.
 # Note: This setting is only valid until something downstream (another script) overrides it.
-ERR=$1
+ERR=${1:-''}
 
 export BOOTSTRAP_CHEF_ENV=${BOOTSTRAP_CHEF_ENV:-"vagrant"}
 
