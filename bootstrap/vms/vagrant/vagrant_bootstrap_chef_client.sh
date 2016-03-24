@@ -28,6 +28,8 @@ source vagrant_base.sh
 # 3. vagrant_bootstrap_chef_client.sh
 # Then do the mon, osd, rgw etc.
 
-do_on_node $CEPH_CHEF_BOOTSTRAP "sudo cp /ceph-files/cobbler/isos/*.iso /tmp"
+if [[ $COBBLER_DOWNLOAD_ISO -eq 1 ]]; then
+  do_on_node $CEPH_CHEF_BOOTSTRAP "sudo cp /ceph-files/cobbler/isos/*.iso /tmp"
+fi
 
 do_on_node $CEPH_CHEF_BOOTSTRAP "sudo chef-client"

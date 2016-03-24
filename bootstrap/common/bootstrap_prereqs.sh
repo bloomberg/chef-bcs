@@ -62,9 +62,7 @@ ftp_file() {
 # Obtain an RHEL 7.2 image to be used for PXE booting in production.
 if [[ ! -z $COBBLER_BOOTSTRAP_ISO ]]; then
   if [[ $COBBLER_DOWNLOAD_ISO -eq 1 ]]; then
-    set +e
     download_file cobbler/isos/$COBBLER_BOOTSTRAP_ISO $COBBLER_REMOTE_URL_ISO
-    set -e
   fi
 fi
 
