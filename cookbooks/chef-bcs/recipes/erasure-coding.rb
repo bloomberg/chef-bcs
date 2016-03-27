@@ -17,15 +17,6 @@
 # limitations under the License.
 #
 
-include_recipe 'chef-bcs'
+include_recipe 'chef-bcs::ceph-conf'
 
-include_recipe 'ceph-chef'
-
-ceph_chef_erasure 'bb-object-store' do
-  action :set
-  plugin node['ceph']['erasure_code']['plugin']
-  directory node['ceph']['erasure_code']['directory']
-  key_value node['ceph']['erasure_code']['key_value']
-  force node['ceph']['erasure_code']['force']
-  ignore_failure true
-end
+include_recipe 'ceph-chef::erasure_profiles_set'

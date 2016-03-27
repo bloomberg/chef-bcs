@@ -17,28 +17,8 @@
 # limitations under the License.
 #
 
-if node['chef-bcs']['init_style'] != 'upstart'
-  package 'firewalld'
+include_recipe 'chef-bcs::ceph-conf'
 
-  execute 'firewalld-enable' do
-    command 'sudo systemctl enable firewalld'
-    only_if "sudo systemctl status firewalld | grep disabled"
-  end
-else
-end
+node.default['ceph']['pools']['radosgw']['remove']['names'] = node['chef-bcs']['ceph']['pools']['radosgw']['remove']['names']
 
-
-# Set permanent for all actions
-# node.default['firewall']['firewalld']['permanent'] = true
-
-# enable platform default firewall
-# firewall 'default' do
-#   action :install
-#   enabled_zone :public
-# end
-
-# Force the rules etc to be saved
-# firewall 'default' do
-#   action :save
-#   ignore_failure true
-# end
+include_recipe 'ceph-chef::pools_remove'

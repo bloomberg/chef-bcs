@@ -33,6 +33,7 @@ if [[ $FAILED_ENVVAR_CHECK != 0 ]]; then exit 1; fi
 mkdir -p $BOOTSTRAP_CACHE_DIR/cobbler/{isos,loaders}
 
 # download_file wraps the usual behavior of curling a remote URL to a local file
+# NOTE: PROXY - Make sure your http_proxy and https_proxy envrionment variables are set correctly if behind a proxy.
 download_file() {
   FILE=$1
   URL=$2
@@ -45,6 +46,7 @@ download_file() {
   fi
 }
 
+# NOTE: PROXY - Make sure your ftp_proxy envrionment variable is set correctly if behind a proxy.
 ftp_file() {
   FILE=$1
   URL=$2
@@ -86,7 +88,13 @@ download_file $CHEF_SERVER_RPM https://web-dl.packagecloud.io/chef/stable/packag
 mkdir -p $BOOTSTRAP_CACHE_DIR/{cookbooks,gems}
 
 # Most important cookbook
-download_file cookbooks/ceph-chef-0.9.16.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/ceph-chef/versions/0.9.16/download
+# If set then it will not download but remove from cache and use the development version that should be set in the chef-bcs/cookbooks directory.
+if [[ $CHEF_BCS_DEBUG -eq 0 ]]; then
+  download_file cookbooks/ceph-chef-0.9.17.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/ceph-chef/versions/0.9.17/download
+else
+  # Remove it so it's not used.
+  rm -f $BOOTSTRAP_CACHE_DIR/cookbooks/ceph-chef-*
+fi
 
 download_file cookbooks/poise-2.6.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/poise/versions/2.6.0/download
 download_file cookbooks/chef-client-4.3.3.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/chef-client/versions/4.3.3/download
@@ -107,7 +115,7 @@ download_file cookbooks/sudo-2.9.0.tar.gz http://cookbooks.opscode.com/api/v1/co
 # REQUIRED for ceph-chef cookbook - must be installed before doing 'sudo chef-client' on any node
 download_file gems/netaddr-1.5.1.gem https://rubygems.org/downloads/netaddr-1.5.1.gem
 
-# Pull knife-acl gem.
+# Pull knife-acl gem. This is ONLY needed if using data bags where the data bag is created with a recipe!
 # 0.0.12
 download_file gems/knife-acl-0.0.12.gem https://rubygems.global.ssl.fastly.net/gems/knife-acl-0.0.12.gem
 

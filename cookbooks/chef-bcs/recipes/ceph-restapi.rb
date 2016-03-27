@@ -1,7 +1,6 @@
 #
 # Author:: Chris Jones <cjones303@bloomberg.net>
 # Cookbook Name:: chef-bcs
-# Recipe:: ceph-restapi
 #
 # Copyright 2016, Bloomberg Finance L.P.
 #
@@ -18,6 +17,4 @@
 # limitations under the License.
 #
 
-# This is one way to set node default values within a higher level area. However, role default or override
-# attribute values are normally a better choice but in this case we want to set the 'rgw dns name' from
-# another node attribute value.
+include_recipe 'chef-bcs::ceph-conf'

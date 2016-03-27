@@ -36,3 +36,5 @@
 #     { "node": "ceph-vm3", "data": "/dev/sde", "type": "hdd", "journal": "/dev/sde" }
 #   ]
 # }
+
+include_recipe 'chef-bcs::ceph-conf'

@@ -159,9 +159,10 @@ export COBBLER_BOOTSTRAP_ISO="rhel-server-7.2-x86_64.iso"
 # The internal repo will override the public version so *ONLY* put files in the internal repo that you don't want
 # to be public AND that you want to take priority!
 export GITHUB_REPO=${GITHUB_REPO:-"chef-bcs"}
+export GITHUB_DATA_REPO=${GITHUB_DATA_REPO:-"chef-bcs-data"}
 export GITHUB_EXTERNAL_REPO=${GITHUB_EXTERNAL_REPO:-"https://github.com/bloomberg/$GITHUB_REPO"}
 if [[ ! -z $internal_git ]]; then
-export GITHUB_INTERNAL_REPO=${GITHUB_INTERNAL_REPO:-"https://$internal_git/$GITHUB_REPO"}
+export GITHUB_INTERNAL_REPO=${GITHUB_INTERNAL_REPO:-"https://$internal_git/$GITHUB_DATA_REPO"}
 fi
 #### Modify section - end ####
 
@@ -225,7 +226,7 @@ if [[ ! -z $internal_git ]]; then
     source $credential_file
   fi
 
-  git clone $GITHUB_INTERNAL_REPO $BOOTSTRAP_CACHE_DIR/build/github/internal/$GITHUB_REPO
+  git clone $GITHUB_INTERNAL_REPO $BOOTSTRAP_CACHE_DIR/build/github/internal/$GITHUB_DATA_REPO
 
   if [[ ! -z $credential_file ]]; then
     git config --global user.name $GITHUB_NAME
@@ -237,8 +238,8 @@ fi
 set -e
 
 # Overlay internal over external to form combined
-cp -r $BOOTSTRAP_CACHE_DIR/build/github/external/chef-bcs/ $BOOTSTRAP_CACHE_DIR/build/github/combined/chef-bcs/
-cp -r $BOOTSTRAP_CACHE_DIR/build/github/internal/chef-bcs/ $BOOTSTRAP_CACHE_DIR/build/github/combined/chef-bcs/
+cp -r $BOOTSTRAP_CACHE_DIR/build/github/external/$GITHUB_REPO/ $BOOTSTRAP_CACHE_DIR/build/github/combined/chef-bcs/
+cp -r $BOOTSTRAP_CACHE_DIR/build/github/internal/$GITHUB_DATA_REPO/ $BOOTSTRAP_CACHE_DIR/build/github/combined/chef-bcs/
 
 # By changing the repo_root it forces the use of github and any internal git
 echo 'Setting REPO_ROOT...'

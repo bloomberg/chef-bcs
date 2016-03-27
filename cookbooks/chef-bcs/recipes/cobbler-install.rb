@@ -17,6 +17,8 @@
 # limitations under the License.
 #
 
+include_recipe 'chef-bcs::ceph-conf'
+
 package 'whois'
 
 # Generate web_user_pwd and save. NOTE: This attribute 'web_user_pwd' is not in an environment file!

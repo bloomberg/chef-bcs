@@ -8,6 +8,12 @@
   "override_attributes": {
     "chef-bcs": {
       "environment": "vagrant",
+      "repo": {
+        "NOTE": "Pins the current version of ceph or any other packaged in the array at the moment of install.",
+        "packages": [
+          {"name": "ceph", "version": "0.94.6-0.el7", "pin": true}
+        ]
+      },
       "bootstrap": {
         "name": "ceph-bootstrap",
         "env": "/home/vagrant/chef-bcs/environments",
@@ -67,9 +73,14 @@
         },
         "backend": {
           "servers": [
-            {"name": "ceph-vm1", "weight": 6, "port": 8080, "options": "check inter 2s rise 2 fall 3"},
-            {"name": "ceph-vm2", "weight": 3, "port": 8080, "options": "check inter 2s rise 2 fall 3"}
-          ]
+            {"name": "ceph-vm1", "instance": "admin", "weight": 6, "port": 8080, "options": "check inter 2s rise 2 fall 3"},
+            {"name": "ceph-vm1", "instance": "dev", "weight": 6, "port": 8081, "options": "check inter 2s rise 2 fall 3"},
+            {"name": "ceph-vm1", "instance": "prod", "weight": 6, "port": 8082, "options": "check inter 2s rise 2 fall 3"},
+            {"name": "ceph-vm2", "instance": "admin", "weight": 3, "port": 8080, "options": "check inter 2s rise 2 fall 3"},
+            {"name": "ceph-vm2", "instance": "dev", "weight": 3, "port": 8081, "options": "check inter 2s rise 2 fall 3"},
+            {"name": "ceph-vm2", "instance": "prod", "weight": 3, "port": 8082, "options": "check inter 2s rise 2 fall 3"}
+          ],
+          "NOTE-BES": "If not Federated then leave 'instance' empty and have only server name unique in the list instead of the way Federated requires the instance name to match the VIP name."
         }
       },
       "keepalived": {
@@ -325,10 +336,6 @@
             "arch": "x86_64"
           }
         },
-        "chooseleaf": "host",
-        "rebalance": false,
-        "journal_size": 10000,
-        "encrypted": false,
         "config": {
           "NOTE": "This section is pure key/value. Meaning, the key and value are added to the given location in ceph.conf.",
           "global": {
@@ -344,7 +351,6 @@
             "cache max file size": 20000000
           }
         },
-        "pgs_per_node": 1024,
         "mon": {
           "port": 6789,
           "niceness": -10
@@ -367,18 +373,87 @@
         },
         "osd": {
           "devices": [
-              { "data": "/dev/sdb", "type": "hdd", "journal": "/dev/sdf" },
-              { "data": "/dev/sdc", "type": "hdd", "journal": "/dev/sdf" },
-              { "data": "/dev/sdd", "type": "hdd", "journal": "/dev/sdf" },
-              { "data": "/dev/sde", "type": "hdd", "journal": "/dev/sdf" }
+            { "data": "/dev/sdb", "data_type": "hdd", "journal": "/dev/sdf", "journal_type": "ssd" },
+            { "data": "/dev/sdc", "data_type": "hdd", "journal": "/dev/sdf", "journal_type": "ssd" },
+            { "data": "/dev/sdd", "data_type": "hdd", "journal": "/dev/sdf", "journal_type": "ssd" },
+            { "data": "/dev/sde", "data_type": "hdd", "journal": "/dev/sdf", "journal_type": "ssd" }
           ],
-          "niceness": -10
+          "add": [],
+          "remove": [],
+          "NOTE-DEVICES1": "The 'add' and 'remove' above should reflect the same structure as 'devices' for maintenance.",
+          "NOTE-DEVICES2": "The 'add' is only for temporary OSD devices you may need to add. If you need to add long-term devices then put them in 'devices' above and re-run the osd recipe.",
+          "niceness": -10,
+          "rebalance": false,
+          "encrypted": false,
+          "size": {
+            "max": 3,
+            "min": 2
+          },
+          "journal": {
+            "size": 2048
+          },
+          "crush": {
+            "chooseleaf_type": 1
+          }
+        },
+        "pools": {
+          "active": ["radosgw"],
+          "erasure_coding": {
+            "profiles": [
+              {"profile": "custom-default", "directory": "/usr/lib64/ceph/erasure-code", "plugin": "SHEC", "force": true, "key_value": {"k": 8, "m": 3}}
+            ]
+          },
+          "radosgw": {
+            "federated": {
+              "enable": true,
+              "instances": [
+                {"name": "admin", "port": 8080},
+                {"name": "dev", "port": 8081},
+                {"name": "prod", "port": 8082}
+              ],
+              "regions": ["us"],
+              "zones": ["01"],
+              "NOTE": "You may have two zones but if the zones represent a datacenter then only use one for each environment(json) file that represents the given datacenter data."
+            },
+            "NOTE-NAME": "If federated then the system generated federated prefix will be added in front of the names below to create a fully federated pool name.",
+            "names": [
+              ".rgw",
+              ".rgw.control",
+              ".rgw.gc",
+              ".rgw.root",
+              ".users.uid",
+              ".users.email",
+              ".users.swift",
+              ".users",
+              ".usage",
+              ".log",
+              ".intent-log",
+              ".rgw.buckets",
+              ".rgw.buckets.index",
+              ".rgw.buckets.extra"
+            ],
+            "NOTE-SETTINGS": "If federated then the settings below apply to the federated pools else the non-federated pools.",
+            "settings": {
+              "pg_num": 128,
+              "pgp_num": 128,
+              "options": "",
+              "force": false,
+              "calc": true,
+              "size": 3,
+              "crush_rule_set": 3,
+              "chooseleaf": "host",
+              "type": "replicated"
+            },
+            "remove": {
+              "names": []
+            }
+          },
+          "pgs": {
+            "num": 128
+          }
         },
         "restapi": {
           "port": 5080
-        },
-        "pools": {
-          "active": ["radosgw"]
         }
       },
       "domain_name" : "ceph.example.com",

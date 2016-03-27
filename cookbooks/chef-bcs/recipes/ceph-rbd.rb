@@ -18,5 +18,4 @@
 # limitations under the License.
 #
 
-# This recipe sets up ceph mds configuration information needed by the ceph cookbook recipes
-#
+include_recipe 'chef-bcs::ceph-conf'

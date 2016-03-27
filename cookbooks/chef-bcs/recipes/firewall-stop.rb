@@ -19,4 +19,5 @@
 
 execute 'firewalld-stop' do
   command 'sudo systemctl stop firewalld'
+  only_if "sudo systemctl status firewalld | grep running"
 end

@@ -21,6 +21,8 @@
 # node.default['ceph']['branch'] = 'testing'
 # node.default['ceph']['version'] = 'infernalis'
 
+include_recipe 'chef-bcs::ceph-conf'
+
 node.default['ceph']['version'] = node['chef-bcs']['ceph']['repo']['version']['name']
 node.default['ceph']['branch'] = node['chef-bcs']['ceph']['repo']['version']['branch']
 

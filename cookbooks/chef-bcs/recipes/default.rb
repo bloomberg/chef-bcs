@@ -1,7 +1,6 @@
 #
 # Author:: Chris Jones <cjones303@bloomberg.net>
 # Cookbook Name:: chef-bcs
-# Recipe:: default
 #
 # Copyright 2016, Bloomberg Finance L.P.
 #
@@ -25,6 +24,8 @@
 
 # The recipe also sets up security on ALL nodes AND initial Users!
 # The recipe also adds the PS1 prompt change for all nodes!
+
+include_recipe 'chef-bcs::ceph-conf'
 
 # Network troubleshooting tools
 package 'ethtool'
@@ -55,11 +56,18 @@ if node['chef-bcs']['init_style'] == 'upstart'
   package 'python-dev'
   package 'build-essential'
 else
+  # Yum versionlock - Check the yum-versionlock recipe for details...
+  package 'yum-versionlock'
+
   package 'kexec-tools'
 end
 
-package 'python-pip'
-# package 'traceroute'
+package 'python-pip' do
+  :upgrade
+end
+package 'python-boto' do
+  :upgrade
+end
 
 # Create user(s) if not already existing
 node['chef-bcs']['cobbler']['kickstart']['users'].each do | user_value |

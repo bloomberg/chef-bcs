@@ -9,6 +9,12 @@
   "override_attributes": {
     "chef-bcs": {
       "environment": "production",
+      "repo": {
+        {#- Pins the current version of ceph or any other packaged in the array at the moment of install. #}
+        "packages": [
+          {"name": "", "version": "", "pin": true}
+        ]
+      },
       "bootstrap": {
         "name": "{{ node.name }}",
         "env": "{{ node.env }}",
@@ -52,6 +58,7 @@
             "non_ssl": 80
           }
         },
+        {#- backend_port is used in the backend section below for Federated only. #}
         "vips": [
         {%- for item in vip.vips %}
           {"name": "{{ item.name }}", "ip": "{{ item.ip }}", "cidr": {{ vip.cidr }}, "interface": "{{ item.interface }}", "ssl": true, "cert": "{{ item.cert }}", "url": "{{ item.url }}"}{%- if not loop.last %},{% endif %}
@@ -69,10 +76,20 @@
           ]
         },
         "backend": {
+          {#- NOTE: IF Federated then VIPs 'name' variable, Backend/Servers 'instance' variable and Ceph/Pools/Radosgw/Federated/Instances 'name' *MUST* be the same value for the lookups to work. #}
+          {#- IF Federated is NOT used then leave 'instance' variable name below empty. #}
           "servers": [
+          {%- if ceph.radosgw.federated.enable %}
+          {%- for vip in vip.vips %}
           {%- for item in backend.servers %}
-            {"name": "{{ item.name }}", "weight": "{{ item.weight }}", "port": {{ item.port }}, "options": "{{ item.options }}"}{%- if not loop.last %},{% endif %}
+            {"name": "{{ item.name }}", "instance": "{{ vip.name }}", "weight": "{{ item.weight }}", "port": {{ vip.backend_port }}, "options": "{{ item.options }}"}{%- if not loop.last %},{% endif %}
           {%- endfor %}
+          {%- endfor %}
+          {% else %}
+          {%- for item in backend.servers %}
+            {"name": "{{ item.name }}", "instance": "", "weight": "{{ item.weight }}", "port": {{ item.port }}, "options": "{{ item.options }}"}{%- if not loop.last %},{% endif %}
+          {%- endfor %}
+          {%- endif %}
           ]
         }
       },
@@ -240,11 +257,6 @@
             "arch": "x86_64"
           }
         },
-        "chooseleaf": "host",
-        "rebalance": false,
-        {#- Change the journal size for the prod SSD #}
-        "journal_size": 30000,
-        "encrypted": false,
         "config": {
           {#- "NOTE": "This section is pure key/value. Meaning, the key and value are added to the given location in ceph.conf.", #}
           "global": {
@@ -260,7 +272,6 @@
             "cache max file size": 20000000
           }
         },
-        "pgs_per_node": 1024,
         "mon": {
           "port": 6789,
           "niceness": -10
@@ -282,27 +293,99 @@
           "civetweb_num_threads": 10
         },
         "osd": {
+          {#- Move this data to the seed yamls if we need to make them more dynamic for different clusters. #}
           "devices": [
-            { "data": "/dev/sda", "type": "hdd", "journal": "/dev/sdm" },
-            { "data": "/dev/sdb", "type": "hdd", "journal": "/dev/sdm" },
-            { "data": "/dev/sdc", "type": "hdd", "journal": "/dev/sdm" },
-            { "data": "/dev/sdd", "type": "hdd", "journal": "/dev/sdm" },
-            { "data": "/dev/sde", "type": "hdd", "journal": "/dev/sdm" },
-            { "data": "/dev/sdf", "type": "hdd", "journal": "/dev/sdn" },
-            { "data": "/dev/sdg", "type": "hdd", "journal": "/dev/sdn" },
-            { "data": "/dev/sdh", "type": "hdd", "journal": "/dev/sdn" },
-            { "data": "/dev/sdi", "type": "hdd", "journal": "/dev/sdn" },
-            { "data": "/dev/sdj", "type": "hdd", "journal": "/dev/sdn" },
-            { "data": "/dev/sdk", "type": "hdd", "journal": "/dev/sdn" },
-            { "data": "/dev/sdl", "type": "hdd", "journal": "/dev/sdn" }
+            { "data": "/dev/sda", "data_type": "hdd", "journal": "/dev/sdm", "journal_type": "ssd" },
+            { "data": "/dev/sdb", "data_type": "hdd", "journal": "/dev/sdm", "journal_type": "ssd" },
+            { "data": "/dev/sdc", "data_type": "hdd", "journal": "/dev/sdm", "journal_type": "ssd" },
+            { "data": "/dev/sdd", "data_type": "hdd", "journal": "/dev/sdm", "journal_type": "ssd" },
+            { "data": "/dev/sde", "data_type": "hdd", "journal": "/dev/sdm", "journal_type": "ssd" },
+            { "data": "/dev/sdf", "data_type": "hdd", "journal": "/dev/sdn", "journal_type": "ssd" },
+            { "data": "/dev/sdg", "data_type": "hdd", "journal": "/dev/sdn", "journal_type": "ssd" },
+            { "data": "/dev/sdh", "data_type": "hdd", "journal": "/dev/sdn", "journal_type": "ssd" },
+            { "data": "/dev/sdi", "data_type": "hdd", "journal": "/dev/sdn", "journal_type": "ssd" },
+            { "data": "/dev/sdj", "data_type": "hdd", "journal": "/dev/sdn", "journal_type": "ssd" },
+            { "data": "/dev/sdk", "data_type": "hdd", "journal": "/dev/sdn", "journal_type": "ssd" },
+            { "data": "/dev/sdl", "data_type": "hdd", "journal": "/dev/sdn", "journal_type": "ssd" }
           ],
-          "niceness": -10
+          {#- The add and remove should reflect the same structure as devices above and should be used for maintenance only! #}
+          "add": [],
+          "remove" [],
+          "niceness": -10,
+          "encrypted": false,
+          "rebalance": false,
+          "size": {
+            "max": 3,
+            "min": 2
+          },
+          "journal": {
+            {#- Change the journal size for the prod SSD #}
+            "size": 10000
+          },
+          "crush": {
+            {#- Rack on crush chooseleaf type #}
+            "chooseleaf_type": 3
+          }
+        },
+        "pools": {
+          "active": ["radosgw"],
+          "erasure_coding": {
+            "profiles": [
+              {"profile": "object-store", "directory": "/usr/lib/ceph/erasure-code", "plugin": "SHEC", "force": true, "key_value": {"k": 8, "m": 3}}
+            ]
+          },
+          "radosgw": {
+            "federated": {
+              "enable": true,
+              {#- Instances represent network tiers #}
+              {#- Instance name MUST match VIPs name and Backend/Server instance variables. IF Federation is not used then Backend/Server instance variable should be empty. #}
+              "instances": [
+                {%- for item in vip.vips %}
+                  {"name": "{{ item.name }}", "port": "{{ item.backend_port }}"}{%- if not loop.last %},{% endif %}
+                {%- endfor %}
+              ],
+              "regions": ["{{ ceph.radosgw.federated.regions|join('", "') }}"],
+              "zones": ["{{ ceph.radosgw.federated.zones|join('", "') }}"]
+            },
+            {#- If federated then the system generated federated prefix will be added in front of the names below to create a fully federated pool name. #}
+            "names": [
+              ".rgw",
+              ".rgw.control",
+              ".rgw.gc",
+              ".rgw.root",
+              ".users.uid",
+              ".users.email",
+              ".users.swift",
+              ".users",
+              ".usage",
+              ".log",
+              ".intent-log",
+              ".rgw.buckets",
+              ".rgw.buckets.index",
+              ".rgw.buckets.extra"
+            ],
+            {#- If federated then the settings below apply to the federated pools else the non-federated pools. #}
+            "settings": {
+              "pg_num": 1024,
+              "pgp_num": 1024,
+              "options": "",
+              "force": false,
+              "calc": true,
+              "size": 3,
+              "crush_rule_set": 3,
+              "chooseleaf": "rack",
+              "type": "erasure"
+            },
+            "remove": {
+              "names": []
+            }
+          },
+          "pgs": {
+            "num": 1024
+          }
         },
         "restapi": {
           "port": 5080
-        },
-        "pools": {
-          "active": ["radosgw"]
         }
       },
       "domain_name" : "{{ node.domain }}",

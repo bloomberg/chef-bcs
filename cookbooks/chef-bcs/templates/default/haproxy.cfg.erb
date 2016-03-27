@@ -41,22 +41,46 @@ listen stats <%= @server['network']['public']['ip'] %>:<%= node['chef-bcs']['adc
 frontend radosgw-http-<%="#{vip['name']}"%>
   bind <%="#{vip['ip']}:#{node['chef-bcs']['adc']['vip']['port']['non_ssl']}"%>
   option tcplog
+  <% if node['chef-bcs']['ceph']['pools']['radosgw']['federated']['enable'] %>
+  default_backend radosgw-http-backend-<%="#{vip['name']}"%>
+  <% else %>
   default_backend radosgw-http-backend
+  <% end %>
 
 <% if vip['ssl'] %>
 frontend radosgw-https-<%="#{vip['name']}"%>
   bind <%="#{vip['ip']}:#{node['chef-bcs']['adc']['vip']['port']['ssl']}"%> ssl crt <%="#{node['chef-bcs']['adc']['ssl']['path']}/#{vip['cert']}" %>
   option tcplog
+  <% if node['chef-bcs']['ceph']['pools']['radosgw']['federated']['enable'] %>
+  default_backend radosgw-http-backend-<%="#{vip['name']}"%>
+  <% else %>
   default_backend radosgw-http-backend
+  <% end %>
 <% end %>
-<% end %>
+<% end -%>
 
-# NOTE: Could try to have a vip related backend since vips represent network tiers. Try to have a different instance
-# Actually, using a different port per rgw instance would work.
+# NOTE: For Federated RGW, each vip name represents an instance for RGW running on the node. For example, if there are
+# 3 VIPs and Federated is enabled then there will be 3 instances of RGW running.
+
+<% if node['chef-bcs']['ceph']['pools']['radosgw']['federated']['enable'] %>
+<% node['chef-bcs']['adc']['vips'].each do | vip | %>
+backend radosgw-http-backend-<%="#{vip['name']}"%>
+  balance <%= node['chef-bcs']['adc']['connections']['balance'] %>
+  option httpchk GET /
+  http-check expect status 200
+<% @backend_nodes.each do | backend_node | -%>
+  <% if  vip['name'] == backend_node['instance'] %>
+  <%= "server #{backend_node['name']} #{backend_node['ip']}:#{backend_node['port']} weight #{backend_node['weight']} #{backend_node['options']}" %>
+  <% end -%>
+<% end -%>
+
+<% end %>
+<% else %>
 backend radosgw-http-backend
   balance <%= node['chef-bcs']['adc']['connections']['balance'] %>
   option httpchk GET /
   http-check expect status 200
 <% @backend_nodes.each do | backend_node | -%>
   <%= "server #{backend_node['name']} #{backend_node['ip']}:#{backend_node['port']} weight #{backend_node['weight']} #{backend_node['options']}" %>
+<% end -%>
 <% end -%>

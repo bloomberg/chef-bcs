@@ -23,12 +23,9 @@
 # quorum but it's really not necessary if fully automated.
 # node.default['ceph']['config']['global']['mon initial members'] = node['hostname']  # quorum of 1 example
 
-# Example of how to customize ceph.conf for the 'mon' section
-# node.default['ceph']['config']['mon']['mon pg warn max per osd']=0
-# node.default['ceph']['config']['mon']['mon osd full ratio']=0.90
-# node.default['ceph']['config']['mon']['mon osd nearfull ratio']=0.80
-
 # Defined in the environment json file
 # node.default['ceph']['config']['mon'] = node['chef-bcs']['ceph']['config']['mon']
 
-#             "mon initial members": "10.121.1.3:6789, 10.121.1.4:6789, 10.121.1.5:6789",
+# Example: "mon initial members": "10.121.1.3:6789, 10.121.1.4:6789, 10.121.1.5:6789",
+
+include_recipe 'chef-bcs::ceph-conf'

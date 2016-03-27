@@ -175,24 +175,8 @@ chmod 0600 /home/{{ user.name }}/.ssh/id_rsa
 chown -R {{ user.name }}:{{ user.group }} /home/{{ user.name }}/.ssh
 
 cp /ceph-host/bootstrap/data/environment/{{ node.environment }}/*.crt /tmp
-
-ln -s /ceph-host/bootstrap/data/environment/{{ node.environment }}/bootstrap_chef.sh /home/{{ user.name }}/bootstrap_chef.sh
-ln -s /ceph-host/bootstrap/data/environment/{{ node.environment_short }}/scripts/bootstrap_chef_nodes.sh /home/{{ user.name }}/bootstrap_chef_nodes.sh
-ln -s /ceph-host/bootstrap/data/environment/{{ node.environment_short }}/scripts/chef_create_tags.sh /home/{{ user.name }}/chef_create_tags.sh
-ln -s /ceph-host/bootstrap/data/environment/{{ node.environment_short }}/scripts/ceph_adc.sh /home/{{ user.name }}/ceph_adc.sh
-ln -s /ceph-host/bootstrap/data/environment/{{ node.environment_short }}/scripts/ceph_finish.sh /home/{{ user.name }}/ceph_finish.sh
-ln -s /ceph-host/bootstrap/data/environment/{{ node.environment_short }}/scripts/ceph_mon.sh /home/{{ user.name }}/ceph_mon.sh
-ln -s /ceph-host/bootstrap/data/environment/{{ node.environment_short }}/scripts/ceph_osd.sh /home/{{ user.name }}/ceph_osd.sh
-ln -s /ceph-host/bootstrap/data/environment/{{ node.environment_short }}/scripts/ceph_pools.sh /home/{{ user.name }}/ceph_pools.sh
-ln -s /ceph-host/bootstrap/data/environment/{{ node.environment_short }}/scripts/ceph_restapi.sh /home/{{ user.name }}/ceph_restapi.sh
-ln -s /ceph-host/bootstrap/data/environment/{{ node.environment_short }}/scripts/ceph_rgw.sh /home/{{ user.name }}/ceph_rgw.sh
-ln -s /ceph-host/bootstrap/data/environment/{{ node.environment_short }}/scripts/ceph_tunables.sh /home/{{ user.name }}/ceph_tunables.sh
-ln -s /ceph-host/bootstrap/data/environment/{{ node.environment_short }}/scripts/rechef_nodes.sh /home/{{ user.name }}/rechef_nodes.sh
-ln -s /ceph-host/bootstrap/data/environment/{{ node.environment_short }}/scripts/reset_pxe_boot.sh /home/{{ user.name }}/reset_pxe_boot.sh
-ln -s /ceph-host/bootstrap/data/environment/{{ node.environment_short }}/scripts/resync_ntp.sh /home/{{ user.name }}/resync_ntp.sh
-ln -s /ceph-host/bootstrap/data/environment/{{ node.environment_short }}/scripts/bootstrap_aio.sh /home/{{ user.name }}/bootstrap_aio.sh
-
-chown -h {{ user.name }}:{{ user.group }} /home/{{ user.name }}/*.sh
+cp /ceph-host/bootstrap/data/environment/{{ node.environment_short }}/README.txt /home/{{ user.name }}
+chown {{ user.name }}:{{ user.group }} /home/{{ user.name }}/README.txt
 
 # Setup sudoer
 echo "%{{ user.name }} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/{{ user.name }}

@@ -47,7 +47,8 @@ while getopts cbsvdp:o:t: opt; do
             CHEF_CLIENT_DEBUG="-l debug"
             ;;
         d)
-            BOOTSTRAP_VAGRANT_DEBUG=1
+            # BOOTSTRAP_VAGRANT_DEBUG=1
+            CHEF_BCS_DEBUG=1
             ;;
         o)
             BOOTSTRAP_OS=$OPTARG
@@ -101,6 +102,7 @@ export BUILD_VMS_ONLY=${BUILD_VMS_ONLY:-0}
 export BOOTSTRAP_SKIP_VMS=${BOOTSTRAP_SKIP_VMS:-0}
 # Vagrant debug flag
 export BOOTSTRAP_VAGRANT_DEBUG=${BOOTSTRAP_VAGRANT_DEBUG:-0}
+export CHEF_BCS_DEBUG=${CHEF_BCS_DEBUG:-0}
 
 # Force the banner to show
 export DONT_SHOW_BANNER=0
