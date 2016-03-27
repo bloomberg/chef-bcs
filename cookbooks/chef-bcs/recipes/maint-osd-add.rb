@@ -17,28 +17,10 @@
 # limitations under the License.
 #
 
-if node['chef-bcs']['init_style'] != 'upstart'
-  package 'firewalld'
+include_recipe 'chef-bcs::ceph-conf'
 
-  execute 'firewalld-enable' do
-    command 'sudo systemctl enable firewalld'
-    only_if "sudo systemctl status firewalld | grep disabled"
-  end
-else
-end
+# This recipe sets up ceph osd add
+node.default['ceph']['osd']['add'] = node['chef-bcs']['ceph']['osd']['add']
 
-
-# Set permanent for all actions
-# node.default['firewall']['firewalld']['permanent'] = true
-
-# enable platform default firewall
-# firewall 'default' do
-#   action :install
-#   enabled_zone :public
-# end
-
-# Force the rules etc to be saved
-# firewall 'default' do
-#   action :save
-#   ignore_failure true
-# end
+# Run the lower level ceph recipe
+include_recipe 'ceph-chef::osd_add'

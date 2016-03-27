@@ -7,7 +7,6 @@
       "recipe[chef-bcs]",
       "recipe[chef-bcs::security]",
       "recipe[chef-bcs::firewall-install]",
-      "recipe[chef-bcs::firewall-stop]",
       "recipe[chef-bcs::system]",
       "recipe[ntp]",
       "recipe[chef-client::delete_validation]",

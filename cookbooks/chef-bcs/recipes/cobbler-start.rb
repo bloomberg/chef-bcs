@@ -17,6 +17,8 @@
 # limitations under the License.
 #
 
+include_recipe 'chef-bcs::ceph-conf'
+
 case node['platform']
 when 'ubuntu'
   service 'isc-dhcp-server' do

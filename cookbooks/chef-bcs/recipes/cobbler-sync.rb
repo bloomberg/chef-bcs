@@ -17,6 +17,8 @@
 # limitations under the License.
 #
 
+include_recipe 'chef-bcs::ceph-conf'
+
 # NOTE: May want to move mount and import to install later...
 # cobbler distro edit --name=#{node['chef-bcs']['cobbler']['os']['name']}-#{node['chef-bcs']['cobbler']['os']['arch']} --kopts="ksdevice= inst.repo=http://#{node['chef-bcs']['cobbler']['server']}/cblr/ks_mirror/#{node['chef-bcs']['cobbler']['os']['name']}"
 

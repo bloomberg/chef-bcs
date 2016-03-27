@@ -292,7 +292,28 @@ def get_adc_backend_nodes
       end
     end
   end
+  results
+end
 
+def get_adc_backend_federated_nodes
+  results = []
+  # Get the list of backend servers
+  nodes = node['chef-bcs']['adc']['backend']['servers']
+  servers = node['chef-bcs']['cobbler']['servers']
+  nodes.each do | bes |
+    servers.each do | server |
+      if server['name'] == bes['name'] &&
+        svr = {}
+        svr['name'] = server['name']
+        svr['ip'] = server['network']['public']['ip']
+        svr['instance'] = bes['instance']
+        svr['port'] = bes['port']
+        svr['weight'] = bes['weight']
+        svr['options'] = bes['options']
+        results.push(svr)
+      end
+    end
+  end
   results
 end
 

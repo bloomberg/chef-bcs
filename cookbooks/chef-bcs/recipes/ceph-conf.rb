@@ -24,6 +24,9 @@
 # NOTE: This file also updates the data in the ceph-chef cookbook
 node.default['ceph']['cluster'] = node['chef-bcs']['ceph']['cluster']
 
+# System
+node.default['ceph']['system']['pid_max'] = node['chef-bcs']['system']['pid_max']
+
 node.default['ceph']['network']['public']['cidr'] = node['chef-bcs']['network']['public']['cidr']
 node.default['ceph']['network']['cluster']['cidr'] = node['chef-bcs']['network']['cluster']['cidr']
 
@@ -33,6 +36,25 @@ node.default['ceph']['config'] = node['chef-bcs']['ceph']['config']
 
 # This recipe sets up ceph osd configuration information needed by the ceph cookbook recipes
 node.default['ceph']['osd']['devices'] = node['chef-bcs']['ceph']['osd']['devices']
+# OSD Add/Remove options/vars are set in main-osd* recipes
+
+# Other OSD related items
+node.default['ceph']['osd']['journal']['size'] = node['chef-bcs']['ceph']['osd']['journal']['size']
+node.default['ceph']['osd']['crush']['chooseleaf_type'] = node['chef-bcs']['ceph']['osd']['crush']['chooseleaf_type']
+node.default['ceph']['osd']['size']['max'] = node['chef-bcs']['ceph']['osd']['size']['max']
+node.default['ceph']['osd']['size']['min'] = node['chef-bcs']['ceph']['osd']['size']['min']
+
+node.default['ceph']['pools']['radosgw']['names'] = node['chef-bcs']['ceph']['pools']['radosgw']['names']
+node.default['ceph']['pools']['radosgw']['settings'] = node['chef-bcs']['ceph']['pools']['radosgw']['settings']
+node.default['ceph']['pools']['pgs']['num'] = node['chef-bcs']['ceph']['pools']['pgs']['num']
+
+node.default['ceph']['pools']['radosgw']['federated_enable'] = node['chef-bcs']['ceph']['pools']['radosgw']['federated']['enable']
+node.default['ceph']['pools']['radosgw']['federated_instances'] = node['chef-bcs']['ceph']['pools']['radosgw']['federated']['instances']
+node.default['ceph']['pools']['radosgw']['federated_zones'] = node['chef-bcs']['ceph']['pools']['radosgw']['federated']['zones']
+node.default['ceph']['pools']['radosgw']['federated_regions'] = node['chef-bcs']['ceph']['pools']['radosgw']['federated']['regions']
+
+# Erasure coding
+node.default['ceph']['pools']['erasure_coding'] = node['chef-bcs']['ceph']['pools']['erasure_coding']
 
 # This recipe sets up ceph rgw configuration information needed by the ceph cookbook recipes
 node.default['ceph']['radosgw']['dns_name'] = node['chef-bcs']['domain_name']

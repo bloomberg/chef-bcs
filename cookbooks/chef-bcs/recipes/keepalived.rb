@@ -34,20 +34,29 @@ template "/etc/keepalived/keepalived.conf" do
 end
 
 # All for binding additional IPs not found in ifcfg files.
-# Sets ipv4 forwarding rule 
+# Sets ipv4 forwarding rule
 template "/etc/sysctl.d/99-sysctl.conf" do
   source '99-sysctl.conf.erb'
+  notifies :create, 'execute[update-sysctl]', :immediately
 end
 
 execute 'update-sysctl' do
   command 'sysctl -p'
+  action :nothing
 end
 
 if node['chef-bcs']['init_style'] == 'upstart'
 else
+  # Broke out the service resources for better idempotency.
   service 'keepalived' do
     provider Chef::Provider::Service::Redhat
-    action [:enable, :start]
+    action [:enable]
+    only_if "sudo systemctl status keepalived | grep disabled"
+  end
+
+  service 'keepalived' do
+    provider Chef::Provider::Service::Redhat
+    action [:start]
     supports :restart => true, :status => true
     subscribes :restart, "template[/etc/keepalived/keepalived.conf]"
   end

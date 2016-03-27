@@ -17,6 +17,9 @@
 # limitations under the License.
 #
 
+# NOTE: Not started by default. Must execute the recipe or include it in a role list.
+
 execute 'firewalld-start' do
   command 'sudo systemctl start firewalld'
+  only_if "sudo systemctl status firewalld | grep dead"
 end

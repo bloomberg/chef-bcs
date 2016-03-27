@@ -1,7 +1,6 @@
 #
 # Author:: Chris Jones <cjones303@bloomberg.net>
 # Cookbook Name:: chef-bcs
-# Recipe:: ceph-admin
 #
 # Copyright 2016, Bloomberg Finance L.P.
 #
@@ -18,4 +17,16 @@
 # limitations under the License.
 #
 
+# C-A-U-T-I-O-N! This will remove ALL data and zap the drive. MAKE SURE to reweight the OSD device down to 0
+# BEFORE removing it from the Ceph control with this recipe!
+# NOTE: Depending on the amount of data on the device: you can reweight to 0 if only a small amount of data exists on
+# the device else reweight in very small increments down to 0 (can be time consuming) so that it doesn't "crush"
+# your performance (pun intended :))!
+
 include_recipe 'chef-bcs::ceph-conf'
+
+# This recipe sets up ceph osd removal info for the lower level osd_remove_zap recipe
+node.default['ceph']['osd']['remove'] = node['chef-bcs']['ceph']['osd']['remove']
+
+# Run the lower level ceph recipe
+include_recipe 'ceph-chef::maint_osd_remove_zap'

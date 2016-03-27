@@ -17,8 +17,21 @@
 # limitations under the License.
 #
 
-# This recipe sets up ceph osd removal info for the lower level osd_remove_zap recipe
-node.default['ceph']['osd']['remove']['devices'] = node['chef-bcs']['ceph']['osd']['remove']['devices']
+# Call this recipe to add version locking for specific packages
+#     "recipe[chef-bcs::yum-versionlock]"
 
-# Run the lower level ceph recipe
-include_recipe 'ceph-chef::maint_osd_remove_zap'
+node['chef-bcs']['repo']['packages'].each do | pkg |
+  if pkg['pin']
+    execute "#{pkg['name']}-add-versionlock" do
+      command lazy { "yum versionlock add #{pkg['name']}" }
+      not_if "yum versionlock list | grep #{pkg['name']}"
+      ignore_failure true
+    end
+  else
+    execute "#{pkg['name']}-delete-versionlock" do
+      command lazy { "yum versionlock delete #{pkg['name']}" }
+      only_if "yum versionlock list | grep #{pkg['name']}"
+      ignore_failure true
+    end
+  end
+end
