@@ -405,7 +405,7 @@
           },
           "radosgw": {
             "federated": {
-              "enable": true,
+              "enable": false,
               "instances": [
                 {"name": "admin", "port": 8080},
                 {"name": "dev", "port": 8081},
