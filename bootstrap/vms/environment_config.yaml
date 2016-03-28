@@ -29,4 +29,4 @@ vagrant:
     # Also, you're not required to use an intermediate CA cert. If you don't use an intermediate cert, then leave it blank.
     # Example: certs/my_firm_cert.pem and certs/my_firm_intermediate_cert.pem
     ssl_ca_file_path:
-    ssl_ca_intermediate_file_path: 
+    ssl_ca_intermediate_file_path:
