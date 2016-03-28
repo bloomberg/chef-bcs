@@ -41,7 +41,7 @@ template "/etc/sysctl.d/99-sysctl.conf" do
 end
 
 execute 'update-sysctl' do
-  command 'sysctl -p'
+  command lazy { "sysctl -p" }
   action :nothing
 end
 
