@@ -37,12 +37,10 @@ end
 # Sets ipv4 forwarding rule
 template "/etc/sysctl.d/99-sysctl.conf" do
   source '99-sysctl.conf.erb'
-  notifies :create, 'execute[update-sysctl]', :immediately
 end
 
 execute 'update-sysctl' do
-  command lazy { "sysctl -p" }
-  action :nothing
+  command 'sysctl -p'
 end
 
 if node['chef-bcs']['init_style'] == 'upstart'
