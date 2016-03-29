@@ -1,0 +1,11 @@
+################################################
+# Auto generated
+################################################
+LoadPlugin "ceph"
+<Plugin "ceph">
+<% node['chef-bcs']['collectd-plugins']['ceph']['daemons'].sort.each do |key, value| %>
+  <Daemon "<%= key %>">
+    SocketPath "<%= value %>"
+  </Daemon>
+<% end %>
+</Plugin>

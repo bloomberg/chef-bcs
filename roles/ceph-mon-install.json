@@ -10,6 +10,7 @@
     "recipe[ceph-chef::repo]",
     "recipe[chef-bcs::ceph-mon]",
     "recipe[chef-bcs::ceph-admin]",
-    "recipe[ceph-chef::mon]"
+    "recipe[ceph-chef::mon]",
+    "role[monitoring]"
   ]
 }
