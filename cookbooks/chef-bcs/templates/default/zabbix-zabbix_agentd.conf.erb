@@ -1,0 +1,15 @@
+################################################
+# Auto generated
+################################################
+PidFile=/var/run/zabbix/zabbix_agentd.pid
+LogFile=/var/log/zabbix/zabbix_agentd.log
+SourceIP=<%= @agent_ip %>
+EnableRemoteCommands=1
+LogRemoteCommands=1
+Server=<%= @zabbix_server %>
+ServerActive=<%= @zabbix_server %>
+ListenIP=<%= @agent_ip %>
+StartAgents=3
+Timeout=10
+Include=/etc/zabbix/zabbix_agentd.d/
+UnsafeUserParameters=1
