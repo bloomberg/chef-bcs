@@ -373,10 +373,10 @@
         },
         "osd": {
           "devices": [
-            { "data": "/dev/sdb", "data_type": "hdd", "journal": "/dev/sdf", "journal_type": "ssd" },
-            { "data": "/dev/sdc", "data_type": "hdd", "journal": "/dev/sdf", "journal_type": "ssd" },
-            { "data": "/dev/sdd", "data_type": "hdd", "journal": "/dev/sdf", "journal_type": "ssd" },
-            { "data": "/dev/sde", "data_type": "hdd", "journal": "/dev/sdf", "journal_type": "ssd" }
+            { "data": "/dev/sdb", "data_type": "hdd", "journal": "/dev/sdf", "journal_type": "ssd", "status": "" },
+            { "data": "/dev/sdc", "data_type": "hdd", "journal": "/dev/sdf", "journal_type": "ssd", "status": "" },
+            { "data": "/dev/sdd", "data_type": "hdd", "journal": "/dev/sdf", "journal_type": "ssd", "status": "" },
+            { "data": "/dev/sde", "data_type": "hdd", "journal": "/dev/sdf", "journal_type": "ssd", "status": "" }
           ],
           "add": [],
           "remove": [],
@@ -390,7 +390,8 @@
             "min": 2
           },
           "journal": {
-            "size": 2048
+            "size": 3000,
+            "NOTE:": "Calculate min size (if you have space then use it): 2 * (#OSDs in node * 100MB/s) * 5 (default sync interval) = 2 * (3 * 100) * 5 = 3GB "
           },
           "crush": {
             "chooseleaf_type": 1
