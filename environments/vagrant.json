@@ -18,7 +18,7 @@
         "name": "ceph-bootstrap",
         "env": "/home/vagrant/chef-bcs/environments",
         "interfaces": [
-          {"name": "enp0s8", "ip": "10.121.1.2", "netmask": "255.255.255.0", "gateway": ""},
+          {"name": "enp0s8", "ip": "10.0.100.20", "netmask": "255.255.255.0", "gateway": ""},
           {"name": "enp0s9", "ip": "10.121.2.2", "netmask": "255.255.255.0", "gateway": ""}
         ]
       },
@@ -145,7 +145,7 @@
       "cobbler": {
         "web_user": "cobbler",
         "pxe_interface": "enp0s3",
-        "server": "10.121.1.2",
+        "server": "10.0.100.20",
         "kickstart": {
           "NOTE": "password vagrant is: $6$Salt$6AyUczFy6SgV8A2wKAKfA9drpzrUsTGPJ3QjcWBbgS97BxBO.C7ZcBFALRiRkKfi9x8MK2SHet38BCQWS9LsR/",
           "root": {
@@ -197,9 +197,9 @@
               "public": {
                 "interface": "enp0s3",
                 "mac": "08:00:27:E3:84:01",
-                "ip": "10.121.1.3",
+                "ip": "10.0.100.20",
                 "netmask": "255.255.255.0",
-                "gateway": "10.121.1.2",
+                "gateway": "10.0.100.2",
                 "mtu": 1500
               },
               "cluster": {
@@ -220,9 +220,9 @@
               "public": {
                 "interface": "enp0s3",
                 "mac": "08:00:27:E3:84:01",
-                "ip": "10.121.1.3",
+                "ip": "10.0.100.21",
                 "netmask": "255.255.255.0",
-                "gateway": "10.121.1.2",
+                "gateway": "10.0.100.2",
                 "mtu": 1500
               },
               "cluster": {
@@ -243,9 +243,9 @@
               "public": {
                 "interface": "enp0s3",
                 "mac": "08:00:27:EB:EC:61",
-                "ip": "10.121.1.4",
+                "ip": "10.0.100.22",
                 "netmask": "255.255.255.0",
-                "gateway": "10.121.1.2",
+                "gateway": "10.0.100.2",
                 "mtu": 1500
               },
               "cluster": {
@@ -266,9 +266,9 @@
               "public": {
                 "interface": "enp0s3",
                 "mac": "08:00:27:8B:9F:3F",
-                "ip": "10.121.1.5",
+                "ip": "10.0.100.23",
                 "netmask": "255.255.255.0",
-                "gateway": "10.121.1.2",
+                "gateway": "10.0.100.2",
                 "mtu": 1500
               },
               "cluster": {
@@ -286,10 +286,10 @@
           "shared_network": "bcs",
           "single": {
             "netmask": "255.255.255.0",
-            "gateway": "10.121.1.2"
+            "gateway": "10.0.100.2"
           },
           "subnets":[
-            {"subnet": "10.121.1.0", "tag": "rack1", "dhcp_range": ["10.121.1.10", "10.121.1.254"], "netmask": "255.255.255.0", "router": "10.121.1.2"}
+            {"subnet": "10.0.100.0", "tag": "rack1", "dhcp_range": ["10.0.100.20", "10.0.100.30"], "netmask": "255.255.255.0", "router": "10.0.100.2"}
           ]
          },
         "NOTE1": "NOTE: Each subnet represents a routable rack so dhcp will need to manage each subnet with the TOR using IP-helper for dhcp requests by nodes in the given rack.",
@@ -461,7 +461,7 @@
         "public": {
           "interface": "enp0s8",
           "cidr": [
-            "10.121.1.0/24"
+            "10.0.100.0/24"
           ],
           "mtu": 1500
         },
@@ -496,7 +496,7 @@
       }
     },
     "chef_client": {
-      "server_url": "http://10.121.1.2:4000",
+      "server_url": "http://10.0.100.20:4000",
       "cache_path": "/var/chef/cache",
       "backup_path": "/var/chef/backup",
       "validation_client_name": "chef-validator",
