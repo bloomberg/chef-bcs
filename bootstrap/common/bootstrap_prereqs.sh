@@ -146,9 +146,6 @@ done
 
 # TODO: Need to clean up what is not needed below!
 
-# Zabbix Agent
-download_file zabbix-agent-2.4.7-1.el7.x86_64.rpm http://repo.zabbix.com/zabbix/2.4/rhel/7/x86_64/
-
 # IF you just want all of the latest rpms
 
 # wget -r -l1 -np http://download.ceph.com/rpm-hammer/el7/x86_64/ -P . -A "*0.94.6*"
