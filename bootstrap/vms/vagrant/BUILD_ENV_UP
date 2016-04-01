@@ -93,6 +93,8 @@ done
 
 export BOOTSTRAP_HTTP_PROXY=${BOOTSTRAP_HTTP_PROXY:-}
 export BOOTSTRAP_HTTPS_PROXY=${BOOTSTRAP_HTTPS_PROXY:-}
+export CHEF_BCS_DEBUG=${CHEF_BCS_DEBUG:-0}
+export BUILD_VMS_ONLY=${BUILD_VMS_ONLY:-0}
 
 # NOTE: Check your private data documentation for these values before running this!
 echo "Environment:"

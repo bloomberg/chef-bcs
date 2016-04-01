@@ -81,12 +81,12 @@
           "servers": [
           {%- if ceph.radosgw.federated.enable %}
           {%- for vip in vip.vips %}
-          {% set rowloop = loop %}
+          {%- set rowloop = loop %}
           {%- for item in backend.servers %}
-            {"name": "{{ item.name }}", "instance": "{{ vip.name }}", "weight": "{{ item.weight }}", "port": {{ vip.backend_port }}, "options": "{{ item.options }}"}{%- if not rowloop.last %},{% endif %}
+            {"name": "{{ item.name }}", "instance": "{{ vip.name }}", "weight": "{{ item.weight }}", "port": {{ vip.backend_port }}, "options": "{{ item.options }}"}{%- if not rowloop.last %},{% elif not loop.last %},{% endif %}
           {%- endfor %}
           {%- endfor %}
-          {% else %}
+          {%- else %}
           {%- for item in backend.servers %}
             {"name": "{{ item.name }}", "instance": "", "weight": "{{ item.weight }}", "port": {{ item.port }}, "options": "{{ item.options }}"}{%- if not loop.last %},{% endif %}
           {%- endfor %}
