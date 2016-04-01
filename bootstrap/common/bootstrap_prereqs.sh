@@ -40,6 +40,7 @@ download_file() {
 
   if [[ ! -f $BOOTSTRAP_CACHE_DIR/$FILE && ! -f $BOOTSTRAP_CACHE_DIR/${FILE}_downloaded ]]; then
     echo $FILE
+    echo $URL
     rm -f $BOOTSTRAP_CACHE_DIR/$FILE
     curl -L --progress-bar -o $BOOTSTRAP_CACHE_DIR/$FILE $URL
     touch $BOOTSTRAP_CACHE_DIR/${FILE}_downloaded
@@ -53,6 +54,7 @@ ftp_file() {
 
   if [[ ! -f $BOOTSTRAP_CACHE_DIR/$FILE && ! -f $BOOTSTRAP_CACHE_DIR/${FILE}_downloaded ]]; then
     echo $FILE
+    echo $URL
     rm -f $BOOTSTRAP_CACHE_DIR/$FILE
     wget $URL -O $BOOTSTRAP_CACHE_DIR/$FILE
     touch $BOOTSTRAP_CACHE_DIR/${FILE}_downloaded
@@ -63,6 +65,7 @@ git_clone_or_update() {
   local NAME=$1
   local URL=$2
 
+  echo "Git clone or update..."
   if [[ ! -f $BOOTSTRAP_CACHE_DIR/${NAME}_downloaded ]]; then
     if [[ ! -d $BOOTSTRAP_CACHE_DIR/$NAME ]]; then
       git clone $URL $BOOTSTRAP_CACHE_DIR/$NAME || true
@@ -72,10 +75,15 @@ git_clone_or_update() {
     touch $BOOTSTRAP_CACHE_DIR/${NAME}_downloaded
   fi
 }
+
 # Obtain an RHEL 7.2 image to be used for PXE booting in production.
+echo "Downloading ISO..."
 if [[ ! -z $COBBLER_BOOTSTRAP_ISO ]]; then
   if [[ $COBBLER_DOWNLOAD_ISO -eq 1 ]]; then
+    # NOTE: the +e is because the hardware build. We can change it later...
+    set +e
     download_file cobbler/isos/$COBBLER_BOOTSTRAP_ISO $COBBLER_REMOTE_URL_ISO
+    set -e
   fi
 fi
 
@@ -89,11 +97,12 @@ fi
 # Obtain Chef client and server RPMs.
 export CHEF_CLIENT_RPM=chef-12.8.1-1.el7.x86_64.rpm
 export CHEF_SERVER_RPM=chef-server-core-12.4.1-1.el7.x86_64.rpm
+echo "Downloading Chef..."
 download_file $CHEF_CLIENT_RPM https://opscode-omnibus-packages.s3.amazonaws.com/el/7/x86_64/$CHEF_CLIENT_RPM
 download_file $CHEF_SERVER_RPM https://web-dl.packagecloud.io/chef/stable/packages/el/7/$CHEF_SERVER_RPM
 
 # BIRD is a little different :)
-#ftp_file bird-1.5.0-1.x86_64.rpm ftp://bird.network.cz/pub/bird/redhat/bird-1.5.0-1.x86_64.rpm
+ftp_file bird-1.5.0-1.x86_64.rpm ftp://bird.network.cz/pub/bird/redhat/bird-1.5.0-1.x86_64.rpm
 
 # Pull needed *cookbooks* from the Chef Supermarket.
 mkdir -p $BOOTSTRAP_CACHE_DIR/{cookbooks,gems}
@@ -103,6 +112,7 @@ mkdir -p $BOOTSTRAP_CACHE_DIR/{cookbooks,gems}
 rm -f $BOOTSTRAP_CACHE_DIR/cookbooks/ceph-chef-*
 # If set then it will not download but remove from cache and use the development version that should be set in the chef-bcs/cookbooks directory.
 if [[ $CHEF_BCS_DEBUG -eq 0 ]]; then
+  echo "Downloading ceph-chef..."
   download_file cookbooks/ceph-chef-0.9.19.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/ceph-chef/versions/0.9.19/download
 else
   # Remove it so it's not used.
