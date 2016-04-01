@@ -216,7 +216,7 @@
         {#- "NOTE1": "NOTE: Each subnet represents a routable rack so dhcp will need to manage each subnet with the TOR using IP-helper for dhcp requests by nodes in the given rack.", #}
         {#- "NOTE2": "NOTE: You could just have one subnet for a single L2 span set of racks.", #}
         {#- "NOTE3": "NOTE: /27 for subnet mask of each rack. DNS could be added to each subnet entry above but the global DNS entry below is good enough for this.", #}
-        {#- "partition_option": "ignoredisk --only-use=sda", #}
+        "partition_option": "ignoredisk --drives=sda,sdb,sdc,sdd,sde,sdf,sdg,sdh,sdi,sdj,sdk,sdl,sdn",
         "partitions": [
           {"part": "/boot", "fstype": "xfs", "size": 1024, "options": "--ondisk=sdm"},
           {"part": "/", "fstype": "xfs", "size": 30000, "options": "--ondisk=sdm"},
@@ -295,19 +295,20 @@
         },
         "osd": {
           {#- Move this data to the seed yamls if we need to make them more dynamic for different clusters. #}
+          {#- The empty status will cause the status check of 'deployed' to fail which will allow the creation of OSDs. #}
           "devices": [
-            { "data": "/dev/sda", "data_type": "hdd", "journal": "/dev/sdm", "journal_type": "ssd" },
-            { "data": "/dev/sdb", "data_type": "hdd", "journal": "/dev/sdm", "journal_type": "ssd" },
-            { "data": "/dev/sdc", "data_type": "hdd", "journal": "/dev/sdm", "journal_type": "ssd" },
-            { "data": "/dev/sdd", "data_type": "hdd", "journal": "/dev/sdm", "journal_type": "ssd" },
-            { "data": "/dev/sde", "data_type": "hdd", "journal": "/dev/sdm", "journal_type": "ssd" },
-            { "data": "/dev/sdf", "data_type": "hdd", "journal": "/dev/sdn", "journal_type": "ssd" },
-            { "data": "/dev/sdg", "data_type": "hdd", "journal": "/dev/sdn", "journal_type": "ssd" },
-            { "data": "/dev/sdh", "data_type": "hdd", "journal": "/dev/sdn", "journal_type": "ssd" },
-            { "data": "/dev/sdi", "data_type": "hdd", "journal": "/dev/sdn", "journal_type": "ssd" },
-            { "data": "/dev/sdj", "data_type": "hdd", "journal": "/dev/sdn", "journal_type": "ssd" },
-            { "data": "/dev/sdk", "data_type": "hdd", "journal": "/dev/sdn", "journal_type": "ssd" },
-            { "data": "/dev/sdl", "data_type": "hdd", "journal": "/dev/sdn", "journal_type": "ssd" }
+            { "data": "/dev/sda", "data_type": "hdd", "journal": "/dev/sdm", "journal_type": "ssd", "status": "" },
+            { "data": "/dev/sdb", "data_type": "hdd", "journal": "/dev/sdm", "journal_type": "ssd", "status": "" },
+            { "data": "/dev/sdc", "data_type": "hdd", "journal": "/dev/sdm", "journal_type": "ssd", "status": "" },
+            { "data": "/dev/sdd", "data_type": "hdd", "journal": "/dev/sdm", "journal_type": "ssd", "status": "" },
+            { "data": "/dev/sde", "data_type": "hdd", "journal": "/dev/sdm", "journal_type": "ssd", "status": "" },
+            { "data": "/dev/sdf", "data_type": "hdd", "journal": "/dev/sdm", "journal_type": "ssd", "status": "" },
+            { "data": "/dev/sdg", "data_type": "hdd", "journal": "/dev/sdn", "journal_type": "ssd", "status": "" },
+            { "data": "/dev/sdh", "data_type": "hdd", "journal": "/dev/sdn", "journal_type": "ssd", "status": "" },
+            { "data": "/dev/sdi", "data_type": "hdd", "journal": "/dev/sdn", "journal_type": "ssd", "status": "" },
+            { "data": "/dev/sdj", "data_type": "hdd", "journal": "/dev/sdn", "journal_type": "ssd", "status": "" },
+            { "data": "/dev/sdk", "data_type": "hdd", "journal": "/dev/sdn", "journal_type": "ssd", "status": "" },
+            { "data": "/dev/sdl", "data_type": "hdd", "journal": "/dev/sdn", "journal_type": "ssd", "status": "" }
           ],
           {#- The add and remove should reflect the same structure as devices above and should be used for maintenance only! #}
           "add": [],
@@ -321,7 +322,8 @@
           },
           "journal": {
             {#- Change the journal size for the prod SSD #}
-            "size": 10000
+            {#- Calculate min size (if you have space then use it): 2 * (#OSDs in node * 100MB/s) * 5 (default sync interval) = 2 * (12 * 100) * 5 = 12GB #}
+            "size": 20000
           },
           "crush": {
             {#- Rack on crush chooseleaf type #}
@@ -411,6 +413,16 @@
       },
       "ntp": {
         "servers": ["{{ ntp|join('", "') }}"]
+      },
+      "collectd-plugins": {
+        "write_graphite": {
+          "node": {
+            "id": "{{ monitoring.id }}",
+            "host": "{{ monitoring.ip }}",
+            "port": {{ monitoring.port }},
+            "prefix": "{{ monitoring.prefix }}"
+          }
+        }
       }
     },
     "chef_client": {
