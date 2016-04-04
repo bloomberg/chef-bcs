@@ -1,5 +1,6 @@
 #!/bin/bash
 #
+# Author: Chris Jones <cjones303@bloomberg.net>
 # Copyright 2016, Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,10 +16,14 @@
 # limitations under the License.
 #
 
-# Exit immediately if anything goes wrong, instead of making things worse.
-set -e
+dev=$1
 
-# cd $REPO_ROOT/bootstrap/vms/vagrant && vagrant halt && vagrant destroy -f
-cd $REPO_ROOT/bootstrap/vms/vagrant && vagrant destroy -f
-rm -f $REPO_ROOT/bootstrap/vms/chef-bcs
-rm -f $REPO_ROOT/bootstrap/vms/chef-bcs.pub
+if [[ -z $dev ]]; then
+  echo "Must specify a valid device."
+  exit 1
+fi
+
+# Lists out the smart info for SSD journals. The main thing to look at is the 'Wearout_Indicator'. The lower it is
+# the sooner is will fail.
+
+sudo smartclt -a $dev

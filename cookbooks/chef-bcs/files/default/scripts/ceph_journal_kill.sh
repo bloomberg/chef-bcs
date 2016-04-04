@@ -1,7 +1,6 @@
+#!/bin/bash
 #
 # Author:: Chris Jones <cjones303@bloomberg.net>
-# Cookbook Name:: chef-bcs
-# Recipe:: ceph-osd
 #
 # Copyright 2016, Bloomberg Finance L.P.
 #
@@ -16,19 +15,30 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
 
-# NOTE: The entries below are examples of how to use Chef to remove and add devices. The data will need to be added in
-# the "osd": section of "ceph": in the given environment file just like "devices": are entered.
-# "remove": {
-#   "devices": [
-#     { "node": "ceph-vm1", "osd": 0, "zap": true, "partition": 1, "data": "/dev/sdb", "journal": "/dev/sdf" }
-#   ]
-# },
-# "add": {
-#   "devices": [
-#     { "node": "ceph-vm3", "data": "/dev/sde", "type": "hdd", "journal": "/dev/sde" }
-#   ]
-# }
+# Script takes 2 parameter: journal device, partition
 
-include_recipe 'chef-bcs::ceph-conf'
+dev=$1
+partition=${2:-0}
+
+if [[ -z $dev ]]; then
+  echo "Must specify the correct Ceph Journal device!"
+  exit 1
+fi
+
+echo "Device: $dev"
+echo "Partition: $partiion"
+
+# TODO: Finish...
+
+# Wipe the data and partions from a device at once.
+# dd if=/dev/zero of=/dev/sda bs=512 count=1 conv=notrunc
+
+for i in $(parted --machine -- $dev print); do
+  part=$(echo $i | grep ceph | grep ^[0-9] | awk -F: '{print $1}')
+
+  # Destroy partition if it matches - DANGER!
+  if [[ $partition -eq 0 || $partition -eq $part ]]; then
+      echo "Nothing yet..."
+  fi
+done

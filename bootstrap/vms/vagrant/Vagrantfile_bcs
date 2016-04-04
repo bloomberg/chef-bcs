@@ -65,6 +65,7 @@ $memory = ( environment['vagrant']['memory'] or "2560" )
 $cpus = ( environment['vagrant']['cpus'] or "2" )
 $vram = ( environment['vagrant']['vram'] or "16" )
 $disk_size = ( environment['vagrant']['disk_size'] or "20480" )
+$osd_drives = ( environment['vagrant']['drives'] or "4" )
 
 # if proxies are provided, configure them before configuring any local mirror override
 # RUN THIS SCRIPT WITH sudo AND privileged = false so that $HOME is set to the
@@ -165,11 +166,9 @@ end
 $hosts_string  += ")"
 
 # Build osd hosts File
-$osd_drives = 0
 servers.each do |server|
   if server['roles'].include? 'osd'
     $osd_hosts_string += "#{server['name']} "
-    $osd_drives += 1
   end
 end
 $osd_hosts_string  += ")\n"

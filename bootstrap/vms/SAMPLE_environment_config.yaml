@@ -24,7 +24,7 @@ vagrant:
     memory: 2560
     cpus: 2
     vram: 16
-    drive_size: 20480
+    drive_size: 40960
     # If proxies are used then the following syntax is used: http://<proxy node>:<port> <-- Note put http or https if applicable
     http_proxy:
     https_proxy:

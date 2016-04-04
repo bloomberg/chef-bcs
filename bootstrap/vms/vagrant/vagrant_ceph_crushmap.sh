@@ -1,5 +1,6 @@
 #!/bin/bash
 #
+# Author: Chris Jones <cjones303@bloomberg.net>
 # Copyright 2016, Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,10 +16,9 @@
 # limitations under the License.
 #
 
-# Exit immediately if anything goes wrong, instead of making things worse.
-set -e
+source vagrant_base.sh
 
-# cd $REPO_ROOT/bootstrap/vms/vagrant && vagrant halt && vagrant destroy -f
-cd $REPO_ROOT/bootstrap/vms/vagrant && vagrant destroy -f
-rm -f $REPO_ROOT/bootstrap/vms/chef-bcs
-rm -f $REPO_ROOT/bootstrap/vms/chef-bcs.pub
+# Setup Ceph Crushmap
+# NOTE: Only needs to be done on first mon node
+do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE node run_list add ${CEPH_MON_HOSTS[@]:1:1}.$BOOTSTRAP_DOMAIN 'role[ceph-crushmap]' $CHEF_KNIFE_DEBUG"
+do_on_node ${CEPH_MON_HOSTS[@]:1:1} "sudo chef-client $CHEF_CLIENT_DEBUG -o 'role[ceph-crushmap]'"

@@ -40,18 +40,24 @@ node.default['ceph']['osd']['devices'] = node['chef-bcs']['ceph']['osd']['device
 
 # Other OSD related items
 node.default['ceph']['osd']['journal']['size'] = node['chef-bcs']['ceph']['osd']['journal']['size']
-node.default['ceph']['osd']['crush']['chooseleaf_type'] = node['chef-bcs']['ceph']['osd']['crush']['chooseleaf_type']
 node.default['ceph']['osd']['size']['max'] = node['chef-bcs']['ceph']['osd']['size']['max']
 node.default['ceph']['osd']['size']['min'] = node['chef-bcs']['ceph']['osd']['size']['min']
+node.default['ceph']['osd']['crush'] = node['chef-bcs']['ceph']['osd']['crush']
 
-node.default['ceph']['pools']['radosgw']['names'] = node['chef-bcs']['ceph']['pools']['radosgw']['names']
+node.default['ceph']['repo']['create'] = node['chef-bcs']['ceph']['repo']['create']
+node.default['ceph']['pools']['pgs']['calc'] = node['chef-bcs']['ceph']['pools']['pgs']['calc']
+# 'names' may be deprecated soon. Here until then.
+#node.default['ceph']['pools']['radosgw']['names'] = node['chef-bcs']['ceph']['pools']['radosgw']['names']
+node.default['ceph']['pools']['radosgw']['pools'] = node['chef-bcs']['ceph']['pools']['radosgw']['pools']
 node.default['ceph']['pools']['radosgw']['settings'] = node['chef-bcs']['ceph']['pools']['radosgw']['settings']
 node.default['ceph']['pools']['pgs']['num'] = node['chef-bcs']['ceph']['pools']['pgs']['num']
 
 node.default['ceph']['pools']['radosgw']['federated_enable'] = node['chef-bcs']['ceph']['pools']['radosgw']['federated']['enable']
-node.default['ceph']['pools']['radosgw']['federated_instances'] = node['chef-bcs']['ceph']['pools']['radosgw']['federated']['instances']
-node.default['ceph']['pools']['radosgw']['federated_zones'] = node['chef-bcs']['ceph']['pools']['radosgw']['federated']['zones']
+node.default['ceph']['pools']['radosgw']['federated_zone_instances'] = node['chef-bcs']['ceph']['pools']['radosgw']['federated']['zone_instances']
+#node.default['ceph']['pools']['radosgw']['federated_zones'] = node['chef-bcs']['ceph']['pools']['radosgw']['federated']['zones']
 node.default['ceph']['pools']['radosgw']['federated_regions'] = node['chef-bcs']['ceph']['pools']['radosgw']['federated']['regions']
+node.default['ceph']['pools']['radosgw']['federated_master_zone'] = node['chef-bcs']['ceph']['pools']['radosgw']['federated']['master_zone']
+node.default['ceph']['pools']['radosgw']['federated_master_zone_port'] = node['chef-bcs']['ceph']['pools']['radosgw']['federated']['master_zone_port']
 
 # Erasure coding
 node.default['ceph']['pools']['erasure_coding'] = node['chef-bcs']['ceph']['pools']['erasure_coding']

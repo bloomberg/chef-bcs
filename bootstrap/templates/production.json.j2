@@ -76,7 +76,7 @@
           ]
         },
         "backend": {
-          {#- NOTE: IF Federated then VIPs 'name' variable, Backend/Servers 'instance' variable and Ceph/Pools/Radosgw/Federated/Instances 'name' *MUST* be the same value for the lookups to work. #}
+          {#- NOTE: IF Federated then VIPs 'name' variable, Backend/Servers 'instance' variable and Ceph/Pools/Radosgw/Federated/Zone_Instances 'name' *MUST* be the same value for the lookups to work. #}
           {#- IF Federated is NOT used then leave 'instance' variable name below empty. #}
           "servers": [
           {%- if ceph.radosgw.federated.enable %}
@@ -216,6 +216,7 @@
         {#- "NOTE1": "NOTE: Each subnet represents a routable rack so dhcp will need to manage each subnet with the TOR using IP-helper for dhcp requests by nodes in the given rack.", #}
         {#- "NOTE2": "NOTE: You could just have one subnet for a single L2 span set of racks.", #}
         {#- "NOTE3": "NOTE: /27 for subnet mask of each rack. DNS could be added to each subnet entry above but the global DNS entry below is good enough for this.", #}
+        "raid": true,
         "partition_option": "ignoredisk --drives=sda,sdb,sdc,sdd,sde,sdf,sdg,sdh,sdi,sdj,sdk,sdl,sdn",
         "partitions": [
           {"part": "/boot", "fstype": "xfs", "size": 1024, "options": "--ondisk=sdm"},
@@ -223,6 +224,24 @@
           {"part": "/var/lib", "fstype": "xfs", "size": 40000, "options": "--ondisk=sdm"},
           {"part": "/opt", "fstype": "xfs", "size": 20000, "options": "--ondisk=sdm"},
           {"part": "swap", "fstype": "swap", "size": 20000, "options": ""}
+        ],
+        {#- Came back and added RAID1 to the OSD SSDs because of issues in supermicro servers. These journals and OS share SSDs because of design limitations. #}
+        "raid_partitions": [
+          {"raid": "part raid.01 --size=1024  --ondisk=sdm"},
+          {"raid": "part raid.02 --size=30000 --ondisk=sdm"},
+          {"raid": "part raid.03 --size=40000 --ondisk=sdm"},
+          {"raid": "part raid.04 --size=20000 --ondisk=sdm"},
+          {"raid": "part raid.05 --size=20000 --ondisk=sdm"},
+          {"raid": "part raid.06 --size=1024  --ondisk=sdn"},
+          {"raid": "part raid.07 --size=30000 --ondisk=sdn"},
+          {"raid": "part raid.08 --size=40000 --ondisk=sdn"},
+          {"raid": "part raid.09 --size=20000 --ondisk=sdn"},
+          {"raid": "part raid.10 --size=20000 --ondisk=sdn"},
+          {"raid": "raid /boot      --level=RAID1 --device=md0 --fstype=xfs  raid.01 raid.06"},
+          {"raid": "raid /          --level=RAID1 --device=md1 --fstype=xfs  raid.02 raid.07"},
+          {"raid": "raid /var/lib   --level=RAID1 --device=md2 --fstype=xfs  raid.03 raid.08"},
+          {"raid": "raid /opt       --level=RAID1 --device=md3 --fstype=xfs  raid.04 raid.09"},
+          {"raid": "raid swap       --level=RAID1 --device=md4 --fstype=swap raid.05 raid.10"}
         ],
         {#- "NOTE4": "NOTE: Partitions are for OSD nodes. All other partitions are coded into the given ks file.", #}
         "ports": {
@@ -264,10 +283,8 @@
             "rgw override bucket index max shards": 5
           },
           "mon": {
-            "mon pg warn max per osd": 0,
-            "mon osd full ratio": 0.90,
-            "mon osd nearfull ratio": 0.80,
-            "clock drift allowed": 15
+            "mon osd full ratio": 0.95,
+            "mon osd nearfull ratio": 0.85
           },
           "radosgw": {
             "cache max file size": 20000000
@@ -297,19 +314,23 @@
           {#- Move this data to the seed yamls if we need to make them more dynamic for different clusters. #}
           {#- The empty status will cause the status check of 'deployed' to fail which will allow the creation of OSDs. #}
           "devices": [
-            { "data": "/dev/sda", "data_type": "hdd", "journal": "/dev/sdm", "journal_type": "ssd", "status": "" },
-            { "data": "/dev/sdb", "data_type": "hdd", "journal": "/dev/sdm", "journal_type": "ssd", "status": "" },
-            { "data": "/dev/sdc", "data_type": "hdd", "journal": "/dev/sdm", "journal_type": "ssd", "status": "" },
-            { "data": "/dev/sdd", "data_type": "hdd", "journal": "/dev/sdm", "journal_type": "ssd", "status": "" },
-            { "data": "/dev/sde", "data_type": "hdd", "journal": "/dev/sdm", "journal_type": "ssd", "status": "" },
-            { "data": "/dev/sdf", "data_type": "hdd", "journal": "/dev/sdm", "journal_type": "ssd", "status": "" },
-            { "data": "/dev/sdg", "data_type": "hdd", "journal": "/dev/sdn", "journal_type": "ssd", "status": "" },
-            { "data": "/dev/sdh", "data_type": "hdd", "journal": "/dev/sdn", "journal_type": "ssd", "status": "" },
-            { "data": "/dev/sdi", "data_type": "hdd", "journal": "/dev/sdn", "journal_type": "ssd", "status": "" },
-            { "data": "/dev/sdj", "data_type": "hdd", "journal": "/dev/sdn", "journal_type": "ssd", "status": "" },
-            { "data": "/dev/sdk", "data_type": "hdd", "journal": "/dev/sdn", "journal_type": "ssd", "status": "" },
-            { "data": "/dev/sdl", "data_type": "hdd", "journal": "/dev/sdn", "journal_type": "ssd", "status": "" }
+            { "data": "/dev/sda", "data_type": "hdd", "journal": "/dev/sdm", "journal_type": "ssd", "encrypted": false, "status": "" },
+            { "data": "/dev/sdb", "data_type": "hdd", "journal": "/dev/sdm", "journal_type": "ssd", "encrypted": false, "status": "" },
+            { "data": "/dev/sdc", "data_type": "hdd", "journal": "/dev/sdm", "journal_type": "ssd", "encrypted": false, "status": "" },
+            { "data": "/dev/sdd", "data_type": "hdd", "journal": "/dev/sdm", "journal_type": "ssd", "encrypted": false, "status": "" },
+            { "data": "/dev/sde", "data_type": "hdd", "journal": "/dev/sdm", "journal_type": "ssd", "encrypted": false, "status": "" },
+            { "data": "/dev/sdf", "data_type": "hdd", "journal": "/dev/sdm", "journal_type": "ssd", "encrypted": false, "status": "" },
+            { "data": "/dev/sdg", "data_type": "hdd", "journal": "/dev/sdn", "journal_type": "ssd", "encrypted": false, "status": "" },
+            { "data": "/dev/sdh", "data_type": "hdd", "journal": "/dev/sdn", "journal_type": "ssd", "encrypted": false, "status": "" },
+            { "data": "/dev/sdi", "data_type": "hdd", "journal": "/dev/sdn", "journal_type": "ssd", "encrypted": false, "status": "" },
+            { "data": "/dev/sdj", "data_type": "hdd", "journal": "/dev/sdn", "journal_type": "ssd", "encrypted": false, "status": "" },
+            { "data": "/dev/sdk", "data_type": "hdd", "journal": "/dev/sdn", "journal_type": "ssd", "encrypted": false, "status": "" },
+            { "data": "/dev/sdl", "data_type": "hdd", "journal": "/dev/sdn", "journal_type": "ssd", "encrypted": false, "status": "" }
           ],
+          "crush": {
+            "update_on_start": true,
+            "chooseleaf_type": 3
+          },
           {#- The add and remove should reflect the same structure as devices above and should be used for maintenance only! #}
           "add": [],
           "remove": [],
@@ -324,17 +345,13 @@
             {#- Change the journal size for the prod SSD #}
             {#- Calculate min size (if you have space then use it): 2 * (#OSDs in node * 100MB/s) * 5 (default sync interval) = 2 * (12 * 100) * 5 = 12GB #}
             "size": 20000
-          },
-          "crush": {
-            {#- Rack on crush chooseleaf type #}
-            "chooseleaf_type": 3
           }
         },
         "pools": {
           "active": ["radosgw"],
           "erasure_coding": {
             "profiles": [
-              {"profile": "object-store", "directory": "/usr/lib/ceph/erasure-code", "plugin": "SHEC", "force": true, "key_value": {"k": 8, "m": 3}}
+              {"profile": "bcs", "directory": "/usr/lib/ceph/erasure-code", "plugin": "jerasure", "force": true, "technique": "reed_sol_van", "key_value": {"k": 8, "m": 3}}
             ]
           },
           "radosgw": {
@@ -342,13 +359,14 @@
               "enable": true,
               {#- Instances represent network tiers #}
               {#- Instance name MUST match VIPs name and Backend/Server instance variables. IF Federation is not used then Backend/Server instance variable should be empty. #}
-              "instances": [
+              "zone_instances": [
                 {%- for item in vip.vips %}
-                  {"name": "{{ item.name }}", "port": "{{ item.backend_port }}"}{%- if not loop.last %},{% endif %}
+                  {"name": "{{ item.name }}", "port": "{{ item.backend_port }}", "region": {{ item.region }}}{%- if not loop.last %},{% endif %}
                 {%- endfor %}
               ],
               "regions": ["{{ ceph.radosgw.federated.regions|join('", "') }}"],
-              "zones": ["{{ ceph.radosgw.federated.zones|join('", "') }}"]
+              "master_zone": "{{ ceph.radosgw.federated.master_zone }}",
+              "master_zone_port": "{{ ceph.radosgw.federated.master_zone_port }}"
             },
             {#- If federated then the system generated federated prefix will be added in front of the names below to create a fully federated pool name. #}
             "names": [
@@ -367,6 +385,23 @@
               ".rgw.buckets.index",
               ".rgw.buckets.extra"
             ],
+            {#- The data_percent below should equal 100%. If Federated then the calculation will take those pools into account. #}
+            "pools": [
+              {"name": ".rgw", "data_percent": 0.10, "type": "erasure", "profile": "bcs", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
+              {"name": ".rgw.control", "data_percent": 0.10, "type": "erasure", "profile": "bcs", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
+              {"name": ".rgw.gc", "data_percent": 0.10, "type": "erasure", "profile": "bcs", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
+              {"name": ".rgw.root", "data_percent": 0.10, "type": "erasure", "profile": "bcs", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
+              {"name": ".users.uid", "data_percent": 0.10, "type": "erasure", "profile": "bcs", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
+              {"name": ".users.email", "data_percent": 0.10, "type": "erasure", "profile": "bcs", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
+              {"name": ".users.swift", "data_percent": 0.10, "type": "erasure", "profile": "bcs", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
+              {"name": ".users", "data_percent": 0.10, "type": "erasure", "profile": "bcs", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
+              {"name": ".usage", "data_percent": 0.10, "type": "erasure", "profile": "bcs", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
+              {"name": ".log", "data_percent": 0.10, "type": "erasure", "profile": "bcs", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
+              {"name": ".intent-log", "data_percent": 0.10, "type": "erasure", "profile": "bcs", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
+              {"name": ".rgw.buckets", "data_percent": 96.90, "type": "erasure", "profile": "bcs", "actions": [{"action": "create", "pg_num": 128, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
+              {"name": ".rgw.buckets.index", "data_percent": 1, "type": "erasure", "profile": "bcs", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
+              {"name": ".rgw.buckets.extra", "data_percent": 1, "type": "erasure", "profile": "bcs", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]}
+            ],
             {#- If federated then the settings below apply to the federated pools else the non-federated pools. #}
             "settings": {
               "pg_num": 1024,
@@ -375,8 +410,9 @@
               "force": false,
               "calc": true,
               "size": 3,
-              "crush_rule_set": 3,
+              "crush_rule_set": 2,
               "chooseleaf": "rack",
+              "chooseleaf_type": 3,
               "type": "erasure"
             },
             "remove": {
@@ -384,6 +420,13 @@
             }
           },
           "pgs": {
+            "calc": {
+              "total_osds": 612,
+              "target_pgs_per_osd": 200,
+              "min_pgs_per_pool": 128,
+              "replicated_size": 3,
+              "erasure_size": 11,
+            },
             "num": 1024
           }
         },
@@ -417,12 +460,17 @@
       "collectd-plugins": {
         "write_graphite": {
           "node": {
-            "id": "{{ monitoring.id }}",
-            "host": "{{ monitoring.ip }}",
-            "port": {{ monitoring.port }},
-            "prefix": "{{ monitoring.prefix }}"
+            "id": "{{ monitoring.collectd.id }}",
+            "host": "{{ monitoring.collectd.ip }}",
+            "port": {{ monitoring.collectd.port }},
+            "prefix": "{{ monitoring.collectd.prefix }}"
           }
         }
+      },
+      "zabbix": {
+        "repository": "http://repo.zabbix.com/zabbix/2.4/rhel/7/x86_64/",
+        "repository_key": "http://repo.zabbix.com/RPM-GPG-KEY-ZABBIX",
+        "server": "{{ monitoring.zabbix.server }}"
       }
     },
     "chef_client": {

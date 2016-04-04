@@ -3,8 +3,9 @@
   "json_class": "Chef::Role",
   "description": "Ceph create osd pools",
   "run_list": [
-    "recipe[chef-bcs::erasure-coding]",
+    "recipe[chef-bcs::pools-erasure-coding]",
     "recipe[ceph-chef::pools_create]",
-    "recipe[ceph-chef::pools_set]"
+    "recipe[ceph-chef::pools_set]",
+    "recipe[chef-bcs::pools]"
   ]
 }

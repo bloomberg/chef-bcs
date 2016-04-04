@@ -70,10 +70,15 @@ zerombr
 # ignoredisk --drives=sdb,sdc
 # ignoredisk --only-use=sda
 <%= node['chef-bcs']['cobbler']['partition_option'] %>
+<% if node['chef-bcs']['cobbler']['raid'] %>
+<% node['chef-bcs']['cobbler']['raid_partitions'].each do |raid_par| %>
+<%= raid_par['raid'] %>
+<% end %>
+<% else %>
 <% node['chef-bcs']['cobbler']['partitions'].each do |par| %>
 part <%= par['part'] %> --fstype=<%= par['fstype'] %> --size=<%= par['size'] %> <%= par['options'] %>
 <% end %>
-#part swap --size=32768
+<% end %>
 
 %pre
 $SNIPPET('log_ks_pre')

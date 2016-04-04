@@ -70,8 +70,14 @@ zerombr
 # ignoredisk --drives=sdb,sdc
 # ignoredisk --only-use=sdm
 <%= node['chef-bcs']['cobbler']['partition_option'] %>
+<% if node['chef-bcs']['cobbler']['raid'] %>
+<% node['chef-bcs']['cobbler']['raid_partitions'].each do |raid_par| %>
+<%= raid_par['raid'] %>
+<% end %>
+<% else %>
 <% node['chef-bcs']['cobbler']['partitions'].each do |par| %>
 part <%= par['part'] %> --fstype=<%= par['fstype'] %> --size=<%= par['size'] %> <%= par['options'] %>
+<% end %>
 <% end %>
 
 %pre

@@ -1,7 +1,7 @@
 {
   "name": "ceph-mon-install",
   "json_class": "Chef::Role",
-  "description": "Ceph Monitor Install",
+  "description": "Ceph Monitor Install - role[monitoring]",
   "override_attributes": {},
   "run_list": [
     "role[common]",
@@ -10,7 +10,6 @@
     "recipe[ceph-chef::repo]",
     "recipe[chef-bcs::ceph-mon]",
     "recipe[chef-bcs::ceph-admin]",
-    "recipe[ceph-chef::mon]",
-    "role[monitoring]"
+    "recipe[ceph-chef::mon]"
   ]
 }

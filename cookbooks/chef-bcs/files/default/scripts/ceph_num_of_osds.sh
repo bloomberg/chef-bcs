@@ -1,5 +1,7 @@
 #!/bin/bash
 #
+# Author:: Chris Jones <cjones303@bloomberg.net>
+#
 # Copyright 2016, Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,12 +15,5 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
 
-# Exit immediately if anything goes wrong, instead of making things worse.
-set -e
-
-# cd $REPO_ROOT/bootstrap/vms/vagrant && vagrant halt && vagrant destroy -f
-cd $REPO_ROOT/bootstrap/vms/vagrant && vagrant destroy -f
-rm -f $REPO_ROOT/bootstrap/vms/chef-bcs
-rm -f $REPO_ROOT/bootstrap/vms/chef-bcs.pub
+ceph osd stat | awk -F: '{gsub("osds", "");print $2}'

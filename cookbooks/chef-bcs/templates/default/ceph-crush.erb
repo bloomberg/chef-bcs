@@ -1,0 +1,29 @@
+root ssd {
+    alg straw
+    hash 0  # rjenkins1
+}
+
+root hdd {
+    alg straw
+    hash 0  # rjenkins1
+}
+
+rule ssd {
+    ruleset 1
+    type <%=node['chef-bcs']['ceph']['pools']['radosgw']['settings']['type']%>
+    min_size 3
+    max_size 12
+    step take ssd
+    step chooseleaf firstn 0 type <%=node['chef-bcs']['ceph']['pools']['radosgw']['settings']['chooseleaf']%>
+    step emit
+}
+
+rule hdd {
+    ruleset 2
+    type <%=node['chef-bcs']['ceph']['pools']['radosgw']['settings']['type']%>
+    min_size 3
+    max_size 12
+    step take hdd
+    step chooseleaf firstn 0 type <%=node['chef-bcs']['ceph']['pools']['radosgw']['settings']['chooseleaf']%>
+    step emit
+}

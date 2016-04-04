@@ -1,5 +1,7 @@
 #!/bin/bash
 #
+# Author:: Chris Jones <cjones303@bloomberg.net>
+#
 # Copyright 2016, Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,12 +15,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
 
-# Exit immediately if anything goes wrong, instead of making things worse.
-set -e
+# DANGER - DANGER - DANGER!!!!
 
-# cd $REPO_ROOT/bootstrap/vms/vagrant && vagrant halt && vagrant destroy -f
-cd $REPO_ROOT/bootstrap/vms/vagrant && vagrant destroy -f
-rm -f $REPO_ROOT/bootstrap/vms/chef-bcs
-rm -f $REPO_ROOT/bootstrap/vms/chef-bcs.pub
+# This assumes you have already stoppped and/or removed Ceph.
+
+# Wipe the data and partions from a device at once.
+# dd if=/dev/zero of=/dev/sda bs=512 count=1 conv=notrunc
+
+# Replace devices to fit your environment
+
+for i in a b c d e f g h i k l; do
+  dd if=/dev/zero of=/dev/sd$i bs=512 count=1 conv=notrunc
+done

@@ -16,14 +16,26 @@
 # limitations under the License.
 #
 
-# Reverse cloning of cloned VMs so as to make them active in a clean state (same as the point where they were cloned).
+source /ceph-host/bootstrap/data/environment/production/scripts/base.sh
 
-# NOTE: MUST execute from VAGRANT directory of project
+new_pool=$1
+old_pool=$2
+# Set a default here...
+pg_num=$3
 
-source vagrant_base.sh
+if [[ -z $new_pool || -z $old_pool ]]; then
+  echo 'Must have valid new_pool and old_pool names.'
+  exit 1
+fi
 
-for vm in ${CEPH_CHEF_HOSTS[@]}; do
-    echo "Mounting $vm..."
-    do_on_node $vm "sudo mount -t vboxsf -o umask=0022,gid=\$(id -u vagrant),uid=\$(id -u vagrant) ceph-host /ceph-host"
-    do_on_node $vm "sudo mount -t vboxsf -o umask=0022,gid=\$(id -u vagrant),uid=\$(id -u vagrant) ceph-files /ceph-files"
-done
+if [[ $pg_num -lt 1 ]]; then
+  echo 'Make sure the pg_num value is greater than 0 but really it should be a valid number.'
+  exit 1
+fi
+
+ceph osd pool create $new_pool $pg_num
+rados cppool $old_pool $new_pool
+
+# May want to move delete and rename to another script so you can do verification in between.
+ceph osd pool delete $old_pool
+ceph osd pool rename $new_pool $old_pool
