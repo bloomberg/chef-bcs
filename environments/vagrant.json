@@ -361,14 +361,16 @@
         "config": {
           "NOTE": "This section is pure key/value. Meaning, the key and value are added to the given location in ceph.conf.",
           "global": {
-            "rgw override bucket index max shards": 5
+            "rgw override bucket index max shards": 10
           },
+          "NOTE-MON": "Setting the clock drift in vagrant is OK since dev vms can sometimes get out of sync.",
           "mon": {
             "mon pg warn max per osd": 0,
             "mon osd full ratio": 0.95,
             "mon osd nearfull ratio": 0.85,
-            "NOTE": "Setting the clock drift in vagrant is OK since dev vms can sometimes get out of sync.",
-            "clock drift allowed": 0.15
+            "mon osd down out interval": 300,
+            "mon pg warn max object skew": 10,
+            "clock drift allowed": 5.0
           },
           "radosgw": {
             "cache max file size": 20000000
@@ -380,6 +382,7 @@
         },
         "radosgw": {
           "port": 8080,
+          "default_url": "s3.rgw.ceph.example.com",
           "keystone": {
             "auth": false,
             "admin": {
@@ -404,8 +407,9 @@
             { "data": "/dev/sde", "data_type": "hdd", "journal": "/dev/sdf", "journal_type": "ssd", "encrypted": false, "status": "" }
           ],
           "crush": {
+            "update": false,
             "update_on_start": true,
-            "chooseleaf_type": 3
+            "chooseleaf_type": 1
           },
           "add": [],
           "remove": [],
@@ -425,6 +429,9 @@
         },
         "pools": {
           "active": ["radosgw"],
+          "crush": {
+            "rule": 2
+          },
           "erasure_coding": {
             "profiles": [
               {"profile": "bcs", "directory": "/usr/lib64/ceph/erasure-code", "plugin": "jerasure", "force": true, "technique": "reed_sol_van", "key_value": {"k": 8, "m": 3}}
@@ -432,10 +439,10 @@
           },
           "radosgw": {
             "federated": {
-              "enable": true,
+              "enable": false,
               "zone_instances": [
-                {"name": "dev", "port": 8080, "region": "dc1"},
-                {"name": "prod", "port": 8081, "region": "dc1"}
+                {"name": "dev", "port": 8080, "region": "dc1", "url": "s3.dev.rgw.ceph.example.com"},
+                {"name": "prod", "port": 8081, "region": "dc1", "url": "s3.prod.rgw.ceph.example.com"}
               ],
               "regions": ["dc1"],
               "master_zone": "prod",
@@ -461,20 +468,20 @@
             "NOTE-POOLS": "pools below replace 'names' and provides data for PG creations. Also, 'actions' portion is EXPERIMENTAL so ignore!",
             "NOTE-POOLS-PERCENT": "data_percent total of the pool should be 100%. IF this is is also a Federated set of pools with multiple tiers then it should still be 100% and the calculation will take those other pools into account.",
             "pools": [
-              {"name": ".rgw", "data_percent": 0.10, "type": "erasure", "profile": "bcs", "crush_ruleset": -1, "crush_ruleset_name": "hdd_ruleset", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
-              {"name": ".rgw.control", "data_percent": 0.10, "type": "erasure", "profile": "bcs", "crush_ruleset": -1, "crush_ruleset_name": "hdd_ruleset", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
-              {"name": ".rgw.gc", "data_percent": 0.10, "type": "erasure", "profile": "bcs", "crush_ruleset": -1, "crush_ruleset_name": "hdd_ruleset", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
-              {"name": ".rgw.root", "data_percent": 0.10, "type": "erasure", "profile": "bcs", "crush_ruleset": -1, "crush_ruleset_name": "hdd_ruleset", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
-              {"name": ".users.uid", "data_percent": 0.10, "type": "erasure", "profile": "bcs", "crush_ruleset": -1, "crush_ruleset_name": "hdd_ruleset", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
-              {"name": ".users.email", "data_percent": 0.10, "type": "erasure", "profile": "bcs", "crush_ruleset": -1, "crush_ruleset_name": "hdd_ruleset", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
-              {"name": ".users.swift", "data_percent": 0.10, "type": "erasure", "profile": "bcs", "crush_ruleset": -1, "crush_ruleset_name": "hdd_ruleset", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
-              {"name": ".users", "data_percent": 0.10, "type": "erasure", "profile": "bcs", "crush_ruleset": -1, "crush_ruleset_name": "hdd_ruleset", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
-              {"name": ".usage", "data_percent": 0.10, "type": "erasure", "profile": "bcs", "crush_ruleset": -1, "crush_ruleset_name": "hdd_ruleset", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
-              {"name": ".log", "data_percent": 0.10, "type": "erasure", "profile": "bcs", "crush_ruleset": -1, "crush_ruleset_name": "hdd_ruleset", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
-              {"name": ".intent-log", "data_percent": 0.10, "type": "erasure", "profile": "bcs", "crush_ruleset": -1, "crush_ruleset_name": "hdd_ruleset", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
-              {"name": ".rgw.buckets", "data_percent": 96.10, "type": "erasure", "profile": "bcs", "crush_ruleset": -1, "crush_ruleset_name": "hdd_ruleset", "actions": [{"action": "create", "pg_num": 128, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
-              {"name": ".rgw.buckets.index", "data_percent": 1.00, "type": "erasure", "profile": "bcs", "crush_ruleset": -1, "crush_ruleset_name": "hdd_ruleset", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
-              {"name": ".rgw.buckets.extra", "data_percent": 1.00, "type": "erasure", "profile": "bcs", "crush_ruleset": -1, "crush_ruleset_name": "hdd_ruleset", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]}
+              {"name": ".rgw", "data_percent": 0.10, "type": "erasure", "profile": "bcs", "crush_ruleset": -1, "crush_ruleset_name": "hdd", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
+              {"name": ".rgw.control", "data_percent": 0.10, "type": "erasure", "profile": "bcs", "crush_ruleset": -1, "crush_ruleset_name": "hdd", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
+              {"name": ".rgw.gc", "data_percent": 0.10, "type": "erasure", "profile": "bcs", "crush_ruleset": -1, "crush_ruleset_name": "hdd", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
+              {"name": ".rgw.root", "data_percent": 0.10, "type": "erasure", "profile": "bcs", "crush_ruleset": -1, "crush_ruleset_name": "hdd", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
+              {"name": ".users.uid", "data_percent": 0.10, "type": "erasure", "profile": "bcs", "crush_ruleset": -1, "crush_ruleset_name": "hdd", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
+              {"name": ".users.email", "data_percent": 0.10, "type": "erasure", "profile": "bcs", "crush_ruleset": -1, "crush_ruleset_name": "hdd", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
+              {"name": ".users.swift", "data_percent": 0.10, "type": "erasure", "profile": "bcs", "crush_ruleset": -1, "crush_ruleset_name": "hdd", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
+              {"name": ".users", "data_percent": 0.10, "type": "erasure", "profile": "bcs", "crush_ruleset": -1, "crush_ruleset_name": "hdd", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
+              {"name": ".usage", "data_percent": 0.10, "type": "erasure", "profile": "bcs", "crush_ruleset": -1, "crush_ruleset_name": "hdd", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
+              {"name": ".log", "data_percent": 0.10, "type": "erasure", "profile": "bcs", "crush_ruleset": -1, "crush_ruleset_name": "hdd", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
+              {"name": ".intent-log", "data_percent": 0.10, "type": "erasure", "profile": "bcs", "crush_ruleset": -1, "crush_ruleset_name": "hdd", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
+              {"name": ".rgw.buckets", "data_percent": 96.10, "type": "erasure", "profile": "bcs", "crush_ruleset": -1, "crush_ruleset_name": "hdd", "actions": [{"action": "create", "pg_num": 128, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
+              {"name": ".rgw.buckets.index", "data_percent": 1.00, "type": "erasure", "profile": "bcs", "crush_ruleset": -1, "crush_ruleset_name": "hdd", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
+              {"name": ".rgw.buckets.extra", "data_percent": 1.00, "type": "erasure", "profile": "bcs", "crush_ruleset": -1, "crush_ruleset_name": "hdd", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]}
             ],
             "NOTE-SETTINGS": "If federated then the settings below apply to the federated pools else the non-federated pools. Chooseleaf - rack is 3.",
             "settings": {
@@ -507,6 +514,9 @@
           }
         },
         "restapi": {
+          "NOTE": "Map the dns to an IP in your production system.",
+          "url": "api.ceph.example.com",
+          "ip": "10.0.100.21",
           "port": 5080
         }
       },

@@ -21,23 +21,25 @@ include_recipe 'chef-bcs::ceph-conf'
 
 # This recipe must run after the ceph-chef::osd recipe to set the crush map settings.
 
-template '/tmp/crush-map-additions.txt' do
-    source 'ceph-crush.erb'
-    owner 'root'
-    mode 00644
-end
+if node['ceph']['osd']['crush']['update']
+  template '/tmp/crush-map-additions.txt' do
+      source 'ceph-crush.erb'
+      owner 'root'
+      mode 00644
+  end
 
-# NOTE: The 'hdd' below is one of the rules.
-bash "ceph-update-crushmap" do
-    code <<-EOH
-        ceph osd getcrushmap -o /tmp/crush-map
-        crushtool -d /tmp/crush-map -o /tmp/crush-map.txt
+  # NOTE: The 'hdd' below is one of the rules.
+  bash "ceph-update-crushmap" do
+      code <<-EOH
+          ceph osd getcrushmap -o /tmp/crush-map
+          crushtool -d /tmp/crush-map -o /tmp/crush-map.txt
 
-        grep hdd /tmp/crush-map.txt
-        if [[ $? -ne 0 ]]; then
-          cat /tmp/crush-map-additions.txt >> /tmp/crush-map.txt
-          crushtool -c /tmp/crush-map.txt -o /tmp/crush-map-new
-          ceph osd setcrushmap -i /tmp/crush-map-new
-        fi
-    EOH
+          grep hdd /tmp/crush-map.txt
+          if [[ $? -ne 0 ]]; then
+            cat /tmp/crush-map-additions.txt >> /tmp/crush-map.txt
+            crushtool -c /tmp/crush-map.txt -o /tmp/crush-map-new
+            ceph osd setcrushmap -i /tmp/crush-map-new
+          fi
+      EOH
+  end
 end

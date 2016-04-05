@@ -46,6 +46,7 @@ node.default['ceph']['osd']['crush'] = node['chef-bcs']['ceph']['osd']['crush']
 
 node.default['ceph']['repo']['create'] = node['chef-bcs']['ceph']['repo']['create']
 node.default['ceph']['pools']['pgs']['calc'] = node['chef-bcs']['ceph']['pools']['pgs']['calc']
+node.default['ceph']['pools']['crush']['rule'] = node['chef-bcs']['ceph']['pools']['crush']['rule']
 # 'names' may be deprecated soon. Here until then.
 #node.default['ceph']['pools']['radosgw']['names'] = node['chef-bcs']['ceph']['pools']['radosgw']['names']
 node.default['ceph']['pools']['radosgw']['pools'] = node['chef-bcs']['ceph']['pools']['radosgw']['pools']
@@ -74,5 +75,8 @@ node.default['ceph']['radosgw']['keystone']['admin']['url'] = node['chef-bcs']['
 node.default['ceph']['radosgw']['keystone']['admin']['port'] = node['chef-bcs']['ceph']['radosgw']['keystone']['admin']['port']
 node.default['ceph']['radosgw']['rgw_num_rados_handles'] = node['chef-bcs']['ceph']['radosgw']['rgw_num_rados_handles']
 node.default['ceph']['radosgw']['civetweb_num_threads'] = node['chef-bcs']['ceph']['radosgw']['civetweb_num_threads']
+node.default['ceph']['radosgw']['default_url'] = node['chef-bcs']['ceph']['radosgw']['default_url']
 
+node.default['ceph']['restapi']['url'] = node['chef-bcs']['ceph']['restapi']['url']
+node.default['ceph']['restapi']['ip'] = node['chef-bcs']['ceph']['restapi']['ip']
 node.default['ceph']['restapi']['port'] = node['chef-bcs']['ceph']['restapi']['port']

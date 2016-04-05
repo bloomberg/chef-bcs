@@ -21,7 +21,7 @@ include_recipe 'chef-bcs::ceph-conf'
 
 # This recipe must run after the ceph-chef::osd recipe to set the crush map settings.
 
-if node['chef-bcs']['ceph']['osd']['devices']
+if node['chef-bcs']['ceph']['osd']['devices'] && node['ceph']['osd']['crush']['update']
   devices = node['chef-bcs']['ceph']['osd']['devices']
 
   devices = Hash[(0...devices.size).zip devices] unless devices.is_a? Hash

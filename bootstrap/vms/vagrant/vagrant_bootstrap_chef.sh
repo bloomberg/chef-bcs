@@ -28,7 +28,6 @@ source vagrant_base.sh
 # IMPORTANT - DO NOT MAKE CHANGES unless to add new functionality that does not already exist. This process will
 # soon change to be like the bare metal build process.
 
-# TODO: Make OS check here to do for Ubuntu or RHEL based...
 do_on_node $CEPH_CHEF_BOOTSTRAP "sudo rpm -Uvh \$(find /ceph-files/ -name chef-server\*rpm -not -name \*downloaded | tail -1)"
 
 do_on_node $CEPH_CHEF_BOOTSTRAP "sudo sh -c \"echo nginx[\'non_ssl_port\'] = 4000 > /etc/opscode/chef-server.rb\""
