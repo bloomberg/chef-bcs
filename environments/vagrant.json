@@ -484,7 +484,7 @@
         "write_graphite": {
           "node": {
             "id": "graphite",
-            "host": "10.0.100.6",
+            "host": "127.0.0.1",
             "port": 2013,
             "prefix": "collectd."
           }
