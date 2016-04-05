@@ -49,7 +49,7 @@ user --name=<%= usr['name'] %> <%= usr['passwd_type'] %> --password=<%= usr['pas
 <% end -%>
 
 # SELinux configuration
-selinux --permissive
+selinux --disabled
 
 # Do not configure the X Window System
 skipx

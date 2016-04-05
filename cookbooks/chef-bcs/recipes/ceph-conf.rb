@@ -24,8 +24,8 @@
 # NOTE: This file also updates the data in the ceph-chef cookbook
 node.default['ceph']['cluster'] = node['chef-bcs']['ceph']['cluster']
 
-# System
-node.default['ceph']['system']['pid_max'] = node['chef-bcs']['system']['pid_max']
+# System tunes
+node.default['ceph']['system']['sysctl'] = node['chef-bcs']['system']['sysctl']
 
 node.default['ceph']['network']['public']['cidr'] = node['chef-bcs']['network']['public']['cidr']
 node.default['ceph']['network']['cluster']['cidr'] = node['chef-bcs']['network']['cluster']['cidr']

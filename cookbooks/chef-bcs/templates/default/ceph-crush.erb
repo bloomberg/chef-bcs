@@ -8,7 +8,7 @@ root hdd {
     hash 0  # rjenkins1
 }
 
-rule ssd {
+rule ssd_ruleset {
     ruleset 1
     type <%=node['chef-bcs']['ceph']['pools']['radosgw']['settings']['type']%>
     min_size 3
@@ -18,7 +18,7 @@ rule ssd {
     step emit
 }
 
-rule hdd {
+rule hdd_ruleset {
     ruleset 2
     type <%=node['chef-bcs']['ceph']['pools']['radosgw']['settings']['type']%>
     min_size 3

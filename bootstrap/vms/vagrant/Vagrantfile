@@ -126,6 +126,8 @@ end
 # Only need this for Vagrant
 if $lsb_name == 'centos' or $lsb_name == 'rhel'
     $repos_script = <<-EOH
+      sudo sed -i 's/enforcing/disabled/g' /etc/selinux/config /etc/selinux/config
+      sudo sed -i 's/permissive/disabled/g' /etc/selinux/config /etc/selinux/config
       sudo yum install -y kernel-devel-`uname -r` gcc make perl bzip2
       sudo yum install -y epel-release rsync
     EOH

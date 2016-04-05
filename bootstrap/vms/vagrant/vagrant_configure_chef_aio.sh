@@ -31,15 +31,16 @@ source vagrant_bootstrap_chef_client.sh
 source vagrant_chef_create_tags.sh
 
 source vagrant_ceph_mon.sh
-source vagrant_ceph_crushmap.sh
-
-source vagrant_ceph_pools.sh
-
-source vagrant_ceph_osd.sh
 
 source vagrant_ceph_tunables.sh
 
-#source vagrant_ceph_pools.sh
+source vagrant_ceph_crushmap.sh
+
+source vagrant_ceph_osd.sh
+
+source vagrant_ceph_pools.sh
+
+exit 0
 
 source vagrant_ceph_rgw.sh
 

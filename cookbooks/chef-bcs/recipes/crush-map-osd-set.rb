@@ -56,4 +56,8 @@ if node['chef-bcs']['ceph']['osd']['devices']
     end
 
   end
+
+  execute 'trigger-osd-startup' do
+    command "udevadm trigger --subsystem-match=block --action=add"
+  end
 end

@@ -31,11 +31,12 @@ if node['chef-bcs']['cobbler']['web_user_pwd'].nil?
   end
 end
 
+# Should be disabled!
 # Set to Permissive
-execute "selinux-permissive" do
-    command "setenforce 0"
-    not_if "getenforce | egrep -qx 'Permissive|Disabled'"
-end
+# execute "selinux-permissive" do
+#     command "setenforce 0"
+#     not_if "getenforce | egrep -qx 'Permissive|Disabled'"
+# end
 
 case node['platform']
 when 'ubuntu'
