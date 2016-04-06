@@ -7,7 +7,7 @@ global
   user haproxy
   group haproxy
   pidfile /var/run/haproxy.pid
-  #stats socket /var/run/haproxy/haproxy.asok level admin
+  stats socket /var/run/haproxy/haproxy-user.asok mode 666 level user
   log /dev/log local0 info
   maxconn <%= node['chef-bcs']['adc']['connections']['max'] %>
 

@@ -53,6 +53,15 @@ bash 'copy-ssl-certs' do
 end
 # SSL End
 
+#
+# Directory for haproxy stats sockets
+#
+directory '/var/run/haproxy' do
+  owner 'root'
+  group 'root'
+  mode 0755
+end
+
 # NOTE: Sample data structure (Federated Example) - ONLY applies if do it manually, if using the template version the VIPs info will do all of it for you.
 # {"name": "ceph-vm1", "instance": "admin", "weight": 6, "port": 8080, "options": "check inter 2s rise 2 fall 3"}
 # The 'instance' variable represents the radosgw instance name and the vip name. So, *ALL* three values should match for lookups to work:

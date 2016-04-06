@@ -29,7 +29,7 @@ end
 
 template '/etc/zabbix/zabbix_agentd.conf' do
   source 'zabbix-zabbix_agentd.conf.erb'
-  owner 'root'
+  owner 'zabbix'
   group 'root'
   mode 00600
   variables(
@@ -37,6 +37,16 @@ template '/etc/zabbix/zabbix_agentd.conf' do
     :agent_ip      => get_bond_ip
   )
   notifies :restart, 'service[zabbix-agent]', :delayed
+end
+
+%w{ ceph radosgw haproxy }.each do |component|
+  template "/etc/zabbix/zabbix_agentd.d/userparameter_#{component}.conf" do
+    source "zabbix-userparameter-#{component}.conf.erb"
+    owner 'zabbix'
+    group 'root'
+    mode '00600'
+    notifies :restart, 'service[zabbix-agent]', :delayed
+  end
 end
 
 service 'zabbix-agent' do
