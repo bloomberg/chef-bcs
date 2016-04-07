@@ -28,6 +28,9 @@ if node['ceph']['osd']['crush']['update']
       mode 00644
   end
 
+  # Removes the default including the default rbd pool
+  include_recipe 'chef-bcs::crushmap-remove-defaults'
+
   # NOTE: The 'hdd' below is one of the rules.
   bash "ceph-update-crushmap" do
       code <<-EOH

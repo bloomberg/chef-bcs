@@ -36,15 +36,29 @@ if node['chef-bcs']['ceph']['osd']['devices'] && node['ceph']['osd']['crush']['u
     rack_num = get_rack_num(node['hostname'])
 
     # Added data_type as part of host name so that ceph osd tree can show which hosts are ssd and which are hdd. Rack does not have to reflect data_type.
-    execute "crushmap-set-#{osd_device['data']}" do
-      command <<-EOH
-        INFO=`df -k | grep #{osd_device['data']} | awk '{print $2,$6}' | sed -e 's/\\/var\\/lib\\/ceph\\/osd\\/ceph-//'`
-        OSD=${INFO#* }
-        WEIGHT=`echo "scale=4; ${INFO% *}/1000000000.0" | bc -q`
-        ceph osd crush create-or-move $OSD $WEIGHT root=#{osd_device['data_type']} rack=rack#{rack_num} host=#{node['hostname']}-#{osd_device['data_type']}
-      EOH
-      action :run
-      notifies :create, "ruby_block[save-status-#{index}]", :immediately
+    # CLEAN UP later...just for testing
+    if node['chef-bcs']['ceph']['pools']['radosgw']['settings']['chooseleaf'] == 'host'
+      execute "crushmap-set-#{osd_device['data']}" do
+        command <<-EOH
+          INFO=`df -k | grep #{osd_device['data']} | awk '{print $2,$6}' | sed -e 's/\\/var\\/lib\\/ceph\\/osd\\/ceph-//'`
+          OSD=${INFO#* }
+          WEIGHT=`echo "scale=4; ${INFO% *}/1000000000.0" | bc -q`
+          ceph osd crush create-or-move $OSD $WEIGHT root=#{osd_device['data_type']} host=#{node['hostname']}
+        EOH
+        action :run
+        notifies :create, "ruby_block[save-status-#{index}]", :immediately
+      end
+    else
+      execute "crushmap-set-#{osd_device['data']}" do
+        command <<-EOH
+          INFO=`df -k | grep #{osd_device['data']} | awk '{print $2,$6}' | sed -e 's/\\/var\\/lib\\/ceph\\/osd\\/ceph-//'`
+          OSD=${INFO#* }
+          WEIGHT=`echo "scale=4; ${INFO% *}/1000000000.0" | bc -q`
+          ceph osd crush create-or-move $OSD $WEIGHT root=#{osd_device['data_type']} rack=rack#{rack_num} host=#{node['hostname']}
+        EOH
+        action :run
+        notifies :create, "ruby_block[save-status-#{index}]", :immediately
+      end
     end
 
     ruby_block "save-status-#{index}" do

@@ -19,3 +19,9 @@
 ceph osd getcrushmap -o /tmp/tmp.out
 crushtool -d /tmp/tmp.out -o /tmp/tmp.txt
 vim /tmp/tmp.txt
+
+# NOTE: If your crushmap has the wrong number of rules then most likely the crushmap is incorrect and the PGs will stay in a state of confusion.
+# If your crushmap hierarchy design does *NOT* include your pools as rules but when you view your crushmap it shows a rule that matches your pools
+# *AND* your PGs are confused (stale+inactive...) then your process of adding/moving the OSD and/or setting your crush_ruleset for your pool may
+# be incorrect. Also note, you can have rules for pools if that fits your design. Experiment with the hierarchy before declaring something
+# production ready.

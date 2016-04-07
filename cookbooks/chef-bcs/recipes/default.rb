@@ -74,6 +74,10 @@ remote_directory '/etc/ceph/scripts' do
   action :create
 end
 
+execute 'set-scripts-perm' do
+  command "sudo chmod +x /etc/ceph/scripts/*.sh"
+end
+
 # Create user(s) if not already existing
 node['chef-bcs']['cobbler']['kickstart']['users'].each do | user_value |
   user user_value['name'] do

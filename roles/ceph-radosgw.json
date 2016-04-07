@@ -1,7 +1,7 @@
 {
   "name": "ceph-radosgw",
   "json_class": "Chef::Role",
-  "description": "Ceph RADOS Gateway - role[monitoring]",
+  "description": "Ceph RADOS Gateway",
   "run_list": [
     "role[common]",
     "recipe[chef-bcs::ceph-conf]",
@@ -9,6 +9,7 @@
     "recipe[ceph-chef::repo]",
     "recipe[chef-bcs::ceph-radosgw]",
     "recipe[ceph-chef::radosgw]",
-    "recipe[ceph-chef::radosgw_start]"
+    "recipe[ceph-chef::radosgw_start]",
+    "role[monitoring]"
   ]
 }

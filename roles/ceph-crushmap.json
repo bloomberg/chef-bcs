@@ -3,6 +3,6 @@
   "json_class": "Chef::Role",
   "description": "Ceph Crushmap Create",
   "run_list": [
-    "recipe[chef-bcs::crush-map-create]"
+    "recipe[chef-bcs::crushmap-create]"
   ]
 }
