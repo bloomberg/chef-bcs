@@ -1,0 +1,4 @@
+################################################
+# Auto generated
+################################################
+UserParameter=haproxy.uptime,HOME=/var/lib/zabbix echo 'show info' | socat /var/run/haproxy/haproxy-user.asok stdio | grep '^Uptime_sec' | awk '{print $2}'
