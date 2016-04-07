@@ -1,6 +1,7 @@
 #!/bin/bash
 #
-# Author: Chris Jones <cjones303@bloomberg.net>
+# Author:: Chris Jones <cjones303@bloomberg.net>
+#
 # Copyright 2016, Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +15,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
 
-source vagrant_base.sh
+crush=${1:-/tmp/tmp.txt}
 
-# Should ONLY run this once. It's here just in case you want to break it out and use it that way.
-do_on_node ${CEPH_RGW_HOSTS[@]:0:1} "sudo chef-client $CHEF_CLIENT_DEBUG -o 'recipe[ceph-chef::radosgw_users]'"
+crushtool -c $crush -o /tmp/tmp.out
+ceph osd setcrushmap -i /tmp/tmp.out

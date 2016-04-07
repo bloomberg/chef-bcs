@@ -18,5 +18,7 @@
 
 source vagrant_base.sh
 
-# Should ONLY run this once. It's here just in case you want to break it out and use it that way.
-do_on_node ${CEPH_RGW_HOSTS[@]:0:1} "sudo chef-client $CHEF_CLIENT_DEBUG -o 'recipe[ceph-chef::radosgw_users]'"
+# Setup Ceph Crushmap
+# NOTE: Only needs to be done on first mon node
+do_on_node $CEPH_CHEF_BOOTSTRAP "$KNIFE node run_list add ${CEPH_MON_HOSTS[@]:0:1}.$BOOTSTRAP_DOMAIN 'role[ceph-crushmap]' $CHEF_KNIFE_DEBUG"
+do_on_node ${CEPH_MON_HOSTS[@]:0:1} "sudo chef-client $CHEF_CLIENT_DEBUG -o 'role[ceph-crushmap]'"

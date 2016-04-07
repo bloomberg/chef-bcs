@@ -65,6 +65,7 @@ $memory = ( environment['vagrant']['memory'] or "2560" )
 $cpus = ( environment['vagrant']['cpus'] or "2" )
 $vram = ( environment['vagrant']['vram'] or "16" )
 $disk_size = ( environment['vagrant']['disk_size'] or "20480" )
+$osd_drives = ( environment['vagrant']['drives'] or "4" )
 
 # if proxies are provided, configure them before configuring any local mirror override
 # RUN THIS SCRIPT WITH sudo AND privileged = false so that $HOME is set to the
@@ -77,61 +78,65 @@ $proxy_string = ""
 $bootstrap_node_name = ""
 
 unless $http_proxy_server.nil? or $http_proxy_server.empty?
-    if $lsb_name == 'centos' or $lsb_name == 'rhel'
-        $bootstrap_node_name = servers.select { |k| k["roles"] == ["bootstrap"] }[0]["name"]
-        $proxy_configuration_script << <<-EOH
-            echo 'Defaults    env_keep += "http_proxy https_proxy no_proxy SSL_CERT_FILE"' | sudo tee -a /etc/sudoers
-            echo 'export http_proxy=#{$http_proxy_server}' | sudo tee -a /etc/profile
-            echo 'export https_proxy=#{$https_proxy_server}' | sudo tee -a /etc/profile
-            echo 'export no_proxy=127.0.0.1,#{$bootstrap_node_name}.#{$domain}' | sudo tee -a /etc/profile
-            echo 'proxy=#{$http_proxy_server};' | sudo tee -a /etc/yum.conf
-            echo 'export http_proxy=#{$http_proxy_server}' | tee -a $HOME/proxy_config.sh
-        EOH
-    end
-    $proxy_string = "export CEPH_CHEF_HTTP_PROXY=#{$http_proxy_server}\nexport CEPH_CHEF_HTTPS_PROXY=#{$https_proxy_server}\n"
+  if $lsb_name == 'centos' or $lsb_name == 'rhel'
+    $bootstrap_node_name = servers.select { |k| k["roles"] == ["bootstrap"] }[0]["name"]
+    $proxy_configuration_script << <<-EOH
+      echo 'Defaults    env_keep += "http_proxy https_proxy no_proxy SSL_CERT_FILE"' | sudo tee -a /etc/sudoers
+      echo 'export http_proxy=#{$http_proxy_server}' | sudo tee -a /etc/profile
+      echo 'export https_proxy=#{$https_proxy_server}' | sudo tee -a /etc/profile
+      echo 'export no_proxy=127.0.0.1,#{$bootstrap_node_name}.#{$domain},10.0.100.*,10.121.*' | sudo tee -a /etc/profile
+      echo 'proxy=#{$http_proxy_server};' | sudo tee -a /etc/yum.conf
+      echo 'export http_proxy=#{$http_proxy_server}' | tee -a $HOME/proxy_config.sh
+    EOH
+  end
+  $proxy_string = "export CEPH_CHEF_HTTP_PROXY=#{$http_proxy_server}\nexport CEPH_CHEF_HTTPS_PROXY=#{$https_proxy_server}\n"
 end
 
 # custom SSL CA cert support
 unless $ssl_ca_file.nil? or $ssl_ca_file.empty?
   if $lsb_name == 'centos' or $lsb_name == 'rhel'
     $proxy_configuration_script << <<-EOH
-        echo "export SSL_CERT_FILE='/etc/pki/ca-trust/source/anchors/chef-bcs_ca_bundle.crt'" | sudo tee -a /etc/profile
-        sudo cp /tmp/#{$ssl_ca_file} /etc/pki/ca-trust/source/anchors/
-        cat /tmp/#{$ssl_ca_file} | sudo tee /etc/pki/ca-trust/source/anchors/chef-bcs_ca_bundle.crt
+      echo "export SSL_CERT_FILE='/etc/pki/ca-trust/source/anchors/chef-bcs_ca_bundle.crt'" | sudo tee -a /etc/profile
+      sudo cp /tmp/#{$ssl_ca_file} /etc/pki/ca-trust/source/anchors/
+      cat /tmp/#{$ssl_ca_file} | sudo tee /etc/pki/ca-trust/source/anchors/chef-bcs_ca_bundle.crt
     EOH
 
     unless $ssl_ssl_ca_intermediate_ediate_file.nil? or $ssl_ca_intermediate_file.empty?
       $proxy_configuration_script << <<-EOH
-          sudo cp /tmp/#{$ssl_ca_intermediate_file} /etc/pki/ca-trust/source/anchors/
-          cat /tmp/#{$ssl_ca_intermediate_file} | sudo tee -a /etc/pki/ca-trust/source/anchors/chef-bcs_ca_bundle.crt
+        sudo cp /tmp/#{$ssl_ca_intermediate_file} /etc/pki/ca-trust/source/anchors/
+        cat /tmp/#{$ssl_ca_intermediate_file} | sudo tee -a /etc/pki/ca-trust/source/anchors/chef-bcs_ca_bundle.crt
       EOH
     end
 
     $proxy_configuration_script << <<-EOH
-        sudo update-ca-trust
+      sudo update-ca-trust
     EOH
   end
 end
 
 unless $https_proxy_server.nil? or $https_proxy_server.empty?
-    if $lsb_name == 'centos' or $lsb_name == 'rhel'
-        $proxy_configuration_script << <<-EOH
-            echo 'export https_proxy=#{$https_proxy_server}' | tee -a $HOME/proxy_config.sh
-        EOH
-    end
+  if $lsb_name == 'centos' or $lsb_name == 'rhel'
+    $proxy_configuration_script << <<-EOH
+      echo 'export http_proxy=#{$http_proxy_server}' | sudo tee -a $HOME/proxy_config.sh
+      echo 'export https_proxy=#{$https_proxy_server}' | tee -a $HOME/proxy_config.sh
+      echo 'export no_proxy=127.0.0.1,#{$bootstrap_node_name}.#{$domain},10.0.100.*,10.121.*' | sudo tee -a $HOME/proxy_config.sh
+    EOH
+  end
 end
 
 # After other yum updates you may also need to re-install the kernel-devel-* so it's in the
 # Only need this for Vagrant
 if $lsb_name == 'centos' or $lsb_name == 'rhel'
-    $repos_script = <<-EOH
-      sudo yum install -y kernel-devel-`uname -r` gcc make perl bzip2
-      sudo yum install -y epel-release rsync
-    EOH
+  $repos_script = <<-EOH
+    sudo sed -i 's/enforcing/disabled/g' /etc/selinux/config /etc/selinux/config
+    sudo sed -i 's/permissive/disabled/g' /etc/selinux/config /etc/selinux/config
+    sudo yum install -y kernel-devel-`uname -r` gcc make perl bzip2
+    sudo yum install -y epel-release rsync
+  EOH
 else
-    $repos_script = <<-EOH
-      sudo apt update
-    EOH
+  $repos_script = <<-EOH
+    sudo apt update
+  EOH
 end
 
 at_exit do
@@ -165,11 +170,9 @@ end
 $hosts_string  += ")"
 
 # Build osd hosts File
-$osd_drives = 0
 servers.each do |server|
   if server['roles'].include? 'osd'
     $osd_hosts_string += "#{server['name']} "
-    $osd_drives += 1
   end
 end
 $osd_hosts_string  += ")\n"

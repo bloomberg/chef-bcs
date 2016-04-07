@@ -16,7 +16,14 @@
 # limitations under the License.
 #
 
-source vagrant_base.sh
+dev=$1
 
-# Should ONLY run this once. It's here just in case you want to break it out and use it that way.
-do_on_node ${CEPH_RGW_HOSTS[@]:0:1} "sudo chef-client $CHEF_CLIENT_DEBUG -o 'recipe[ceph-chef::radosgw_users]'"
+if [[ -z $dev ]]; then
+  echo "Must specify a valid device."
+  exit 1
+fi
+
+# Lists out the smart info for SSD journals. The main thing to look at is the 'Wearout_Indicator'. The lower it is
+# the sooner is will fail.
+
+sudo smartclt -a $dev

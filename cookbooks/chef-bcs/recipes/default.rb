@@ -58,7 +58,6 @@ if node['chef-bcs']['init_style'] == 'upstart'
 else
   # Yum versionlock - Check the yum-versionlock recipe for details...
   package 'yum-versionlock'
-
   package 'kexec-tools'
 end
 
@@ -67,6 +66,16 @@ package 'python-pip' do
 end
 package 'python-boto' do
   :upgrade
+end
+
+# Copy the scripts to the nodes
+remote_directory '/etc/ceph/scripts' do
+  source 'scripts'
+  action :create
+end
+
+execute 'set-scripts-perm' do
+  command "sudo chmod +x /etc/ceph/scripts/*.sh"
 end
 
 # Create user(s) if not already existing
@@ -92,5 +101,3 @@ end
 
 # Set ntp servers
 node.default['ntp']['servers'] = node['chef-bcs']['ntp']['servers']
-
-node.default['ceph']['repo']['create'] = node['chef-bcs']['ceph']['repo']['create']

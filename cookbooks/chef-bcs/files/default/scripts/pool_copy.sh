@@ -16,7 +16,26 @@
 # limitations under the License.
 #
 
-source vagrant_base.sh
+source /ceph-host/bootstrap/data/environment/production/scripts/base.sh
 
-# Should ONLY run this once. It's here just in case you want to break it out and use it that way.
-do_on_node ${CEPH_RGW_HOSTS[@]:0:1} "sudo chef-client $CHEF_CLIENT_DEBUG -o 'recipe[ceph-chef::radosgw_users]'"
+new_pool=$1
+old_pool=$2
+# Set a default here...
+pg_num=$3
+
+if [[ -z $new_pool || -z $old_pool ]]; then
+  echo 'Must have valid new_pool and old_pool names.'
+  exit 1
+fi
+
+if [[ $pg_num -lt 1 ]]; then
+  echo 'Make sure the pg_num value is greater than 0 but really it should be a valid number.'
+  exit 1
+fi
+
+ceph osd pool create $new_pool $pg_num
+rados cppool $old_pool $new_pool
+
+# May want to move delete and rename to another script so you can do verification in between.
+ceph osd pool delete $old_pool
+ceph osd pool rename $new_pool $old_pool

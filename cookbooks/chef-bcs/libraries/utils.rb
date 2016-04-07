@@ -72,6 +72,21 @@ def get_item(key)
     return result
 end
 
+# Assumes hostname looks something like xxxxxxx-rNxxx
+def get_rack_num(host)
+  # Default to rack 1
+  rack = 1
+  if host
+    index = host.index('-r')
+    if !index.nil? && index > 0
+      rack = host[index+2..-3]
+    else
+      rack = host[-1]
+    end
+  end
+  rack.to_i
+end
+
 def is_bootstrap_node
   val = false
   if node['hostname'] == node['chef-bcs']['bootstrap']['name']
@@ -302,7 +317,7 @@ def get_adc_backend_federated_nodes
   servers = node['chef-bcs']['cobbler']['servers']
   nodes.each do | bes |
     servers.each do | server |
-      if server['name'] == bes['name'] &&
+      if server['name'] == bes['name']
         svr = {}
         svr['name'] = server['name']
         svr['ip'] = server['network']['public']['ip']

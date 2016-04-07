@@ -1,0 +1,16 @@
+root hdd {
+    alg straw
+    hash 0  # rjenkins1
+}
+
+rule hdd {
+    ruleset 1
+    type <%=node['chef-bcs']['ceph']['pools']['radosgw']['settings']['type']%>
+    min_size 1
+    max_size 10
+    step set_chooseleaf_tries 5
+    step set_choose_tries 100
+    step take hdd
+    step chooseleaf firstn 0 type <%=node['chef-bcs']['ceph']['pools']['radosgw']['settings']['chooseleaf']%>
+    step emit
+}

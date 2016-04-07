@@ -24,8 +24,8 @@
 # NOTE: This file also updates the data in the ceph-chef cookbook
 node.default['ceph']['cluster'] = node['chef-bcs']['ceph']['cluster']
 
-# System
-node.default['ceph']['system']['pid_max'] = node['chef-bcs']['system']['pid_max']
+# System tunes
+node.default['ceph']['system']['sysctl'] = node['chef-bcs']['system']['sysctl']
 
 node.default['ceph']['network']['public']['cidr'] = node['chef-bcs']['network']['public']['cidr']
 node.default['ceph']['network']['cluster']['cidr'] = node['chef-bcs']['network']['cluster']['cidr']
@@ -40,18 +40,26 @@ node.default['ceph']['osd']['devices'] = node['chef-bcs']['ceph']['osd']['device
 
 # Other OSD related items
 node.default['ceph']['osd']['journal']['size'] = node['chef-bcs']['ceph']['osd']['journal']['size']
-node.default['ceph']['osd']['crush']['chooseleaf_type'] = node['chef-bcs']['ceph']['osd']['crush']['chooseleaf_type']
 node.default['ceph']['osd']['size']['max'] = node['chef-bcs']['ceph']['osd']['size']['max']
 node.default['ceph']['osd']['size']['min'] = node['chef-bcs']['ceph']['osd']['size']['min']
+node.default['ceph']['osd']['crush'] = node['chef-bcs']['ceph']['osd']['crush']
 
-node.default['ceph']['pools']['radosgw']['names'] = node['chef-bcs']['ceph']['pools']['radosgw']['names']
+node.default['ceph']['repo']['create'] = node['chef-bcs']['ceph']['repo']['create']
+node.default['ceph']['pools']['pgs']['calc'] = node['chef-bcs']['ceph']['pools']['pgs']['calc']
+node.default['ceph']['pools']['crush']['rule'] = node['chef-bcs']['ceph']['pools']['crush']['rule']
+# 'names' may be deprecated soon. Here until then.
+#node.default['ceph']['pools']['radosgw']['names'] = node['chef-bcs']['ceph']['pools']['radosgw']['names']
+node.default['ceph']['pools']['radosgw']['pools'] = node['chef-bcs']['ceph']['pools']['radosgw']['pools']
 node.default['ceph']['pools']['radosgw']['settings'] = node['chef-bcs']['ceph']['pools']['radosgw']['settings']
 node.default['ceph']['pools']['pgs']['num'] = node['chef-bcs']['ceph']['pools']['pgs']['num']
 
 node.default['ceph']['pools']['radosgw']['federated_enable'] = node['chef-bcs']['ceph']['pools']['radosgw']['federated']['enable']
-node.default['ceph']['pools']['radosgw']['federated_instances'] = node['chef-bcs']['ceph']['pools']['radosgw']['federated']['instances']
-node.default['ceph']['pools']['radosgw']['federated_zones'] = node['chef-bcs']['ceph']['pools']['radosgw']['federated']['zones']
+node.default['ceph']['pools']['radosgw']['federated_enable_regions_zones'] = node['chef-bcs']['ceph']['pools']['radosgw']['federated']['enable_regions_zones']
+node.default['ceph']['pools']['radosgw']['federated_zone_instances'] = node['chef-bcs']['ceph']['pools']['radosgw']['federated']['zone_instances']
+#node.default['ceph']['pools']['radosgw']['federated_zones'] = node['chef-bcs']['ceph']['pools']['radosgw']['federated']['zones']
 node.default['ceph']['pools']['radosgw']['federated_regions'] = node['chef-bcs']['ceph']['pools']['radosgw']['federated']['regions']
+node.default['ceph']['pools']['radosgw']['federated_master_zone'] = node['chef-bcs']['ceph']['pools']['radosgw']['federated']['master_zone']
+node.default['ceph']['pools']['radosgw']['federated_master_zone_port'] = node['chef-bcs']['ceph']['pools']['radosgw']['federated']['master_zone_port']
 
 # Erasure coding
 node.default['ceph']['pools']['erasure_coding'] = node['chef-bcs']['ceph']['pools']['erasure_coding']
@@ -68,5 +76,8 @@ node.default['ceph']['radosgw']['keystone']['admin']['url'] = node['chef-bcs']['
 node.default['ceph']['radosgw']['keystone']['admin']['port'] = node['chef-bcs']['ceph']['radosgw']['keystone']['admin']['port']
 node.default['ceph']['radosgw']['rgw_num_rados_handles'] = node['chef-bcs']['ceph']['radosgw']['rgw_num_rados_handles']
 node.default['ceph']['radosgw']['civetweb_num_threads'] = node['chef-bcs']['ceph']['radosgw']['civetweb_num_threads']
+node.default['ceph']['radosgw']['default_url'] = node['chef-bcs']['ceph']['radosgw']['default_url']
 
+node.default['ceph']['restapi']['url'] = node['chef-bcs']['ceph']['restapi']['url']
+node.default['ceph']['restapi']['ip'] = node['chef-bcs']['ceph']['restapi']['ip']
 node.default['ceph']['restapi']['port'] = node['chef-bcs']['ceph']['restapi']['port']

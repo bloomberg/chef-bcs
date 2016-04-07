@@ -1,0 +1,8 @@
+{
+  "name": "ceph-crushmap",
+  "json_class": "Chef::Role",
+  "description": "Ceph Crushmap Create",
+  "run_list": [
+    "recipe[chef-bcs::crushmap-create]"
+  ]
+}

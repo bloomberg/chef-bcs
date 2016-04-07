@@ -32,6 +32,8 @@ source vagrant_chef_create_tags.sh
 
 source vagrant_ceph_mon.sh
 
+source vagrant_ceph_crushmap.sh
+
 source vagrant_ceph_osd.sh
 
 source vagrant_ceph_tunables.sh
