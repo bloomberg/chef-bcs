@@ -25,6 +25,7 @@
 
 # Replace devices to fit your environment
 
-for i in a b c d e f g h i k l; do
+for i in a b c d e f g h i j k l; do
   dd if=/dev/zero of=/dev/sd$i bs=512 count=1 conv=notrunc
+  sgdisk --zap-all /dev/sd$i
 done

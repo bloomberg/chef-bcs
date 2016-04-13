@@ -220,7 +220,7 @@
         {#- "NOTE2": "NOTE: You could just have one subnet for a single L2 span set of racks.", #}
         {#- "NOTE3": "NOTE: /27 for subnet mask of each rack. DNS could be added to each subnet entry above but the global DNS entry below is good enough for this.", #}
         "raid": true,
-        "partition_option": "ignoredisk --drives=sda,sdb,sdc,sdd,sde,sdf,sdg,sdh,sdi,sdj,sdk,sdl,sdn",
+        "partition_option": "ignoredisk --drives=sda,sdb,sdc,sdd,sde,sdf,sdg,sdh,sdi,sdj,sdk,sdl",
         "partitions": [
           {"part": "/boot", "fstype": "xfs", "size": 1024, "options": "--ondisk=sdm"},
           {"part": "/", "fstype": "xfs", "size": 30000, "options": "--ondisk=sdm"},
@@ -340,7 +340,7 @@
           "crush": {
             "update": true,
             "update_on_start": false,
-            "chooseleaf_type": 3
+            "chooseleaf_type": 1
           },
           {#- The add and remove should reflect the same structure as devices above and should be used for maintenance only! #}
           "add": [],
@@ -370,7 +370,7 @@
           },
           "radosgw": {
             "federated": {
-              "enable": true,
+              "enable": false,
               {#- Instances represent network tiers #}
               {#- Instance name MUST match VIPs name and Backend/Server instance variables. IF Federation is not used then Backend/Server instance variable should be empty. #}
               "zone_instances": [
@@ -419,15 +419,15 @@
             ],
             {#- If federated then the settings below apply to the federated pools else the non-federated pools. #}
             "settings": {
-              "pg_num": 1024,
-              "pgp_num": 1024,
+              "pg_num": 128,
+              "pgp_num": 128,
               "options": "",
               "force": false,
               "calc": true,
               "size": 3,
               "crush_rule_set": 1,
-              "chooseleaf": "rack",
-              "chooseleaf_type": 3,
+              "chooseleaf": "host",
+              "chooseleaf_type": 1,
               "type": "erasure"
             },
             "remove": {
@@ -438,11 +438,11 @@
             "calc": {
               "total_osds": 612,
               "target_pgs_per_osd": 200,
-              "min_pgs_per_pool": 1024,
+              "min_pgs_per_pool": 128,
               "replicated_size": 3,
-              "erasure_size": 8,
+              "erasure_size": 8
             },
-            "num": 1024
+            "num": 128
           }
         },
         "restapi": {

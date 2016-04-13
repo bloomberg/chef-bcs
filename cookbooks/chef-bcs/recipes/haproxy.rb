@@ -86,14 +86,12 @@ if node['chef-bcs']['init_style'] == 'upstart'
 else
   # Broke out the service resources for better idempotency.
   service 'haproxy' do
-    provider Chef::Provider::Service::Redhat
     action [:enable]
     only_if "sudo systemctl status haproxy | grep disabled"
   end
 
   service 'haproxy' do
     restart_command "service haproxy stop && service haproxy start && sleep 5"
-    provider Chef::Provider::Service::Redhat
     action [:start]
     supports :restart => true, :status => true
     subscribes :restart, "template[/etc/haproxy/haproxy.cfg]"

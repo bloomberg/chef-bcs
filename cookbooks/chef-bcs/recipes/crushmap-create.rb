@@ -22,16 +22,17 @@ include_recipe 'chef-bcs::ceph-conf'
 # This recipe must run after the ceph-chef::osd recipe to set the crush map settings.
 
 if node['ceph']['osd']['crush']['update']
-  template '/tmp/crush-map-additions.txt' do
+  template '/tmp/crush-map-new.txt' do
       source 'ceph-crush.erb'
       owner 'root'
       mode 00644
   end
 
   # Removes the default including the default rbd pool
-  include_recipe 'chef-bcs::crushmap-remove-defaults'
+  # include_recipe 'chef-bcs::crushmap-remove-defaults'
 
   # NOTE: The 'hdd' below is one of the rules.
+  # This will override the default crushmap which is for replication instead of erasure-code. Also, added updated straw alg.
   bash "ceph-update-crushmap" do
       code <<-EOH
           ceph osd getcrushmap -o /tmp/crush-map
@@ -39,8 +40,7 @@ if node['ceph']['osd']['crush']['update']
 
           grep hdd /tmp/crush-map.txt
           if [[ $? -ne 0 ]]; then
-            cat /tmp/crush-map-additions.txt >> /tmp/crush-map.txt
-            crushtool -c /tmp/crush-map.txt -o /tmp/crush-map-new
+            crushtool -c /tmp/crush-map-new.txt -o /tmp/crush-map-new
             ceph osd setcrushmap -i /tmp/crush-map-new
           fi
       EOH

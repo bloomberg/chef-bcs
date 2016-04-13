@@ -1,0 +1,8 @@
+{
+  "name": "ceph-osd-crushmap-set",
+  "json_class": "Chef::Role",
+  "description": "Ceph Crushmap Set",
+  "run_list": [
+    "recipe[chef-bcs::crushmap-osd-set]"
+  ]
+}
