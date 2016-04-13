@@ -561,7 +561,7 @@
       },
       "zabbix": {
         "repository": "http://repo.zabbix.com/zabbix/2.4/rhel/7/x86_64/",
-        "repository_key": "http://repo.zabbix.com/RPM-GPG-KEY-ZABBIX",
+        "repository_key": "file:///etc/pki/rpm-gpg/RPM-GPG-KEY-ZABBIX",
         "server": "10.0.100.6"
       }
     },

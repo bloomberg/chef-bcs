@@ -16,9 +16,18 @@
 # limitations under the License.
 #
 
-yum_repository 'zabbix' do
-  baseurl node['chef-bcs']['zabbix']['repository']
-  gpgkey node['chef-bcs']['zabbix']['repository_key']
+cookbook_file '/etc/pki/rpm-gpg/RPM-GPG-KEY-ZABBIX' do
+  source 'RPM-GPG-KEY-ZABBIX'
+  owner 'root'
+  group 'root'
+  mode 00644
+end
+
+if node['chef-bcs']['cobbler']['redhat']['management']['type'] == 'off'
+  yum_repository 'zabbix' do
+    baseurl node['chef-bcs']['zabbix']['repository']
+    gpgkey node['chef-bcs']['zabbix']['repository_key']
+  end
 end
 
 %w{zabbix-agent zabbix-sender}.each do |pkg|
