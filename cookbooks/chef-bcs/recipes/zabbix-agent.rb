@@ -60,5 +60,5 @@ end
 
 service 'zabbix-agent' do
   provider Chef::Provider::Service::Systemd
-  action [:enable, :start]
+  action [:enable]
 end
