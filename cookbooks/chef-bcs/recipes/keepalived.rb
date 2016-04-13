@@ -47,13 +47,11 @@ if node['chef-bcs']['init_style'] == 'upstart'
 else
   # Broke out the service resources for better idempotency.
   service 'keepalived' do
-    provider Chef::Provider::Service::Redhat
     action [:enable]
     only_if "sudo systemctl status keepalived | grep disabled"
   end
 
   service 'keepalived' do
-    provider Chef::Provider::Service::Redhat
     action [:start]
     supports :restart => true, :status => true
     subscribes :restart, "template[/etc/keepalived/keepalived.conf]"

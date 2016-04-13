@@ -439,7 +439,7 @@
           "erasure_coding": {
             "NOTE": "Failure zone for vagrant is OSD since we don't have a lot of resources. Production it's host.",
             "profiles": [
-              {"profile": "bcs", "directory": "/usr/lib64/ceph/erasure-code", "plugin": "jerasure", "force": true, "technique": "reed_sol_van", "ruleset_root": "hdd", "ruleset_failure_domain": "osd", "key_value": {"k": 3, "m": 2}}
+              {"profile": "bcs", "directory": "/usr/lib64/ceph/erasure-code", "plugin": "jerasure", "force": true, "technique": "reed_sol_van", "ruleset_root": "hdd", "ruleset_failure_domain": "host", "key_value": {"k": 3, "m": 2}}
             ]
           },
           "radosgw": {

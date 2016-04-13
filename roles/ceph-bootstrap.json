@@ -5,9 +5,10 @@
     "json_class": "Chef::Role",
     "run_list": [
       "recipe[chef-bcs::build-env]",
-      "role[cobbler]"
+      "role[cobbler]",
+      "role[monitoring]"
     ],
-    "description": "A bootstrap (admin) node in a ceph cluster - role[monitoring]",
+    "description": "A bootstrap (admin) node in a ceph cluster",
     "chef_type": "role",
     "override_attributes": {
     }
