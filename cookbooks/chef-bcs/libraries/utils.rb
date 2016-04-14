@@ -467,3 +467,10 @@ def get_ceph_sockets
     end
     return h
 end
+
+# get_osd_mountpoints
+def get_osd_mountpoints
+    mount_basepath = '/var/lib/ceph/osd'
+    mountpoints = Dir.glob(File.join(mount_basepath, '*')).sort
+    mountpoints
+end
