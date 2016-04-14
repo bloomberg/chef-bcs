@@ -45,7 +45,7 @@ vrrp_instance <%= 100 + index %> {
   interface <%= vip['interface'] %>
 
   virtual_ipaddress {
-    <%="#{vip['ip']} dev #{vip['interface']}"%>
+    <%="#{vip['ip']}/#{vip['cidr']} dev #{vip['interface']}"%>
   }
   track_script {
 <% if node['chef-bcs']['keepalived']['checks'] %>

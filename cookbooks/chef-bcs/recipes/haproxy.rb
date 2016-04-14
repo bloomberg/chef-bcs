@@ -42,14 +42,36 @@ directory '/etc/ssl/private' do
   not_if "test -d /etc/ssl/private"
 end
 
-
 bash 'copy-ssl-certs' do
   user 'root'
   code <<-EOH
     sudo cp /tmp/*.crt #{node['chef-bcs']['adc']['ssl']['path']}/.
+    sudo cp /tmp/*.key #{node['chef-bcs']['adc']['ssl']['path']}/.
     sudo chmod 0444 #{node['chef-bcs']['adc']['ssl']['path']}/*
   EOH
   only_if "test -f /tmp/*.crt"
+end
+
+# Can optimize later...
+node['chef-bcs']['adc']['vips'].each do | vip |
+  if !File.exists?("#{vip['cert']}")
+    execute 'dev-null-cert' do
+     command lazy { "cp /dev/null #{node['chef-bcs']['adc']['ssl']['path']}/#{vip['cert']}" }
+    end
+
+    vip['ssl_files'].each do | ssl_file |
+      bash "build-ssl-cert-#{vip['name']}" do
+        user 'root'
+        code <<-EOH
+          cat #{node['chef-bcs']['adc']['ssl']['path']}/#{ssl_file} >> #{node['chef-bcs']['adc']['ssl']['path']}/#{vip['cert']}
+        EOH
+      end
+    end
+
+    execute 'chmod-cert' do
+     command lazy { "chmod 0444 #{node['chef-bcs']['adc']['ssl']['path']}/#{vip['cert']}" }
+    end
+  end
 end
 # SSL End
 
