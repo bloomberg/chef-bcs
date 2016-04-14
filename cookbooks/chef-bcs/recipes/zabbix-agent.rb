@@ -43,7 +43,8 @@ template '/etc/zabbix/zabbix_agentd.conf' do
   mode 00600
   variables(
     :zabbix_server => node['chef-bcs']['zabbix']['server'],
-    :agent_ip      => get_bond_ip
+    :agent_ip      => get_bond_ip,
+    :tags          => node.tags
   )
   notifies :restart, 'service[zabbix-agent]', :delayed
 end
