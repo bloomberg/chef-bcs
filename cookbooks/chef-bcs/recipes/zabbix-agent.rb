@@ -58,7 +58,26 @@ end
   end
 end
 
+execute 'systemd-reload' do
+  command 'systemctl daemon-reload'
+  action :nothing
+end
+
+directory '/etc/systemd/system/zabbix-agent.service.d' do
+  owner 'root'
+  group 'root'
+  mode 00755
+end
+
+cookbook_file '/etc/systemd/system/zabbix-agent.service.d/service.conf' do
+  source 'zabbix-systemd-service.conf'
+  owner 'root'
+  group 'root'
+  mode 00644
+  notifies :run, 'execute[systemd-reload]', :immediately
+end
+
 service 'zabbix-agent' do
   provider Chef::Provider::Service::Systemd
-  action [:enable, :start]
+  action [:enable]
 end
