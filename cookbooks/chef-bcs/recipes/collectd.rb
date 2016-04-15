@@ -22,6 +22,7 @@ node.default['collectd']['service']['user'] = 'root'
 node.default['collectd']['service']['group'] = 'root'
 node.default['collectd-plugins']['cpu']['report_by_cpu'] = false
 node.default['collectd-plugins']['df']['f_s_type'] = 'proc', 'sysfs', 'fusectl', 'debugfs', 'securityfs', 'devtmpfs', 'devpts', 'tmpfs', 'nfs', 'vboxsf'
+node.default['collectd-plugins']['df']['mount_point'] = get_osd_mountpoints
 node.default['collectd-plugins']['df']['ignore_selected'] = true
 node.default['collectd-plugins']['df']['report_inodes'] = true
 node.default['collectd-plugins']['df']['values_percentage'] = true
@@ -46,7 +47,7 @@ include_recipe 'collectd_plugins::processes'
 include_recipe 'collectd_plugins::syslog'
 include_recipe 'collectd_plugins::write_graphite'
 
-%w{entropy tcpconns}.each do |plugin|
+%w{entropy}.each do |plugin|
   collectd_plugin "#{plugin}" do
     notifies :restart, 'service[collectd]', :delayed
   end
