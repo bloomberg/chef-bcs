@@ -1,6 +1,6 @@
 DEVICE=<%= node['chef-bcs']['adc']['bond']['name'] %>
 NAME=<%= node['chef-bcs']['adc']['bond']['name'] %>
-TYPE=<%= node['chef-bcs']['adc']['bond']['type'] %>
+TYPE=Bond
 IPADDR=<%= @ip_addr %>
 NETMASK=<%= @net_mask %>
 GATEWAY=<%= @gateway %>
@@ -8,7 +8,7 @@ DNS1=<%= node['chef-bcs']['dns']['servers'][0] %>
 DNS2=<%= node['chef-bcs']['dns']['servers'][1] %>
 ONBOOT=yes
 BOOTPROTO=none
+BONDING_MASTER=yes
 BONDING_OPTS="<%= node['chef-bcs']['adc']['bond']['options'] %>"
-#BONDING_OPTS="mode=active-backup"
 USERCTL=no
 NM_CONTROLLED=<%= node['chef-bcs']['adc']['bond']['nm_controlled'] %>
