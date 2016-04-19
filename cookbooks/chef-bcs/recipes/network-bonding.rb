@@ -51,38 +51,40 @@ end
 # 4. netstat -rn  - IF you see a zeroconfig '169.254.0.0' no need to be concerned (http://www.zeroconf.org/). However, if you wish to remove it then add the following to the /etc/sysconfig/network file: NOZEROCONF=no
 
 # NOTE: IMPORTANT: The get_bond functions referenced below WILL CHANGE the result of the json file based on VirtualBox!!!!
-
 # NOTE: Could turn 'bond' into 'bonds': [{...}] and then loop the template below to have multiple bonds.
-template "/etc/sysconfig/network-scripts/ifcfg-#{node['chef-bcs']['adc']['bond']['name']}" do
-  source 'ifcfg-bond.erb'
-  variables lazy {
-    {
-      :ip_addr => get_bond_ip,
-      :net_mask => get_bond_netmask,
-      :gateway => get_bond_gateway
-    }
-  }
-end
+# NOTE: MAKE SURE to change your TOR (Switch) so that it supports whatever mode you set (see above) - bare-metal only
 
-node['chef-bcs']['adc']['bond']['interfaces'].each do | interface |
-  template "/etc/sysconfig/network-scripts/ifcfg-#{interface}" do
-    source 'ifcfg-slave.erb'
+if is_adc_node && node['chef-bcs']['adc']['bond']['enable']
+  template "/etc/sysconfig/network-scripts/ifcfg-bond0" do
+    source 'ifcfg-bond.erb'
     variables lazy {
       {
-        :interface => interface
+        :ip_addr => get_bond_ip,
+        :net_mask => get_bond_netmask,
+        :gateway => get_bond_gateway
       }
     }
   end
-end
 
-service 'network' do
-  provider Chef::Provider::Service::Redhat
-  action [:enable, :restart]
-  supports :restart => true, :status => true
-  subscribes :restart, "template[/etc/sysconfig/network-scripts/ifcfg-bond0]"
-end
+  node['chef-bcs']['adc']['bond']['interfaces'].each do | interface |
+    template "/etc/sysconfig/network-scripts/ifcfg-#{interface}" do
+      source 'ifcfg-slave.erb'
+      variables lazy {
+        {
+          :interface => interface
+        }
+      }
+    end
+  end
 
-execute 'bond-mtu' do
-  command lazy { "ip link set dev #{node['chef-bcs']['adc']['bond']['name']} mtu #{node['chef-bcs']['adc']['bond']['mtu']}" }
-  not_if "ip link show dev #{node['chef-bcs']['adc']['bond']['name']} | grep 'mtu #{node['chef-bcs']['adc']['bond']['mtu']}'"
+  service 'network' do
+    action [:enable, :restart]
+    supports :restart => true, :status => true
+    subscribes :restart, "template[/etc/sysconfig/network-scripts/ifcfg-#{node['chef-bcs']['adc']['bond']['name']}]"
+  end
+
+  execute 'bond-mtu' do
+    command lazy { "ip link set dev #{node['chef-bcs']['adc']['bond']['name']} mtu #{node['chef-bcs']['adc']['bond']['mtu']}" }
+    not_if "ip link show dev #{node['chef-bcs']['adc']['bond']['name']} | grep 'mtu #{node['chef-bcs']['adc']['bond']['mtu']}'"
+  end
 end

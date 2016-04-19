@@ -16,7 +16,7 @@ defaults
   mode http
   option http-server-close
   option abortonclose
-  option tcplog
+  option httplog
   option dontlognull
   option nolinger
   option redispatch
@@ -40,7 +40,7 @@ listen stats <%= @server['network']['public']['ip'] %>:<%= node['chef-bcs']['adc
 <% node['chef-bcs']['adc']['vips'].each do | vip | %>
 frontend radosgw-http-<%="#{vip['name']}"%>
   bind <%="#{vip['ip']}:#{node['chef-bcs']['adc']['vip']['port']['non_ssl']}"%>
-  option tcplog
+  option httplog
   <% if node['chef-bcs']['ceph']['pools']['radosgw']['federated']['enable'] %>
   default_backend radosgw-http-backend-<%="#{vip['name']}"%>
   <% else %>
@@ -50,7 +50,7 @@ frontend radosgw-http-<%="#{vip['name']}"%>
 <% if vip['ssl'] %>
 frontend radosgw-https-<%="#{vip['name']}"%>
   bind <%="#{vip['ip']}:#{node['chef-bcs']['adc']['vip']['port']['ssl']}"%> ssl crt <%="#{node['chef-bcs']['adc']['ssl']['path']}/#{vip['cert']}" %>
-  option tcplog
+  option httplog
   <% if node['chef-bcs']['ceph']['pools']['radosgw']['federated']['enable'] %>
   default_backend radosgw-http-backend-<%="#{vip['name']}"%>
   <% else %>

@@ -22,7 +22,7 @@ network --onboot=yes --bootproto=static --device={{ int.device }} --mtu={{ int.m
 # Important: The bootstrap partition schema is static to the given environment
 # Raid 1
 part raid.01 --size=1024  --ondisk=sda
-part raid.02 --size=20000 --ondisk=sda
+part raid.02 --size=40000 --ondisk=sda
 part raid.03 --size=30000 --ondisk=sda
 part raid.04 --size=50000 --ondisk=sda
 part raid.05 --size=30000 --ondisk=sda
@@ -30,7 +30,7 @@ part raid.06 --size=60000 --ondisk=sda
 part raid.07 --size=20000 --ondisk=sda
 
 part raid.08 --size=1024  --ondisk=sdb
-part raid.09 --size=20000 --ondisk=sdb
+part raid.09 --size=40000 --ondisk=sdb
 part raid.10 --size=30000 --ondisk=sdb
 part raid.11 --size=50000 --ondisk=sdb
 part raid.12 --size=30000 --ondisk=sdb
@@ -175,6 +175,7 @@ chmod 0600 /home/{{ user.name }}/.ssh/id_rsa
 chown -R {{ user.name }}:{{ user.group }} /home/{{ user.name }}/.ssh
 
 cp /ceph-host/bootstrap/data/environment/{{ node.environment }}/*.crt /tmp
+cp /ceph-host/bootstrap/data/environment/{{ node.environment }}/*.key /tmp
 cp /ceph-host/bootstrap/data/environment/{{ node.environment_short }}/README.txt /home/{{ user.name }}
 chown {{ user.name }}:{{ user.group }} /home/{{ user.name }}/README.txt
 

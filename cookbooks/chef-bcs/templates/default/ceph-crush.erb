@@ -26,14 +26,30 @@ root hdd {
     hash 0  # rjenkins1
 }
 
-rule hdd {
-    ruleset 1
-    type <%=node['chef-bcs']['ceph']['pools']['radosgw']['settings']['type']%>
+rule hdd_replicated {
+    ruleset 0
+    type replicated
     min_size 1
-    max_size 5
-    step set_chooseleaf_tries 5
+    max_size 10
+    step set_chooseleaf_tries 10
+    step set_choose_tries 100
     step take hdd
-    step choose firstn 0 type rack
-    step chooseleaf indep 0 type <%=node['chef-bcs']['ceph']['pools']['radosgw']['settings']['chooseleaf']%>
+    step choose firstn 3 type rack
+    step chooseleaf firstn 0 type host
     step emit
 }
+
+<% if node['chef-bcs']['ceph']['pools']['radosgw']['settings']['type'] == 'erasure' %>
+rule hdd_erasure {
+    ruleset 1
+    type erasure
+    min_size 1
+    max_size 11
+    step set_chooseleaf_tries 10
+    step set_choose_tries 100
+    step take hdd
+    step choose firstn 3 type rack
+    step chooseleaf indep 0 type host
+    step emit
+}
+<% end %>

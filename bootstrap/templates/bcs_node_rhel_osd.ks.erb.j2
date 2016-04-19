@@ -198,6 +198,7 @@ chmod +x /tmp/rhelsub.sh
 {% endif %}
 
 cp /ceph-host/bootstrap/data/environment/{{ node.environment }}/*.crt /tmp
+cp /ceph-host/bootstrap/data/environment/{{ node.environment }}/*.key /tmp
 
 rpm -Uvh /ceph-files/{{ chef.rpms.client }}
 
