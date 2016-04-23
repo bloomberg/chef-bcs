@@ -50,6 +50,7 @@ package 'htop'
 package 'sysstat'
 package 'vim'
 package 'patch'
+package 'lshw'
 
 package 'sshpass'
 
