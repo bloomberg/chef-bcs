@@ -17,6 +17,7 @@
 #
 
 node.default['collectd']['service']['configuration']['hostname'] = node['fqdn']
+node.default['collectd']['service']['configuration']['interval'] = 15
 node.default['collectd']['service']['configuration']['plugin_dir'] = '/usr/lib64/collectd'
 node.default['collectd']['service']['user'] = 'root'
 node.default['collectd']['service']['group'] = 'root'
