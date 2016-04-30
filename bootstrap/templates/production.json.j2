@@ -69,6 +69,11 @@
           "enable": true,
           "asn": {{ adc.bgp.asn }},
           "interface": "{{ adc.bgp.interface }}",
+          "roles": [
+          {%- for item in adc.bgp.roles %}
+            {"name": "{{ item.name }}", "role": "{{ item.role }}"}{%- if not loop.last %},{% endif %}
+          {%- endfor %}
+          ],
           "peers": [
             {%- for item in adc.bgp.peers %}
               {"name": "{{ item.name }}", "label": "{{ item.label }}", "ip": "{{ item.ip }}"}{%- if not loop.last %},{% endif %}

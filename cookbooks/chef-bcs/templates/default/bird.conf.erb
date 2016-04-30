@@ -40,6 +40,12 @@ protocol bgp <%= peer['name'] %> {
   export where proto = "static_vips";
   local as <%= node['chef-bcs']['adc']['bgp']['asn'] %>;
   neighbor <%= peer['ip'] %> as <%= node['chef-bcs']['adc']['bgp']['asn'] %>;
+  <% if is_adc_node_role?('secondary') %>
+  export filter {
+    bgp_path.prepend(<%= node['chef-bcs']['adc']['bgp']['asn'] %>);
+    accept;
+  };
+  <% end %>
 }
 
 <% end %>
