@@ -49,7 +49,7 @@ rule hdd_erasure {
     step set_choose_tries 100
     step take hdd
     step choose firstn 3 type rack
-    step chooseleaf indep 0 type host
+    step chooseleaf indep -3 type host
     step emit
 }
 <% end %>

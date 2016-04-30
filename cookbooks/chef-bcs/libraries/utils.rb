@@ -251,6 +251,21 @@ def adc_nodes
   results.sort! { |a, b| a['hostname'] <=> b['hostname'] }
 end
 
+def is_adc_node_role(role)
+  val = false
+
+  if is_adc_node
+    node['chef-bcs']['adc']['bgp']['roles'].each do |n|
+      if n['name'] == node['hostname'] && n['role'] == role
+        val = true
+        break
+      end
+    end
+  end
+
+  val
+end
+
 # BGP uses the keepalived servers which always use the "public" interface
 def get_bgp_interface_ip
   val = nil

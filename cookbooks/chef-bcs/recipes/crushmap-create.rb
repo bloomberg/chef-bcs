@@ -33,12 +33,12 @@ if node['ceph']['osd']['crush']['update']
 
   # NOTE: The 'hdd' below is one of the rules.
   # This will override the default crushmap which is for replication instead of erasure-code. Also, added updated straw alg.
+  # Removed the following two lines for testing new crushmap file.
+  # ceph osd getcrushmap -o /tmp/crush-map
+  # crushtool -d /tmp/crush-map -o /tmp/crush-map.txt
   bash "ceph-update-crushmap" do
       code <<-EOH
-          ceph osd getcrushmap -o /tmp/crush-map
-          crushtool -d /tmp/crush-map -o /tmp/crush-map.txt
-
-          grep hdd /tmp/crush-map.txt
+          grep hdd /tmp/crush-map-new.txt
           if [[ $? -ne 0 ]]; then
             crushtool -c /tmp/crush-map-new.txt -o /tmp/crush-map-new
             ceph osd setcrushmap -i /tmp/crush-map-new
