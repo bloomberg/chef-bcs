@@ -5,6 +5,7 @@
     "json_class": "Chef::Role",
     "run_list": [
       "recipe[chef-bcs::build-env]",
+      "recipe[chef-bcs::ansible]",
       "role[cobbler]",
       "role[monitoring]"
     ],

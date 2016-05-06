@@ -17,8 +17,16 @@
 # limitations under the License.
 #
 
-# NOTE: Bonding - *IMPORTANT* - Make sure your switch is configured for bonding or you may not be able to reach
+# NOTE: Bonding - *IMPORTANT* - Make sure your network SWITCH is configured for bonding or you may not be able to reach
 # your node. You will then have to use your IPMI (depending on platform) UI to get to the console to change things!!
+
+# Also, bonding is *NOT* recommended as part of a default Architecture *UNLESS* you have the ports on a single card and
+# you're only using one interface. For example, RGW and MON nodes only use the "public" interface but if you
+# standardize on nics which most people do then you will have the "cluster" interface available and doing nothing on
+# those nodes so bonding in this case is acceptable.
+
+# It is *ALWAYS* better to have a larger interface port instead of bonding if possible because you will get better
+# overall throughput.
 
 execute 'modprobe-bond' do
   command 'modprobe --first-time bonding'
@@ -30,7 +38,7 @@ end
 # mode=1 (Active backup)
 # mode=2 (Balance XOR)
 # mode=3 (Broadcast)
-# mode=4 (802.3ad) - Aggregate which is default for bare-metal
+# mode=4 (802.3ad) - Aggregate which is default for bare-metal - LACP
 # mode=5 (Balance TLB)
 # mode=6 (Balance ALB)
 

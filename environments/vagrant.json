@@ -37,12 +37,12 @@
           "type": "Bond",
           "mtu": 1500,
           "interfaces": ["enp0s8", "enp0s9"],
-          "options": "mode=4 miimon=100 xmit_hash_policy=layer2+3",
+          "options": "mode=4 miimon=100 xmit_hash_policy=layer3+4",
           "vbox_options": "mode=1 miimon=100 fail_over_mac=1",
           "nm_controlled": "no"
         },
         "connections": {
-          "max": 8000,
+          "max": 1000,
           "balance": "roundrobin"
         },
         "ssl": {
