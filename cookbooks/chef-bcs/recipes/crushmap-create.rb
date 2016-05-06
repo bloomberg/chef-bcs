@@ -38,7 +38,9 @@ if node['ceph']['osd']['crush']['update']
   # crushtool -d /tmp/crush-map -o /tmp/crush-map.txt
   bash "ceph-update-crushmap" do
       code <<-EOH
-          grep hdd /tmp/crush-map-new.txt
+          ceph osd getcrushmap -o /tmp/crush-map
+          crushtool -d /tmp/crush-map -o /tmp/crush-map.txt
+          grep hdd /tmp/crush-map.txt
           if [[ $? -ne 0 ]]; then
             crushtool -c /tmp/crush-map-new.txt -o /tmp/crush-map-new
             ceph osd setcrushmap -i /tmp/crush-map-new
