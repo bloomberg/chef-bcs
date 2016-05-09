@@ -37,7 +37,7 @@ echo "--------------------------------------------"
 echo "Bootstrapping local CEPH environment using Vagrant..."
 echo
 
-while getopts cbsvdp:o:t: opt; do
+while getopts cbsvd:p:o:t: opt; do
     case $opt in
         b)
             BUILD_VMS_ONLY=1
@@ -48,6 +48,8 @@ while getopts cbsvdp:o:t: opt; do
             ;;
         d)
             # BOOTSTRAP_VAGRANT_DEBUG=1
+            # CEPH_DEV_MODE == 1 then install ceph github source along with development tools. You can also install your favorite IDE if you want.
+            CEPH_DEV_MODE=$OPTARG
             CHEF_BCS_DEBUG=1
             ;;
         o)
@@ -103,6 +105,7 @@ export BOOTSTRAP_SKIP_VMS=${BOOTSTRAP_SKIP_VMS:-0}
 # Vagrant debug flag
 export BOOTSTRAP_VAGRANT_DEBUG=${BOOTSTRAP_VAGRANT_DEBUG:-0}
 export CHEF_BCS_DEBUG=${CHEF_BCS_DEBUG:-0}
+export CEPH_DEV_MODE=${CEPH_DEV_MODE:-0}
 
 # Force the banner to show
 export DONT_SHOW_BANNER=0
