@@ -119,6 +119,11 @@ else
   rm -f $BOOTSTRAP_CACHE_DIR/cookbooks/ceph-chef-*
 fi
 
+if [[ $CEPH_DEV_MODE -ne 0 ]]; then
+  echo "Cloning Ceph..."
+  git_clone_or_update github/ceph https://github.com/ceph/ceph.git
+fi
+
 download_file cookbooks/poise-2.6.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/poise/versions/2.6.0/download
 download_file cookbooks/chef-client-4.3.3.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/chef-client/versions/4.3.3/download
 download_file cookbooks/windows-1.39.1.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/windows/versions/1.39.1/download

@@ -415,6 +415,7 @@
             { "data": "/dev/sde", "data_type": "hdd", "journal": "/dev/sdf", "journal_type": "ssd", "encrypted": false, "status": "" }
           ],
           "crush": {
+            "NOTE": "update and update_on_start should be opposite of each other.",
             "update": false,
             "update_on_start": true,
             "chooseleaf_type": 1
