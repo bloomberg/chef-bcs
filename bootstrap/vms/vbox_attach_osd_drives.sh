@@ -45,7 +45,7 @@ for vm in ${CEPH_OSD_HOSTS[@]}; do
   vbox_add_hdd $vm "$controller" $dev 10 "$vm_dir/$vm/$vm-osd-journal.vdi"
 
   # Add 2nd Journal drive - only used for testing raid1 with os sharing journals
-  vbox_delete_hdd $vm "$controller" $dev 11 "$vm_dir/$vm/$vm-osd-journal.vdi"
-  vbox_create_hdd "$vm_dir/$vm/$vm-osd-journal.vdi" 40960
-  vbox_add_hdd $vm "$controller" $dev 11 "$vm_dir/$vm/$vm-osd-journal.vdi"
+  #vbox_delete_hdd $vm "$controller" $dev 11 "$vm_dir/$vm/$vm-osd-journal.vdi"
+  #vbox_create_hdd "$vm_dir/$vm/$vm-osd-journal.vdi" 40960
+  #vbox_add_hdd $vm "$controller" $dev 11 "$vm_dir/$vm/$vm-osd-journal.vdi"
 done

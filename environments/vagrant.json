@@ -11,7 +11,7 @@
       "repo": {
         "NOTE": "Pins the current version of ceph or any other packaged in the array at the moment of install.",
         "packages": [
-          {"name": "ceph", "version": "0.94.6-0.el7", "pin": true}
+          {"name": "ceph", "version": "10.2.0-0.el7", "pin": true}
         ]
       },
       "bootstrap": {
