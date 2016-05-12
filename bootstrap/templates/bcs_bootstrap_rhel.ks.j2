@@ -22,19 +22,19 @@ network --onboot=yes --bootproto=static --device={{ int.device }} --mtu={{ int.m
 # Important: The bootstrap partition schema is static to the given environment
 # Raid 1
 part raid.01 --size=1024  --ondisk=sda
-part raid.02 --size=40000 --ondisk=sda
+part raid.02 --size=50000 --ondisk=sda
 part raid.03 --size=30000 --ondisk=sda
-part raid.04 --size=50000 --ondisk=sda
+part raid.04 --size=30000 --ondisk=sda
 part raid.05 --size=30000 --ondisk=sda
-part raid.06 --size=60000 --ondisk=sda
+part raid.06 --size=40000 --ondisk=sda
 part raid.07 --size=20000 --ondisk=sda
 
 part raid.08 --size=1024  --ondisk=sdb
-part raid.09 --size=40000 --ondisk=sdb
+part raid.09 --size=50000 --ondisk=sdb
 part raid.10 --size=30000 --ondisk=sdb
-part raid.11 --size=50000 --ondisk=sdb
+part raid.11 --size=30000 --ondisk=sdb
 part raid.12 --size=30000 --ondisk=sdb
-part raid.13 --size=60000 --ondisk=sdb
+part raid.13 --size=40000 --ondisk=sdb
 part raid.14 --size=20000 --ondisk=sdb
 
 raid /boot      --level=RAID1 --device=md0 --fstype=xfs  raid.01 raid.08
