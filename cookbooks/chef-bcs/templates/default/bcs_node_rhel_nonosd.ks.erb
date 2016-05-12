@@ -5,20 +5,27 @@
 
 ########## MODIFY SECTION ##########
 
+# Raid 1
 part raid.01 --size=1024  --ondisk=sda
-part raid.02 --size=10000 --ondisk=sda
-part raid.03 --size=20000 --ondisk=sda
-part raid.04 --size=8000  --ondisk=sda
+part raid.02 --size=30000 --ondisk=sda
+part raid.03 --size=30000 --ondisk=sda
+part raid.04 --size=125000 --ondisk=sda
+part raid.05 --size=20000 --ondisk=sda
+part raid.06 --size=20000 --ondisk=sda
 
-part raid.05 --size=1024  --ondisk=sdb
-part raid.06 --size=10000 --ondisk=sdb
-part raid.07 --size=20000 --ondisk=sdb
-part raid.08 --size=8000  --ondisk=sdb
+part raid.07 --size=1024  --ondisk=sdb
+part raid.08 --size=30000 --ondisk=sdb
+part raid.09 --size=30000 --ondisk=sdb
+part raid.10 --size=125000 --ondisk=sdb
+part raid.11 --size=20000 --ondisk=sdb
+part raid.12 --size=20000 --ondisk=sdb
 
-raid /boot    --level=RAID1 --device=md0 --fstype=xfs  raid.01 raid.05
-raid /        --level=RAID1 --device=md1 --fstype=xfs  raid.02 raid.06
-raid /var/lib --level=RAID1 --device=md2 --fstype=xfs  raid.03 raid.07
-raid swap     --level=RAID1 --device=md3 --fstype=swap raid.04 raid.08
+raid /boot      --level=RAID1 --device=md0 --fstype=xfs  raid.01 raid.07
+raid /          --level=RAID1 --device=md1 --fstype=xfs  raid.02 raid.08
+raid /var/lib   --level=RAID1 --device=md2 --fstype=xfs  raid.03 raid.09
+raid /var/log   --level=RAID1 --device=md3 --fstype=xfs  raid.04 raid.10
+raid /opt       --level=RAID1 --device=md4 --fstype=xfs  raid.05 raid.11
+raid swap       --level=RAID1 --device=md6 --fstype=swap raid.06 raid.12
 
 ####################################
 # Whatever is not found below then Cobbler 'fills in' the missing pieces such as networking.

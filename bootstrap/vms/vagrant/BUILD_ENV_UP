@@ -91,6 +91,9 @@ while getopts bc:d:e:g:p:v opt; do
   esac
 done
 
+# Just setting it to 0 here...
+export CEPH_DEV_MODE=${CEPH_DEV_MODE:-0}
+
 export BOOTSTRAP_HTTP_PROXY=${BOOTSTRAP_HTTP_PROXY:-}
 export BOOTSTRAP_HTTPS_PROXY=${BOOTSTRAP_HTTPS_PROXY:-}
 export CHEF_BCS_DEBUG=${CHEF_BCS_DEBUG:-0}
