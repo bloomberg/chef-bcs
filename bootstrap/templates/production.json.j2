@@ -281,7 +281,7 @@
             "name": "hammer",
             "branch": "stable",
             "revision": "0.el7",
-            "number": "0.94.6",
+            "number": "0.94.7",
             "arch": "x86_64"
           }
         },
@@ -328,20 +328,19 @@
         },
         "osd": {
           {#- Move this data to the seed yamls if we need to make them more dynamic for different clusters. #}
-          {#- The empty status will cause the status check of 'deployed' to fail which will allow the creation of OSDs. #}
           "devices": [
-            { "data": "/dev/sda", "data_type": "hdd", "journal": "/dev/sdm", "journal_type": "ssd", "encrypted": false, "status": "" },
-            { "data": "/dev/sdb", "data_type": "hdd", "journal": "/dev/sdm", "journal_type": "ssd", "encrypted": false, "status": "" },
-            { "data": "/dev/sdc", "data_type": "hdd", "journal": "/dev/sdm", "journal_type": "ssd", "encrypted": false, "status": "" },
-            { "data": "/dev/sdd", "data_type": "hdd", "journal": "/dev/sdm", "journal_type": "ssd", "encrypted": false, "status": "" },
-            { "data": "/dev/sde", "data_type": "hdd", "journal": "/dev/sdm", "journal_type": "ssd", "encrypted": false, "status": "" },
-            { "data": "/dev/sdf", "data_type": "hdd", "journal": "/dev/sdm", "journal_type": "ssd", "encrypted": false, "status": "" },
-            { "data": "/dev/sdg", "data_type": "hdd", "journal": "/dev/sdn", "journal_type": "ssd", "encrypted": false, "status": "" },
-            { "data": "/dev/sdh", "data_type": "hdd", "journal": "/dev/sdn", "journal_type": "ssd", "encrypted": false, "status": "" },
-            { "data": "/dev/sdi", "data_type": "hdd", "journal": "/dev/sdn", "journal_type": "ssd", "encrypted": false, "status": "" },
-            { "data": "/dev/sdj", "data_type": "hdd", "journal": "/dev/sdn", "journal_type": "ssd", "encrypted": false, "status": "" },
-            { "data": "/dev/sdk", "data_type": "hdd", "journal": "/dev/sdn", "journal_type": "ssd", "encrypted": false, "status": "" },
-            { "data": "/dev/sdl", "data_type": "hdd", "journal": "/dev/sdn", "journal_type": "ssd", "encrypted": false, "status": "" }
+            { "data": "/dev/sda", "data_type": "hdd", "journal": "/dev/sdm", "journal_type": "ssd", "encrypted": false},
+            { "data": "/dev/sdb", "data_type": "hdd", "journal": "/dev/sdm", "journal_type": "ssd", "encrypted": false},
+            { "data": "/dev/sdc", "data_type": "hdd", "journal": "/dev/sdm", "journal_type": "ssd", "encrypted": false},
+            { "data": "/dev/sdd", "data_type": "hdd", "journal": "/dev/sdm", "journal_type": "ssd", "encrypted": false},
+            { "data": "/dev/sde", "data_type": "hdd", "journal": "/dev/sdm", "journal_type": "ssd", "encrypted": false},
+            { "data": "/dev/sdf", "data_type": "hdd", "journal": "/dev/sdm", "journal_type": "ssd", "encrypted": false},
+            { "data": "/dev/sdg", "data_type": "hdd", "journal": "/dev/sdn", "journal_type": "ssd", "encrypted": false},
+            { "data": "/dev/sdh", "data_type": "hdd", "journal": "/dev/sdn", "journal_type": "ssd", "encrypted": false},
+            { "data": "/dev/sdi", "data_type": "hdd", "journal": "/dev/sdn", "journal_type": "ssd", "encrypted": false},
+            { "data": "/dev/sdj", "data_type": "hdd", "journal": "/dev/sdn", "journal_type": "ssd", "encrypted": false},
+            { "data": "/dev/sdk", "data_type": "hdd", "journal": "/dev/sdn", "journal_type": "ssd", "encrypted": false},
+            { "data": "/dev/sdl", "data_type": "hdd", "journal": "/dev/sdn", "journal_type": "ssd", "encrypted": false}
           ],
           "crush": {
             "update": true,
@@ -409,20 +408,20 @@
             {#- The data_percent below should equal 100%. If Federated then the calculation will take those pools into account. #}
             {#- NOTE: IMPORTANT - ONLY 'buckets' (data) can be erasure coded. Others need to be replicated. #}
             "pools": [
-              {"name": ".rgw", "data_percent": 0.10, "type": "replicated", "profile": "", "crush_ruleset": 0, "crush_ruleset_name": "hdd", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
-              {"name": ".rgw.control", "data_percent": 0.10, "type": "replicated", "profile": "", "crush_ruleset": 0, "crush_ruleset_name": "hdd", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
-              {"name": ".rgw.gc", "data_percent": 0.10, "type": "replicated", "profile": "", "crush_ruleset": 0, "crush_ruleset_name": "hdd", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
-              {"name": ".rgw.root", "data_percent": 0.10, "type": "replicated", "profile": "", "crush_ruleset": 0, "crush_ruleset_name": "hdd", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
-              {"name": ".users.uid", "data_percent": 0.10, "type": "replicated", "profile": "", "crush_ruleset": 0, "crush_ruleset_name": "hdd", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
-              {"name": ".users.email", "data_percent": 0.10, "type": "replicated", "profile": "", "crush_ruleset": 0, "crush_ruleset_name": "hdd", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
-              {"name": ".users.swift", "data_percent": 0.10, "type": "replicated", "profile": "", "crush_ruleset": 0, "crush_ruleset_name": "hdd", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
-              {"name": ".users", "data_percent": 0.10, "type": "replicated", "profile": "", "crush_ruleset": 0, "crush_ruleset_name": "hdd", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
-              {"name": ".usage", "data_percent": 0.10, "type": "replicated", "profile": "", "crush_ruleset": 0, "crush_ruleset_name": "hdd", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
-              {"name": ".log", "data_percent": 0.10, "type": "replicated", "profile": "", "crush_ruleset": 0, "crush_ruleset_name": "hdd", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
-              {"name": ".intent-log", "data_percent": 0.10, "type": "replicated", "profile": "", "crush_ruleset": 0, "crush_ruleset_name": "hdd", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
-              {"name": ".rgw.buckets", "data_percent": 96.90, "type": "erasure", "profile": "bcs", "crush_ruleset": 1, "crush_ruleset_name": "hdd", "actions": [{"action": "create", "pg_num": 128, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
-              {"name": ".rgw.buckets.index", "data_percent": 1, "type": "replicated", "profile": "", "crush_ruleset": 0, "crush_ruleset_name": "hdd", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
-              {"name": ".rgw.buckets.extra", "data_percent": 1, "type": "replicated", "profile": "", "crush_ruleset": 0, "crush_ruleset_name": "hdd", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]}
+              {"name": ".rgw", "data_percent": 0.10, "type": "replicated", "profile": "", "crush_ruleset": 0, "crush_ruleset_name": "hdd_replicated", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
+              {"name": ".rgw.control", "data_percent": 0.10, "type": "replicated", "profile": "", "crush_ruleset": 0, "crush_ruleset_name": "hdd_replicated", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
+              {"name": ".rgw.gc", "data_percent": 0.10, "type": "replicated", "profile": "", "crush_ruleset": 0, "crush_ruleset_name": "hdd_replicated", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
+              {"name": ".rgw.root", "data_percent": 0.10, "type": "replicated", "profile": "", "crush_ruleset": 0, "crush_ruleset_name": "hdd_replicated", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
+              {"name": ".users.uid", "data_percent": 0.10, "type": "replicated", "profile": "", "crush_ruleset": 0, "crush_ruleset_name": "hdd_replicated", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
+              {"name": ".users.email", "data_percent": 0.10, "type": "replicated", "profile": "", "crush_ruleset": 0, "crush_ruleset_name": "hdd_replicated", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
+              {"name": ".users.swift", "data_percent": 0.10, "type": "replicated", "profile": "", "crush_ruleset": 0, "crush_ruleset_name": "hdd_replicated", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
+              {"name": ".users", "data_percent": 0.10, "type": "replicated", "profile": "", "crush_ruleset": 0, "crush_ruleset_name": "hdd_replicated", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
+              {"name": ".usage", "data_percent": 0.10, "type": "replicated", "profile": "", "crush_ruleset": 0, "crush_ruleset_name": "hdd_replicated", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
+              {"name": ".log", "data_percent": 0.10, "type": "replicated", "profile": "", "crush_ruleset": 0, "crush_ruleset_name": "hdd_replicated", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
+              {"name": ".intent-log", "data_percent": 0.10, "type": "replicated", "profile": "", "crush_ruleset": 0, "crush_ruleset_name": "hdd_replicated", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
+              {"name": ".rgw.buckets", "data_percent": 96.90, "type": "erasure", "profile": "bcs", "crush_ruleset": 1, "crush_ruleset_name": "hdd_erasure", "actions": [{"action": "create", "pg_num": 128, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
+              {"name": ".rgw.buckets.index", "data_percent": 1, "type": "replicated", "profile": "", "crush_ruleset": 0, "crush_ruleset_name": "hdd_replicated", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
+              {"name": ".rgw.buckets.extra", "data_percent": 1, "type": "replicated", "profile": "", "crush_ruleset": 0, "crush_ruleset_name": "hdd_replicated", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]}
             ],
             {#- If federated then the settings below apply to the federated pools else the non-federated pools. #}
             "settings": {

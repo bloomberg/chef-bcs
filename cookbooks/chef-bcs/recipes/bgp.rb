@@ -32,7 +32,8 @@ if node['chef-bcs']['adc']['bgp']['enable']
     source 'bird.conf.erb'
     variables lazy {
       {
-        :interface_ip => get_bgp_interface_ip
+        :interface_ip => get_bgp_interface_ip,
+        :is_adc_node_secondary => is_adc_node_role('secondary')
       }
     }
   end

@@ -1,0 +1,3 @@
+# Empty by default. Add short name hosts for the cluster like the following example. Do it for Public, Cluster and IPMI (optional) IPs
+# Public IPs
+# 10.121.1.2  <whatever host name>  <whatever host name>.example.com

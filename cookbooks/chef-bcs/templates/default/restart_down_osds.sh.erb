@@ -1,0 +1,31 @@
+#!/bin/bash
+#
+# Author: Chris Jones <cjones303@bloomberg.net>
+# Copyright 2016, Bloomberg Finance L.P.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# IMPORTANT: This script needs to run from a Ceph node!
+
+# IMPORTANT: It's best to do the following before running this so that you use your key with no prompts by the given host
+# ssh-agent bash
+# ssh-add ~/.ssh/id_rsa
+# Answer any pass phrase if there is one and then you're good to go...
+
+# NOTE: The first user is the one that should be the "operations" like user and be the one with the ssh key.
+
+for i in $(ceph osd tree | awk '/down/ {print $1}'); do
+  host=$(ceph osd find $i | awk -F\" '$2 ~ /host/ {print $4}')
+  ssh -t -o StrictHostKeyChecking=no <%= node['chef-bcs']['cobbler']['kickstart']['users'].first %>@$host "sudo service ceph restart osd.$i"
+done

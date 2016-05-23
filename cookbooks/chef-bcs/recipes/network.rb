@@ -35,7 +35,7 @@ if node['chef-bcs']['network']['cluster']['route']['cidr']
   gateway = get_gateway("#{node['chef-bcs']['network']['cluster']['interface']}")
   execute 'network-cluster-route' do
     command lazy { "ip route add #{node['chef-bcs']['network']['cluster']['route']['cidr']} via #{gateway} dev #{node['chef-bcs']['network']['cluster']['interface']}" }
-    not_if "ip route show | grep #{node['chef-bcs']['network']['cluster']['route']['cidr']}"
+    ignore_failure true
   end
 end
 
