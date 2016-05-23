@@ -45,11 +45,12 @@ end
 bash 'copy-ssl-certs' do
   user 'root'
   code <<-EOH
+    sudo cp /tmp/*.pem #{node['chef-bcs']['adc']['ssl']['path']}/.
     sudo cp /tmp/*.crt #{node['chef-bcs']['adc']['ssl']['path']}/.
     sudo cp /tmp/*.key #{node['chef-bcs']['adc']['ssl']['path']}/.
     sudo chmod 0444 #{node['chef-bcs']['adc']['ssl']['path']}/*
   EOH
-  only_if "test -f /tmp/*.crt"
+  ignore_failure true
 end
 
 # Can optimize later...
@@ -59,6 +60,7 @@ node['chef-bcs']['adc']['vips'].each do | vip |
      command lazy { "cp /dev/null #{node['chef-bcs']['adc']['ssl']['path']}/#{vip['cert']}" }
     end
 
+    # IF ssl_files contains more than one file name it will build a cert from those files. If just a wildcard then only one file should be in the list
     vip['ssl_files'].each do | ssl_file |
       bash "build-ssl-cert-#{vip['name']}" do
         user 'root'

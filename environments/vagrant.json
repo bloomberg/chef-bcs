@@ -11,7 +11,7 @@
       "repo": {
         "NOTE": "Pins the current version of ceph or any other packaged in the array at the moment of install.",
         "packages": [
-          {"name": "ceph", "version": "10.2.0-0.el7", "pin": true}
+          {"name": "ceph", "version": "10.2.1-0.el7", "pin": true}
         ]
       },
       "bootstrap": {
@@ -358,7 +358,7 @@
             "name": "hammer",
             "branch": "stable",
             "revision": "0.el7",
-            "number": "0.94.6",
+            "number": "0.94.7",
             "arch": "x86_64"
           }
         },
@@ -408,11 +408,12 @@
         "osd": {
           "NOTE-RAID": "Cannot really use device sda (vagrant boot disk) as a journal without some work because it takes over the whole drive.",
           "NOTE-RAID-1": "Modify the journal to use different drives to sort of test using journals on a shared OS drive in a bare-metal scenario.",
+          "NOTE-STATUS": "NOTE: The devices list are 'default' precedences so you can't alter them at runtime. So, a 'status' is created at runtime as a 'normal' precidence which will remain with the node object.",
           "devices": [
-            { "data": "/dev/sdb", "data_type": "hdd", "journal": "/dev/sdf", "journal_type": "ssd", "encrypted": false, "status": "" },
-            { "data": "/dev/sdc", "data_type": "hdd", "journal": "/dev/sdf", "journal_type": "ssd", "encrypted": false, "status": "" },
-            { "data": "/dev/sdd", "data_type": "hdd", "journal": "/dev/sdf", "journal_type": "ssd", "encrypted": false, "status": "" },
-            { "data": "/dev/sde", "data_type": "hdd", "journal": "/dev/sdf", "journal_type": "ssd", "encrypted": false, "status": "" }
+            { "data": "/dev/sdb", "data_type": "hdd", "journal": "/dev/sdf", "journal_type": "ssd", "encrypted": false},
+            { "data": "/dev/sdc", "data_type": "hdd", "journal": "/dev/sdf", "journal_type": "ssd", "encrypted": false},
+            { "data": "/dev/sdd", "data_type": "hdd", "journal": "/dev/sdf", "journal_type": "ssd", "encrypted": false},
+            { "data": "/dev/sde", "data_type": "hdd", "journal": "/dev/sdf", "journal_type": "ssd", "encrypted": false}
           ],
           "crush": {
             "NOTE": "update and update_on_start should be opposite of each other.",

@@ -211,6 +211,8 @@ chmod +x /tmp/rhelsub.sh
 {% endif %}
 
 cp /ceph-host/bootstrap/data/environment/{{ node.environment }}/*.crt /tmp
+cp /ceph-host/bootstrap/data/environment/{{ node.environment }}/*.key /tmp
+cp /ceph-host/bootstrap/data/environment/{{ node.environment }}/*.pem /tmp
 
 rpm -Uvh /ceph-files/{{ chef.rpms.client }}
 
@@ -227,8 +229,6 @@ chef-client
 
 cat <<EOM >/tmp/chef-enroll.sh
 yum update -y
-cp /ceph-host/bootstrap/data/environment/{{ node.environment }}/*.crt /tmp
-cp /ceph-host/bootstrap/data/environment/{{ node.environment }}/*.key /tmp
 
 rpm -Uvh /ceph-files/{{ chef.rpms.client }}
 

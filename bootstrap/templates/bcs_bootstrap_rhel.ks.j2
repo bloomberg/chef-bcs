@@ -174,6 +174,7 @@ chmod 0600 /home/{{ user.name }}/.ssh/authorized_keys
 chmod 0600 /home/{{ user.name }}/.ssh/id_rsa
 chown -R {{ user.name }}:{{ user.group }} /home/{{ user.name }}/.ssh
 
+cp /ceph-host/bootstrap/data/environment/{{ node.environment }}/*.pem /tmp
 cp /ceph-host/bootstrap/data/environment/{{ node.environment }}/*.crt /tmp
 cp /ceph-host/bootstrap/data/environment/{{ node.environment }}/*.key /tmp
 cp /ceph-host/bootstrap/data/environment/{{ node.environment_short }}/README.txt /home/{{ user.name }}

@@ -16,11 +16,15 @@
 # limitations under the License.
 #
 
-source /ceph-host/bootstrap/data/environment/production/scripts/base.sh
+# IMPORTANT: This script needs to run on the Ceph node where the OSD lives!
+set -e
 
-# IMPORTANT: This script needs to run from a Ceph node!
+osd=$1
 
-# Not really a script per se but more of a process.
+if [[ -z $osd ]]; then
+  echo 'Must pass in a valid OSD number.'
+  exit 1
+fi
 
 # Step 1 (reweight down to 0.0)
 # Reweighting down to 0.0 all at once is not a good thing unless there is only a small
@@ -33,11 +37,12 @@ source /ceph-host/bootstrap/data/environment/production/scripts/base.sh
 # with this process until you hit a final 0.0 reweight.
 
 # Step 2 (on the node where the OSD resides)
-# ceph osd out XXX
-# service ceph stop osd.XXX
-# ceph osd crush remove osd.XXX
-# ceph auth del osd.XXX
-# ceph osd rm XXX
+ceph osd out $osd
+# NOTE: Can change the next line to ssh into the host to shut it down or just run this on the node itself.
+sudo service ceph stop osd.$osd
+ceph osd crush remove osd.$osd
+ceph auth del osd.$osd
+ceph osd rm $osd
 
 # IMPORTANT: It's worth repeating - DO NOT just reweight to 0.0 in one call unless there
 # is just a small of amount of data on the OSD!

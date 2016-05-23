@@ -250,9 +250,10 @@ cp -r $BOOTSTRAP_CACHE_DIR/build/github/internal/$GITHUB_DATA_REPO/ $BOOTSTRAP_C
 echo 'Setting REPO_ROOT...'
 export REPO_ROOT=$BOOTSTRAP_CACHE_DIR
 
-echo "Building DNS and hosts files..."
-$BOOTSTRAP_CACHE_DIR/build/github/combined/$GITHUB_REPO/bootstrap/data/environment/$env/scripts/build_dns_file.sh $dc
-$BOOTSTRAP_CACHE_DIR/build/github/combined/$GITHUB_REPO/bootstrap/data/environment/$env/scripts/build_hosts_file.sh $dc
+# NOTE: Run these from their respective directories *before* running this script. Leaving the comments here for now...
+#echo "Building DNS and hosts files..."
+#$BOOTSTRAP_CACHE_DIR/build/github/combined/$GITHUB_REPO/bootstrap/data/environment/$env/scripts/build_dns_file.sh $dc
+#$BOOTSTRAP_CACHE_DIR/build/github/combined/$GITHUB_REPO/bootstrap/data/environment/$env/scripts/build_hosts_file.sh $dc
 
 # NOTE: (IMPORTANT) - Overlay the internal repo on the external repo in the cache path
 

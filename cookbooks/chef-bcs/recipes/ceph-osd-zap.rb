@@ -19,6 +19,7 @@
 #
 
 include_recipe 'chef-bcs::ceph-conf'
+include_recipe 'ceph-chef::osd_stop_all'
 
 package 'gdisk'
 
@@ -30,17 +31,25 @@ if node['ceph']['osd']['devices']
   devices.each do |index, osd_device|
     dmcrypt = osd_device['encrypted'] == true ? '--dmcrypt' : ''
 
+    # No reason for a gaurd since it works or it doesn't.
     execute "ceph-disk-zap on #{osd_device['data']}" do
       command <<-EOH
         dd if=/dev/zero of=#{osd_device['data']} bs=512 count=1 conv=notrunc
         sgdisk --zap-all #{osd_device['data']}
       EOH
-      only_if "sgdisk -i1 #{osd_device['data']} | grep -i 4fbd7e29-9d25-41b8-afd0-062c0ceff05d" if !dmcrypt
-      only_if "sgdisk -i1 #{osd_device['data']} | grep -i 4fbd7e29-9d25-41b8-afd0-5ec00ceff05d" if dmcrypt
-      only_if "parted --script #{osd_device['data']} print | egrep -sq '^ 1.*ceph'"
       action :run
     end
   end
+
+  # Reset back to initial install by removing normal attribute of ceph osd devices
+  ruby_block 'null osd_device status' do
+    block do
+      node.rm_normal('ceph', 'osd')
+    end
+    action :run
+  end
+
+  include_recipe 'chef-bcs::ceph-journal-zap'
 else
   Log.info("node['ceph']['osd']['devices'] empty")
 end

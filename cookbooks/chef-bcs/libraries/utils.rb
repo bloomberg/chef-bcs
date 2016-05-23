@@ -87,6 +87,17 @@ def get_rack_num(host)
   rack.to_i
 end
 
+# Cycle through osd_devices to find a unique journals used.
+def get_journals
+  journals = []
+  node['ceph']['osd']['devices'].each do | journal |
+    if !journals.include? journal['journal']
+      journals << journal['journal']
+    end
+  end
+  journals
+end
+
 def is_bootstrap_node
   val = false
   if node['hostname'] == node['chef-bcs']['bootstrap']['name']
