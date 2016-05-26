@@ -10,6 +10,7 @@
     "recipe[chef-bcs::ceph-radosgw]",
     "recipe[ceph-chef::radosgw]",
     "recipe[ceph-chef::radosgw_start]",
+    "recipe[chef-bcs::ceph-scripts]",
     "role[monitoring]"
   ]
 }
