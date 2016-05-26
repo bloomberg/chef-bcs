@@ -12,6 +12,7 @@
     "recipe[chef-bcs::ceph-admin]",
     "recipe[ceph-chef::mon]",
     "recipe[chef-bcs::ansible]",
+    "recipe[chef-bcs::ceph-scripts]",
     "role[monitoring]"
   ]
 }

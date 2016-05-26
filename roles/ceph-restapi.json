@@ -10,6 +10,7 @@
     "recipe[chef-bcs::ceph-restapi]",
     "recipe[ceph-chef::restapi_install]",
     "recipe[ceph-chef::restapi]",
+    "recipe[chef-bcs::ceph-scripts]",
     "recipe[ceph-chef::restapi_start]"
   ]
 }

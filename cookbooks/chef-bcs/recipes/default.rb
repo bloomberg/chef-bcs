@@ -45,6 +45,7 @@ package 'lm_sensors'
 package 'fio'
 package 'bc'
 package 'iotop'
+package 'atop'
 
 # System troubleshooting tools
 package 'htop'
