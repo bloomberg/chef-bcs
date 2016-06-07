@@ -68,15 +68,24 @@ node['chef-bcs']['cobbler']['servers'].each do | server |
   end
 end
 
-ceph_chef_ansible_content = "[bootstrap]\n" + ceph_chef_bootstrap_content + "\n\n"
-ceph_chef_ansible_content += ceph_chef_ansible_content + "[adc]\n" + ceph_chef_adc_hosts_content + "\n\n"
-ceph_chef_ansible_content += ceph_chef_ansible_content + "[admin]\n" + ceph_chef_admin_hosts_content + "\n\n"
-ceph_chef_ansible_content += ceph_chef_ansible_content + "[mon]\n" + ceph_chef_mon_hosts_content + "\n\n"
-ceph_chef_ansible_content += ceph_chef_ansible_content + "[osd]\n" + ceph_chef_osd_hosts_content + "\n\n"
-ceph_chef_ansible_content += ceph_chef_ansible_content + "[osd-rack01]\n" + ceph_chef_osd_rack01_hosts_content + "\n\n"
-ceph_chef_ansible_content += ceph_chef_ansible_content + "[osd-rack02]\n" + ceph_chef_osd_rack02_hosts_content + "\n\n"
-ceph_chef_ansible_content += ceph_chef_ansible_content + "[osd-rack03]\n" + ceph_chef_osd_rack03_hosts_content + "\n\n"
-ceph_chef_ansible_content += ceph_chef_ansible_content + "[rgw]\n" + ceph_chef_rgw_hosts_content + "\n\n"
+ceph_chef_ansible_content  = "[bootstrap]\n" + ceph_chef_bootstrap_content + "\n\n"
+ceph_chef_ansible_content += "[adc]\n" + ceph_chef_adc_hosts_content + "\n\n"
+ceph_chef_ansible_content += "[admin]\n" + ceph_chef_admin_hosts_content + "\n\n"
+ceph_chef_ansible_content += "[mon]\n" + ceph_chef_mon_hosts_content + "\n\n"
+ceph_chef_ansible_content += "[osd]\n" + ceph_chef_osd_hosts_content + "\n\n"
+ceph_chef_ansible_content += "[osd-rack01]\n" + ceph_chef_osd_rack01_hosts_content + "\n\n"
+ceph_chef_ansible_content += "[osd-rack02]\n" + ceph_chef_osd_rack02_hosts_content + "\n\n"
+ceph_chef_ansible_content += "[osd-rack03]\n" + ceph_chef_osd_rack03_hosts_content + "\n\n"
+ceph_chef_ansible_content += "[rgw]\n" + ceph_chef_rgw_hosts_content + "\n\n"
+
+#ceph_chef_ansible_content += ceph_chef_ansible_content + "[adc]\n" + ceph_chef_adc_hosts_content + "\n\n"
+#ceph_chef_ansible_content += ceph_chef_ansible_content + "[admin]\n" + ceph_chef_admin_hosts_content + "\n\n"
+#ceph_chef_ansible_content += ceph_chef_ansible_content + "[mon]\n" + ceph_chef_mon_hosts_content + "\n\n"
+#ceph_chef_ansible_content += ceph_chef_ansible_content + "[osd]\n" + ceph_chef_osd_hosts_content + "\n\n"
+#ceph_chef_ansible_content += ceph_chef_ansible_content + "[osd-rack01]\n" + ceph_chef_osd_rack01_hosts_content + "\n\n"
+#ceph_chef_ansible_content += ceph_chef_ansible_content + "[osd-rack02]\n" + ceph_chef_osd_rack02_hosts_content + "\n\n"
+#ceph_chef_ansible_content += ceph_chef_ansible_content + "[osd-rack03]\n" + ceph_chef_osd_rack03_hosts_content + "\n\n"
+#ceph_chef_ansible_content += ceph_chef_ansible_content + "[rgw]\n" + ceph_chef_rgw_hosts_content + "\n\n"
 
 # NOTE: The default ansible /etc/ansible directory
 file '/etc/ansible/hosts' do

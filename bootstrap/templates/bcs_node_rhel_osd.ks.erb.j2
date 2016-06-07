@@ -183,7 +183,6 @@ echo "{{ user.name }} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/{{ user.name }}
 {{ cobbler.kickstart.redhat.management.commands.C1 }}
 {{ cobbler.kickstart.redhat.management.commands.C2 }}
 {{ cobbler.kickstart.redhat.management.commands.C3 }}
-{{ cobbler.kickstart.redhat.management.commands.C4 }}
 yum update -y
 # Go ahead and create a script in /tmp if the network has issues during the process.
 cat <<EOM >/tmp/rhelsub.sh
@@ -191,7 +190,6 @@ service network restart
 {{ cobbler.kickstart.redhat.management.commands.C1 }}
 {{ cobbler.kickstart.redhat.management.commands.C2 }}
 {{ cobbler.kickstart.redhat.management.commands.C3 }}
-{{ cobbler.kickstart.redhat.management.commands.C4 }}
 yum update -y
 EOM
 chmod +x /tmp/rhelsub.sh
