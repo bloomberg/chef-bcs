@@ -65,7 +65,9 @@ node['chef-bcs']['adc']['vips'].each do | vip |
       bash "build-ssl-cert-#{vip['name']}" do
         user 'root'
         code <<-EOH
-          cat #{node['chef-bcs']['adc']['ssl']['path']}/#{ssl_file} >> #{node['chef-bcs']['adc']['ssl']['path']}/#{vip['cert']}
+          if [[ #{node['chef-bcs']['adc']['ssl']['path']}/#{ssl_file} != #{node['chef-bcs']['adc']['ssl']['path']}/#{vip['cert']} ]]; then
+            cat #{node['chef-bcs']['adc']['ssl']['path']}/#{ssl_file} >> #{node['chef-bcs']['adc']['ssl']['path']}/#{vip['cert']}
+          fi
         EOH
       end
     end
