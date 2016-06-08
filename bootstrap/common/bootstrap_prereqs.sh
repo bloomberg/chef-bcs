@@ -31,6 +31,7 @@ if [[ $FAILED_ENVVAR_CHECK != 0 ]]; then exit 1; fi
 
 # Create directory for download cache.
 mkdir -p $BOOTSTRAP_CACHE_DIR/cobbler/{isos,loaders}
+mkdir -p $BOOTSTRAP_CACHE_DIR/python
 
 # download_file wraps the usual behavior of curling a remote URL to a local file
 # NOTE: PROXY - Make sure your http_proxy and https_proxy envrionment variables are set correctly if behind a proxy.
@@ -104,6 +105,9 @@ download_file $CHEF_SERVER_RPM https://web-dl.packagecloud.io/chef/stable/packag
 # BIRD is a little different :)
 ftp_file bird-1.5.0-1.x86_64.rpm ftp://bird.network.cz/pub/bird/redhat/bird-1.5.0-1.x86_64.rpm
 
+# Python pyyaml
+download_file /python/PyYAML-3.11.tar.gz http://pyyaml.org/download/pyyaml/PyYAML-3.11.tar.gz
+
 # Pull needed *cookbooks* from the Chef Supermarket.
 mkdir -p $BOOTSTRAP_CACHE_DIR/{cookbooks,gems}
 
@@ -156,9 +160,3 @@ mkdir -p $BOOTSTRAP_CACHE_DIR/gems
 for GEM in ${GEMS[@]}; do
   download_file gems/$GEM.gem https://rubygems.global.ssl.fastly.net/gems/$GEM.gem
 done
-
-# TODO: Need to clean up what is not needed below!
-
-# IF you just want all of the latest rpms
-
-# wget -r -l1 -np http://download.ceph.com/rpm-hammer/el7/x86_64/ -P . -A "*0.94.6*"

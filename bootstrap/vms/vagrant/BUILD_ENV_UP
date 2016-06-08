@@ -336,7 +336,7 @@ if [[ $BUILD_VMS_ONLY -eq 0 ]]; then
   do_on_node $vm "sed '/---/d' /tmp/rack03-node-seed.yaml >> /tmp/rack-node-seed.yaml"
 
   do_on_node $vm "sudo /ceph-host/bootstrap/templates/jinja_render.py -d /tmp/rack-node-seed.yaml -i /tmp/build/iso/postinstall/ceph-host/environments/$env.json.j2 -o /tmp/build/iso/postinstall/ceph-host/environments/$env.json"
-  do_on_node $vm "sudo rm /tmp/build/iso/postinstall/ceph-host/environments/$env.json.j2"
+  do_on_node $vm "sudo rm -f /tmp/build/iso/postinstall/ceph-host/environments/$env.json.j2"
 
   # Build ISO with custom kickstart
   echo "Generating new ISO..."
