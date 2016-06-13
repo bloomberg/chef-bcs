@@ -79,6 +79,20 @@ node['chef-bcs']['cobbler']['servers'].each do | server |
   end
 end
 
+# Update mac addresses - PUBLIC and CLUSTER
+# May want to add interfaces as an array so that any number of nic/mac can be added
+# TODO: Also update for any bonded nics
+node['chef-bcs']['cobbler']['servers'].each do | server |
+  bash 'update-cobbler-macs' do
+    user 'root'
+    code <<-EOH
+      cobbler system edit --name=#{server['name']} --static=true --interface=#{server['network']['public']['interface']} --mac=#{server['network']['cluster']['mac']} --ip-address=#{server['network']['cluster']['ip']} --netmask=#{server['network']['cluster']['netmask']} --if-gateway=#{server['network']['cluster']['gateway']} --mtu=#{server['network']['cluster']['mtu']}
+      cobbler system edit --name=#{server['name']} --static=true --interface=#{server['network']['cluster']['interface']} --mac=#{server['network']['cluster']['mac']} --ip-address=#{server['network']['cluster']['ip']} --netmask=#{server['network']['cluster']['netmask']} --if-gateway=#{server['network']['cluster']['gateway']} --mtu=#{server['network']['cluster']['mtu']}
+    EOH
+    only_if "cobbler system find --name=#{server['name']} --netboot-enabled=False"
+  end
+end
+
 # Cobbler will create the base pxe boot files needed. Every time you modify profile/system/distro you will need to do a cobbler sync
 execute 'cobbler-sync' do
   command lazy{ "cobbler sync" }
