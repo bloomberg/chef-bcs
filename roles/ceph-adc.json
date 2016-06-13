@@ -6,9 +6,11 @@
     "run_list": [
       "recipe[chef-bcs::haproxy]",
       "recipe[chef-bcs::keepalived]",
-      "recipe[chef-bcs::bgp]"
+      "recipe[chef-bcs::bgp]",
+      "role[monitoring]",
+      "role[common]"
     ],
-    "description": "ADC (Load Balancer) for ceph cluster - role[monitoring]",
+    "description": "ADC (Load Balancer) for ceph cluster",
     "chef_type": "role",
     "override_attributes": {
     }
