@@ -45,8 +45,7 @@ package 'lm_sensors'
 package 'fio'
 package 'bc'
 package 'iotop'
-# TODO: Waiting on package mgr update..
-# package 'atop'
+package 'atop'
 
 # System troubleshooting tools
 package 'htop'

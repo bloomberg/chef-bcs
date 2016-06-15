@@ -32,6 +32,7 @@ if [[ $FAILED_ENVVAR_CHECK != 0 ]]; then exit 1; fi
 # Create directory for download cache.
 mkdir -p $BOOTSTRAP_CACHE_DIR/cobbler/{isos,loaders}
 mkdir -p $BOOTSTRAP_CACHE_DIR/python
+mkdir -p $BOOTSTRAP_CACHE_DIR/rpms
 
 # download_file wraps the usual behavior of curling a remote URL to a local file
 # NOTE: PROXY - Make sure your http_proxy and https_proxy envrionment variables are set correctly if behind a proxy.
@@ -96,14 +97,14 @@ if [[ ! -z $COBBLER_BOOTSTRAP_ISO ]]; then
 fi
 
 # Obtain Chef client and server RPMs.
-export CHEF_CLIENT_RPM=chef-12.8.1-1.el7.x86_64.rpm
-export CHEF_SERVER_RPM=chef-server-core-12.4.1-1.el7.x86_64.rpm
+export CHEF_CLIENT_RPM=chef-12.11.18-1.el7.x86_64.rpm
+export CHEF_SERVER_RPM=chef-server-core-12.6.0-1.el7.x86_64.rpm
 echo "Downloading Chef..."
-download_file $CHEF_CLIENT_RPM https://opscode-omnibus-packages.s3.amazonaws.com/el/7/x86_64/$CHEF_CLIENT_RPM
-download_file $CHEF_SERVER_RPM https://web-dl.packagecloud.io/chef/stable/packages/el/7/$CHEF_SERVER_RPM
+download_file /rpms/$CHEF_CLIENT_RPM URL: https://packages.chef.io/stable/el/7/$CHEF_CLIENT_RPM
+download_file /rpms/$CHEF_SERVER_RPM https://packages.chef.io/stable/el/7/$CHEF_SERVER_RPM
 
 # BIRD is a little different :)
-ftp_file bird-1.5.0-1.x86_64.rpm ftp://bird.network.cz/pub/bird/redhat/bird-1.5.0-1.x86_64.rpm
+#ftp_file /rpms/bird-1.5.0-1.x86_64.rpm ftp://bird.network.cz/pub/bird/redhat/bird-1.5.0-1.x86_64.rpm
 
 # Python pyyaml
 download_file /python/PyYAML-3.11.tar.gz http://pyyaml.org/download/pyyaml/PyYAML-3.11.tar.gz
