@@ -450,13 +450,13 @@
           },
           "radosgw": {
             "federated": {
-              "enable": true,
+              "enable": false,
               "zone_instances": [
                 {"name": "dev", "port": 8080, "region": "dc1", "url": "s3.dc1.dev.rgw.ceph.example.com"},
                 {"name": "prod", "port": 8081, "region": "dc1", "url": "s3.dc1.prod.rgw.ceph.example.com"}
               ],
               "regions": ["dc1"],
-              "enable_regions_zones": true,
+              "enable_regions_zones": false,
               "master_zone": "dev",
               "master_zone_port": 8080
             },
