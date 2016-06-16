@@ -460,23 +460,6 @@
               "master_zone": "dev",
               "master_zone_port": 8080
             },
-            "NOTE-NAME": "If federated then the system generated federated prefix will be added in front of the names below to create a fully federated pool name.",
-            "names": [
-              ".rgw",
-              ".rgw.control",
-              ".rgw.gc",
-              ".rgw.root",
-              ".users.uid",
-              ".users.email",
-              ".users.swift",
-              ".users",
-              ".usage",
-              ".log",
-              ".intent-log",
-              ".rgw.buckets",
-              ".rgw.buckets.index",
-              ".rgw.buckets.extra"
-            ],
             "NOTE-POOLS": "pools below replace 'names' and provides data for PG creations. Also, 'actions' portion is EXPERIMENTAL so ignore!",
             "NOTE-POOLS-PERCENT": "data_percent total of the pool should be 100%. IF this is is also a Federated set of pools with multiple tiers then it should still be 100% and the calculation will take those other pools into account.",
             "NOTE-EC-POOLS": "IMPORTANT - ONLY .rgw.buckets (data) pool can be erasure coded. The others must be replicated.",

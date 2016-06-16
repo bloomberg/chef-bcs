@@ -375,7 +375,7 @@
           },
           "radosgw": {
             "federated": {
-              "enable": false,
+              "enable": true,
               {#- Instances represent network tiers #}
               {#- Instance name MUST match VIPs name and Backend/Server instance variables. IF Federation is not used then Backend/Server instance variable should be empty. #}
               "zone_instances": [
@@ -384,27 +384,10 @@
                 {%- endfor %}
               ],
               "regions": ["{{ ceph.radosgw.federated.regions|join('", "') }}"],
-              "enable_regions_zones": false,
+              "enable_regions_zones": true,
               "master_zone": "{{ ceph.radosgw.federated.master_zone }}",
               "master_zone_port": "{{ ceph.radosgw.federated.master_zone_port }}"
             },
-            {#- If federated then the system generated federated prefix will be added in front of the names below to create a fully federated pool name. #}
-            "names": [
-              ".rgw",
-              ".rgw.control",
-              ".rgw.gc",
-              ".rgw.root",
-              ".users.uid",
-              ".users.email",
-              ".users.swift",
-              ".users",
-              ".usage",
-              ".log",
-              ".intent-log",
-              ".rgw.buckets",
-              ".rgw.buckets.index",
-              ".rgw.buckets.extra"
-            ],
             {#- The data_percent below should equal 100%. If Federated then the calculation will take those pools into account. #}
             {#- NOTE: IMPORTANT - ONLY 'buckets' (data) can be erasure coded. Others need to be replicated. #}
             "pools": [
