@@ -51,12 +51,16 @@ if [[ -f /etc/ceph/ceph.conf ]]; then
   # Get crushmap and back it up
   ceph osd getcrushmap -o $HOME/chef-bcs-backups/chef-bcs-$VERSION-$DATE/ceph/crushmap.out
   crushtool -d $HOME/chef-bcs-backups/chef-bcs-$VERSION-$DATE/ceph/crushmap.out -o $HOME/chef-bcs-backups/chef-bcs-$VERSION-$DATE/ceph/crushmap.txt
+
+  logger -t BCSBackup "Backed up Ceph files - $VERSION-$DATE"
 fi
 
 # Bird
 if [[ -f /etc/bird.conf ]]; then
   mkdir -p $HOME/chef-bcs-backups/chef-bcs-$VERSION-$DATE/bird/etc
   sudo cp /etc/bird.conf $HOME/chef-bcs-backups/chef-bcs-$VERSION-$DATE/bird/etc
+
+  logger -t BCSBackup "Backed up Bird files - $VERSION-$DATE"
 fi
 
 # HAProxy
@@ -69,10 +73,14 @@ if [[ -d /etc/haproxy ]]; then
     mkdir -p $HOME/chef-bcs-backups/chef-bcs-$VERSION-$DATE/haproxy/etc/ssl/private
     sudo cp /etc/ssl/private/* $HOME/chef-bcs-backups/chef-bcs-$VERSION-$DATE/haproxy/etc/ssl/private
   fi
+
+  logger -t BCSBackup "Backed up HAProxy files - $VERSION-$DATE"
 fi
 
 # KeepAliveD
 if [[ -d /etc/keepalived ]]; then
   mkdir -p $HOME/chef-bcs-backups/chef-bcs-$VERSION-$DATE/keepalived/etc/keepalived
   sudo cp /etc/keepalived/* $HOME/chef-bcs-backups/chef-bcs-$VERSION-$DATE/keepalived/etc/keepalived
+
+  logger -t BCSBackup "Backed up KeepAliveD files - $VERSION-$DATE"
 fi
