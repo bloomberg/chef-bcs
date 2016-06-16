@@ -100,7 +100,7 @@ fi
 export CHEF_CLIENT_RPM=chef-12.11.18-1.el7.x86_64.rpm
 export CHEF_SERVER_RPM=chef-server-core-12.6.0-1.el7.x86_64.rpm
 echo "Downloading Chef..."
-download_file /rpms/$CHEF_CLIENT_RPM URL: https://packages.chef.io/stable/el/7/$CHEF_CLIENT_RPM
+download_file /rpms/$CHEF_CLIENT_RPM https://packages.chef.io/stable/el/7/$CHEF_CLIENT_RPM
 download_file /rpms/$CHEF_SERVER_RPM https://packages.chef.io/stable/el/7/$CHEF_SERVER_RPM
 
 # BIRD is a little different :)
