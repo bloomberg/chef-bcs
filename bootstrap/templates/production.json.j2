@@ -375,7 +375,7 @@
           },
           "radosgw": {
             "federated": {
-              "enable": true,
+              "enable": false,
               {#- Instances represent network tiers #}
               {#- Instance name MUST match VIPs name and Backend/Server instance variables. IF Federation is not used then Backend/Server instance variable should be empty. #}
               "zone_instances": [
@@ -384,7 +384,7 @@
                 {%- endfor %}
               ],
               "regions": ["{{ ceph.radosgw.federated.regions|join('", "') }}"],
-              "enable_regions_zones": true,
+              "enable_regions_zones": false,
               "master_zone": "{{ ceph.radosgw.federated.master_zone }}",
               "master_zone_port": "{{ ceph.radosgw.federated.master_zone_port }}"
             },
