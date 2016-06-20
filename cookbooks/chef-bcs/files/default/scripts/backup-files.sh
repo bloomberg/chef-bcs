@@ -84,3 +84,8 @@ if [[ -d /etc/keepalived ]]; then
 
   logger -t BCSBackup "Backed up KeepAliveD files - $VERSION-$DATE"
 fi
+
+# Tar up directory
+tar -cjvf chef-bcs-$VERSION-$DATE.tar.bz2 $HOME/chef-bcs-backups/chef-bcs-$VERSION-$DATE
+
+# Rsync/scp
