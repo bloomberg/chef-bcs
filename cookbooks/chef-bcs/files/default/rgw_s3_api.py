@@ -31,11 +31,11 @@ from boto.s3.bucket import Bucket
 # NOTE: Modify these values with your key, secret and url/ip for s3 endpoint
 key = "<whatever your key is>"
 secret = "<whatever your secret is>"
-default_host = "<whatever your s3 url or IP is>"
+endpoint = "<whatever your s3 url or IP is>"
 
 # NOTE: Add the proxy if you need one.
 
-def connect(key, secret, proxy=None, user_agent=None, host=default_host, port=80,
+def connect(key, secret, proxy=None, user_agent=None, endpoint=endpoint, port=80,
             proxy_port=8080, is_secure=False, debug=0, verbose=False):
     conn = None
 
@@ -44,7 +44,7 @@ def connect(key, secret, proxy=None, user_agent=None, host=default_host, port=80
                     aws_access_key_id=key,
                     aws_secret_access_key=secret,
                     port=port,
-                    host=host,
+                    host=endpoint,
                     proxy=proxy,
                     proxy_port=proxy_port,
                     is_secure=is_secure,
@@ -120,9 +120,9 @@ def bucket_list(bucket, verbose=False):
 
     try:
         for i in bucket.list():
-            fname =  i.key.split("/")[-1]  # i.name  # i.key.split("/")[-1]
-            size = i.size  # i.get_contents_to_filename(fname)
-            print('%s: %d' % (fname, size))
+            obj_name =  i.key.split("/")[-1]  # i.name  # i.key.split("/")[-1]
+            size = i.size  # i.get_contents_to_filename(obj_name)
+            print('%s: %d' % (obj_name, size))
     except BaseException, e:
         print(e.message)
 
@@ -267,8 +267,9 @@ def upload_directory(bucket, directory, pattern='*', include_dir_prefix=False, m
 
 
 def main():
-    # Add parse here later...
-
+    # NOTE: This is just a number of samples that can be called via the cli. However, the primary purpose of this
+    # are the functions defined above which are imported into rgw-admin.py
+    
     conn = connect(key, secret, is_secure=False, verbose=True)  # debug=2 Add more options later...
 
     # Sample header for object_get
