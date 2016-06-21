@@ -20,8 +20,6 @@
 # This is only needed *IF* we install test tools like JMeter etc that require Java.
 include_recipe 'chef-bcs::java'
 
-package 'jmeter'
-
 # Add the bash script
 
 # Add the jmx definition file
