@@ -40,7 +40,8 @@ rule hdd_replicated {
 }
 
 <% if node['chef-bcs']['ceph']['pools']['radosgw']['settings']['type'] == 'erasure' %>
-rule hdd_erasure {
+# hdd is by default erasure coded
+rule hdd {
     ruleset 1
     type erasure
     min_size 1
