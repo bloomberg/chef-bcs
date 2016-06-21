@@ -76,6 +76,8 @@ end
 remote_directory '/etc/ceph/scripts' do
   source 'scripts'
   action :create
+  owner node['chef-bcs']['chef']['owner']
+  mode 0755
 end
 
 execute 'set-scripts-perm' do
