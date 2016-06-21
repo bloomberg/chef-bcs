@@ -61,7 +61,7 @@
         {#- backend_port is used in the backend section below for Federated only. #}
         "vips": [
         {%- for item in vip.vips %}
-          {"name": "{{ item.name }}", "ip": "{{ item.ip }}", "cidr": {{ vip.cidr }}, "interface": "{{ item.interface }}", "ssl": true, "cert": "{{ item.cert }}", "ssl_files": ["{{ item.ssl_files|join('","') }}"], "url": "{{ item.url }}"}{%- if not loop.last %},{% endif %}
+          {"name": "{{ item.name }}", "ip": "{{ item.ip }}", "cidr": {{ vip.cidr }}, "interface": "{{ item.interface }}", "ssl": {%- if item.ssl == True %} true {% else %} false {%- endif %}, "cert": "{{ item.cert }}", "ssl_files": ["{{ item.ssl_files|join('","') }}"], "url": "{{ item.url }}"}{%- if not loop.last %},{% endif %}
         {%- endfor %}
         ],
         {#- VIPS are 10.121.16.16/28 range (.17 - .30). Advertised via BGP or Static+BFD Beacon. #}
