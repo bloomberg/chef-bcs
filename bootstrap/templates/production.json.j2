@@ -370,7 +370,7 @@
           },
           "erasure_coding": {
             "profiles": [
-              {"profile": "bcs", "directory": "/usr/lib/ceph/erasure-code", "plugin": "jerasure", "force": true, "technique": "reed_sol_van", "ruleset_failure_domain": "host", "key_value": {"k": 8, "m": 3}}
+              {"profile": "bcs", "directory": "/usr/lib/ceph/erasure-code", "plugin": "jerasure", "force": true, "technique": "reed_sol_van", "ruleset_root": "hdd", "ruleset_failure_domain": "host", "key_value": {"k": 8, "m": 3}}
             ]
           },
           "radosgw": {
@@ -402,7 +402,7 @@
               {"name": ".usage", "data_percent": 0.10, "type": "replicated", "profile": "", "crush_ruleset": 0, "crush_ruleset_name": "hdd_replicated", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
               {"name": ".log", "data_percent": 0.10, "type": "replicated", "profile": "", "crush_ruleset": 0, "crush_ruleset_name": "hdd_replicated", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
               {"name": ".intent-log", "data_percent": 0.10, "type": "replicated", "profile": "", "crush_ruleset": 0, "crush_ruleset_name": "hdd_replicated", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
-              {"name": ".rgw.buckets", "data_percent": 96.90, "type": "erasure", "profile": "bcs", "crush_ruleset": 1, "crush_ruleset_name": "hdd_erasure", "actions": [{"action": "create", "pg_num": 128, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
+              {"name": ".rgw.buckets", "data_percent": 96.90, "type": "erasure", "profile": "bcs", "crush_ruleset": 1, "crush_ruleset_name": "hdd", "actions": [{"action": "create", "pg_num": 128, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
               {"name": ".rgw.buckets.index", "data_percent": 1, "type": "replicated", "profile": "", "crush_ruleset": 0, "crush_ruleset_name": "hdd_replicated", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
               {"name": ".rgw.buckets.extra", "data_percent": 1, "type": "replicated", "profile": "", "crush_ruleset": 0, "crush_ruleset_name": "hdd_replicated", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]}
             ],
