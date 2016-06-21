@@ -43,11 +43,11 @@ if [[ -f /etc/ceph/ceph.conf ]]; then
   mkdir -p /home/$USER/chef-bcs-backups/chef-bcs-$VERSION-$DATE/ceph/etc/ceph
 
   # Backup /etc/ceph configs and keys
-  sudo cp /etc/ceph/* /home/$USER/chef-bcs-backups/chef-bcs-$VERSION-$DATE/ceph/etc/ceph
+  sudo cp -r /etc/ceph/* /home/$USER/chef-bcs-backups/chef-bcs-$VERSION-$DATE/ceph/etc/ceph
 
   # Get crushmap and back it up
-  ceph osd getcrushmap -o /home/$USER/chef-bcs-backups/chef-bcs-$VERSION-$DATE/ceph/crushmap.out
-  crushtool -d /home/$USER/chef-bcs-backups/chef-bcs-$VERSION-$DATE/ceph/crushmap.out -o /home/$USER/chef-bcs-backups/chef-bcs-$VERSION-$DATE/ceph/crushmap.txt
+  sudo ceph osd getcrushmap -o /home/$USER/chef-bcs-backups/chef-bcs-$VERSION-$DATE/ceph/crushmap.out
+  sudo crushtool -d /home/$USER/chef-bcs-backups/chef-bcs-$VERSION-$DATE/ceph/crushmap.out -o /home/$USER/chef-bcs-backups/chef-bcs-$VERSION-$DATE/ceph/crushmap.txt
 
   # Backup keys in /var/lib/ceph
   for i in $(sudo find /var/lib/ceph -name keyring); do
