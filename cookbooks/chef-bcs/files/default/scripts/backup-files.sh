@@ -46,6 +46,7 @@ if [[ -f /etc/ceph/ceph.conf ]]; then
   sudo cp -r /etc/ceph/* /home/$USER/chef-bcs-backups/chef-bcs-$VERSION-$DATE/ceph/etc/ceph
 
   # Get crushmap and back it up
+  # NOTE: Only need to do this on one mon node but it's ok if done as part of normal process on all nodes
   sudo ceph osd getcrushmap -o /home/$USER/chef-bcs-backups/chef-bcs-$VERSION-$DATE/ceph/crushmap.out
   sudo crushtool -d /home/$USER/chef-bcs-backups/chef-bcs-$VERSION-$DATE/ceph/crushmap.out -o /home/$USER/chef-bcs-backups/chef-bcs-$VERSION-$DATE/ceph/crushmap.txt
 
