@@ -45,16 +45,16 @@ if [[ -f /etc/ceph/ceph.conf ]]; then
   # Backup /etc/ceph configs and keys
   sudo cp /etc/ceph/* /home/$USER/chef-bcs-backups/chef-bcs-$VERSION-$DATE/ceph/etc/ceph
 
-  # Backup keys in /var/lib/ceph
-  for i in $(sudo find /var/lib/ceph -name keyring); do
-    new_dir=${i%keyring}
-    mkdir -p /home/$USER/chef-bcs-backups/chef-bcs-$VERSION-$DATE/ceph/$new_dir
-    sudo cp $i /home/$USER/chef-bcs-backups/chef-bcs-$VERSION-$DATE/ceph$i
-  done
-
   # Get crushmap and back it up
   ceph osd getcrushmap -o /home/$USER/chef-bcs-backups/chef-bcs-$VERSION-$DATE/ceph/crushmap.out
   crushtool -d /home/$USER/chef-bcs-backups/chef-bcs-$VERSION-$DATE/ceph/crushmap.out -o /home/$USER/chef-bcs-backups/chef-bcs-$VERSION-$DATE/ceph/crushmap.txt
+
+  # Backup keys in /var/lib/ceph
+  for i in $(sudo find /var/lib/ceph -name keyring); do
+    new_dir=${i%keyring}
+    sudo mkdir -p /home/$USER/chef-bcs-backups/chef-bcs-$VERSION-$DATE/ceph/$new_dir
+    sudo cp $i /home/$USER/chef-bcs-backups/chef-bcs-$VERSION-$DATE/ceph$i
+  done
 
   logger -t BCSBackup "Backed up Ceph files - $VERSION-$DATE"
 fi
