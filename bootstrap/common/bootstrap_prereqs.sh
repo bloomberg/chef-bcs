@@ -132,7 +132,7 @@ fi
 download_file cookbooks/poise-2.6.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/poise/versions/2.6.0/download
 download_file cookbooks/chef-client-4.3.3.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/chef-client/versions/4.3.3/download
 download_file cookbooks/windows-1.39.1.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/windows/versions/1.39.1/download
-download_file cookbooks/cron-1.7.4.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/cron/versions/1.7.4/download
+download_file cookbooks/cron-1.7.6.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/cron/versions/1.7.6/download
 download_file cookbooks/logrotate-1.9.2.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/logrotate/versions/1.9.2/download
 download_file cookbooks/ntp-1.10.1.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/ntp/versions/1.10.1/download
 download_file cookbooks/yum-3.10.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/yum/versions/3.10.0/download
