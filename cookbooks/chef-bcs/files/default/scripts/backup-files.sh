@@ -21,7 +21,11 @@
 set -e
 
 VERSION=$1
+# NOTE: Make sure DATE does not have any ':' characters
 DATE=$2
+
+# Change this to whatever user you want or put into a template later...
+USER=operations
 
 if [[ -z $VERSION ]]; then
   echo "MUST pass in a valid VERSION number."
@@ -36,42 +40,42 @@ fi
 # Make backup directories
 # Ceph (NOTE: the /etc/ceph directory is on every node - even non-ceph nodes)
 if [[ -f /etc/ceph/ceph.conf ]]; then
-  mkdir -p $HOME/chef-bcs-backups/chef-bcs-$VERSION-$DATE/ceph/etc/ceph
+  mkdir -p /home/$USER/chef-bcs-backups/chef-bcs-$VERSION-$DATE/ceph/etc/ceph
 
   # Backup /etc/ceph configs and keys
-  sudo cp /etc/ceph/* $HOME/chef-bcs-backups/chef-bcs-$VERSION-$DATE/ceph/etc/ceph
+  sudo cp /etc/ceph/* /home/$USER/chef-bcs-backups/chef-bcs-$VERSION-$DATE/ceph/etc/ceph
 
   # Backup keys in /var/lib/ceph
   for i in $(sudo find /var/lib/ceph -name keyring); do
     new_dir=${i%keyring}
-    mkdir -p $HOME/chef-bcs-backups/chef-bcs-$VERSION-$DATE/ceph/$new_dir
-    sudo cp $i $HOME/chef-bcs-backups/chef-bcs-$VERSION-$DATE/ceph$i
+    mkdir -p /home/$USER/chef-bcs-backups/chef-bcs-$VERSION-$DATE/ceph/$new_dir
+    sudo cp $i /home/$USER/chef-bcs-backups/chef-bcs-$VERSION-$DATE/ceph$i
   done
 
   # Get crushmap and back it up
-  ceph osd getcrushmap -o $HOME/chef-bcs-backups/chef-bcs-$VERSION-$DATE/ceph/crushmap.out
-  crushtool -d $HOME/chef-bcs-backups/chef-bcs-$VERSION-$DATE/ceph/crushmap.out -o $HOME/chef-bcs-backups/chef-bcs-$VERSION-$DATE/ceph/crushmap.txt
+  ceph osd getcrushmap -o /home/$USER/chef-bcs-backups/chef-bcs-$VERSION-$DATE/ceph/crushmap.out
+  crushtool -d /home/$USER/chef-bcs-backups/chef-bcs-$VERSION-$DATE/ceph/crushmap.out -o /home/$USER/chef-bcs-backups/chef-bcs-$VERSION-$DATE/ceph/crushmap.txt
 
   logger -t BCSBackup "Backed up Ceph files - $VERSION-$DATE"
 fi
 
 # Bird
 if [[ -f /etc/bird.conf ]]; then
-  mkdir -p $HOME/chef-bcs-backups/chef-bcs-$VERSION-$DATE/bird/etc
-  sudo cp /etc/bird.conf $HOME/chef-bcs-backups/chef-bcs-$VERSION-$DATE/bird/etc
+  mkdir -p /home/$USER/chef-bcs-backups/chef-bcs-$VERSION-$DATE/bird/etc
+  sudo cp /etc/bird.conf /home/$USER/chef-bcs-backups/chef-bcs-$VERSION-$DATE/bird/etc
 
   logger -t BCSBackup "Backed up Bird files - $VERSION-$DATE"
 fi
 
 # HAProxy
 if [[ -d /etc/haproxy ]]; then
-  mkdir -p $HOME/chef-bcs-backups/chef-bcs-$VERSION-$DATE/haproxy/etc/haproxy
-  sudo cp /etc/haproxy/* $HOME/chef-bcs-backups/chef-bcs-$VERSION-$DATE/haproxy/etc/haproxy
+  mkdir -p /home/$USER/chef-bcs-backups/chef-bcs-$VERSION-$DATE/haproxy/etc/haproxy
+  sudo cp /etc/haproxy/* /home/$USER/chef-bcs-backups/chef-bcs-$VERSION-$DATE/haproxy/etc/haproxy
 
   # Get certs if any
   if [[ -d /etc/ssl/private ]]; then
-    mkdir -p $HOME/chef-bcs-backups/chef-bcs-$VERSION-$DATE/haproxy/etc/ssl/private
-    sudo cp /etc/ssl/private/* $HOME/chef-bcs-backups/chef-bcs-$VERSION-$DATE/haproxy/etc/ssl/private
+    mkdir -p /home/$USER/chef-bcs-backups/chef-bcs-$VERSION-$DATE/haproxy/etc/ssl/private
+    sudo cp /etc/ssl/private/* /home/$USER/chef-bcs-backups/chef-bcs-$VERSION-$DATE/haproxy/etc/ssl/private
   fi
 
   logger -t BCSBackup "Backed up HAProxy files - $VERSION-$DATE"
@@ -79,13 +83,16 @@ fi
 
 # KeepAliveD
 if [[ -d /etc/keepalived ]]; then
-  mkdir -p $HOME/chef-bcs-backups/chef-bcs-$VERSION-$DATE/keepalived/etc/keepalived
-  sudo cp /etc/keepalived/* $HOME/chef-bcs-backups/chef-bcs-$VERSION-$DATE/keepalived/etc/keepalived
+  mkdir -p /home/$USER/chef-bcs-backups/chef-bcs-$VERSION-$DATE/keepalived/etc/keepalived
+  sudo cp /etc/keepalived/* /home/$USER/chef-bcs-backups/chef-bcs-$VERSION-$DATE/keepalived/etc/keepalived
 
   logger -t BCSBackup "Backed up KeepAliveD files - $VERSION-$DATE"
 fi
 
 # Tar up directory
-tar -cjvf chef-bcs-$VERSION-$DATE.tar.bz2 $HOME/chef-bcs-backups/chef-bcs-$VERSION-$DATE
+sudo tar -cjf /home/$USER/chef-bcs-backups/chef-bcs-$VERSION-$DATE.tar.bz2 /home/$USER/chef-bcs-backups/chef-bcs-$VERSION-$DATE
+
+# No longer need directory once tar
+sudo rm -rf home/$USER/chef-bcs-backups/chef-bcs-$VERSION-$DATE
 
 # Rsync/scp
