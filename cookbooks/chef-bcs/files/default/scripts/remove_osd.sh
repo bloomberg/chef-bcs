@@ -26,6 +26,10 @@ if [[ -z $osd ]]; then
   exit 1
 fi
 
+# Stop any monitoring
+sudo systemctl stop zabbix-agent
+sudo systemctl stop collectd
+
 # Step 1 (reweight down to 0.0)
 # Reweighting down to 0.0 all at once is not a good thing unless there is only a small
 # amount of data. Otherwise, you will get a lot of rebalancing that can degrade
@@ -43,6 +47,11 @@ sudo service ceph stop osd.$osd
 ceph osd crush remove osd.$osd
 ceph auth del osd.$osd
 ceph osd rm $osd
+
+# Now remove mount
+set +e
+sudo umount /var/lib/ceph/osd/ceph-$osd
+sudo rm -rf /var/lib/ceph/osd/ceph-$osd
 
 # IMPORTANT: It's worth repeating - DO NOT just reweight to 0.0 in one call unless there
 # is just a small of amount of data on the OSD!
