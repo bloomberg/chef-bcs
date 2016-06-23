@@ -55,7 +55,7 @@ end
 
 # Can optimize later...
 node['chef-bcs']['adc']['vips'].each do | vip |
-  if !File.exists?("#{vip['cert']}")
+  if vip['ssl'] == true && !File.exists?("#{vip['cert']}")
     execute 'dev-null-cert' do
      command lazy { "cp /dev/null #{node['chef-bcs']['adc']['ssl']['path']}/#{vip['cert']}" }
     end
