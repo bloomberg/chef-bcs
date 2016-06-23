@@ -89,7 +89,6 @@ node['chef-bcs']['cobbler']['servers'].each do | server |
       cobbler system edit --name=#{server['name']} --static=true --interface=#{server['network']['public']['interface']} --mac=#{server['network']['public']['mac']} --ip-address=#{server['network']['public']['ip']} --netmask=#{server['network']['cluster']['netmask']} --if-gateway=#{server['network']['public']['gateway']} --mtu=#{server['network']['public']['mtu']}
       cobbler system edit --name=#{server['name']} --static=true --interface=#{server['network']['cluster']['interface']} --mac=#{server['network']['cluster']['mac']} --ip-address=#{server['network']['cluster']['ip']} --netmask=#{server['network']['cluster']['netmask']} --if-gateway=#{server['network']['cluster']['gateway']} --mtu=#{server['network']['cluster']['mtu']}
     EOH
-    #only_if "cobbler system find --name=#{server['name']} --netboot-enabled=False"
     only_if "cobbler system list | grep #{server['name']}"
   end
 end
