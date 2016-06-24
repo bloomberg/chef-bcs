@@ -403,6 +403,48 @@ def radosgw_nodes
   results.sort! { |a, b| a['hostname'] <=> b['hostname'] }
 end
 
+def is_mon_node
+  val = false
+  nodes = mon_nodes
+  nodes.each do |n|
+    if n['hostname'] == node['hostname']
+      val = true
+      break
+    end
+  end
+  val
+end
+
+def mon_nodes
+  results = search(:node, "tags:#{node['ceph']['mon']['tag']}")
+  results.map! { |x| x['hostname'] == node['hostname'] ? node : x }
+  if !results.include?(node) && node.run_list.roles.include?(node['ceph']['mon']['role'])
+    results.push(node)
+  end
+  results.sort! { |a, b| a['hostname'] <=> b['hostname'] }
+end
+
+def is_osd_node
+  val = false
+  nodes = osd_nodes
+  nodes.each do |n|
+    if n['hostname'] == node['hostname']
+      val = true
+      break
+    end
+  end
+  val
+end
+
+def osd_nodes
+  results = search(:node, "tags:#{node['ceph']['osd']['tag']}")
+  results.map! { |x| x['hostname'] == node['hostname'] ? node : x }
+  if !results.include?(node) && node.run_list.roles.include?(node['ceph']['osd']['role'])
+    results.push(node)
+  end
+  results.sort! { |a, b| a['hostname'] <=> b['hostname'] }
+end
+
 def search_nodes(key, value)
     if key == "recipe"
         results = search(:node, "recipes:ceph\\:\\:#{value} AND chef_environment:#{node.chef_environment}")

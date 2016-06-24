@@ -307,7 +307,16 @@
         },
         "mon": {
           "port": 6789,
-          "niceness": -10
+          "niceness": -10,
+          "bond": {
+            "enable": {%- if bond.enable == True %} true, {% else %} false, {%- endif %}
+            "name": "{{ bond.name }}",
+            "type": "Bond",
+            "mtu": {{ bond.mtu }},
+            "interfaces": ["{{ bond.interfaces|join('","') }}"],
+            "options": "{{ bond.options }}",
+            "nm_controlled": "no"
+          }
         },
         "radosgw": {
           "port": 8080,
@@ -324,7 +333,16 @@
             "revocation_interval": 1200
           },
           "rgw_num_rados_handles": 5,
-          "civetweb_num_threads": 100
+          "civetweb_num_threads": 100,
+          "bond": {
+            "enable": {%- if bond.enable == True %} true, {% else %} false, {%- endif %}
+            "name": "{{ bond.name }}",
+            "type": "Bond",
+            "mtu": {{ bond.mtu }},
+            "interfaces": ["{{ bond.interfaces|join('","') }}"],
+            "options": "{{ bond.options }}",
+            "nm_controlled": "no"
+          }
         },
         "osd": {
           {#- Move this data to the seed yamls if we need to make them more dynamic for different clusters. #}
