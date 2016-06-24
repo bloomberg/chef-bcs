@@ -62,7 +62,33 @@ end
 # NOTE: Could turn 'bond' into 'bonds': [{...}] and then loop the template below to have multiple bonds.
 # NOTE: MAKE SURE to change your TOR (Switch) so that it supports whatever mode you set (see above) - bare-metal only
 
-if (is_adc_node || is_radosgw_node || is_mon_node) && node['chef-bcs']['bond']['enable']
+bond = false
+bond_interfaces = []
+bond_name = ''
+bond_mtu = 9000
+
+if is_adc_node && node['chef-bcs']['adc']['bond']['enable']
+  bond = true
+  bond_interfaces << node['chef-bcs']['adc']['bond']['interfaces']
+  bond_name = node['chef-bcs']['adc']['bond']['name']
+  bond_mtu = node['chef-bcs']['adc']['bond']['mtu']
+end
+
+if is_radosgw_node && node['chef-bcs']['ceph']['radosgw']['bond']['enable']
+  bond = true
+  bond_interfaces << node['chef-bcs']['ceph']['radosgw']['bond']['interfaces']
+  bond_name = node['chef-bcs']['radosgw']['bond']['name']
+  bond_mtu = node['chef-bcs']['radosgw']['bond']['mtu']
+end
+
+if is_mon_node && node['chef-bcs']['ceph']['mon']['bond']['enable']
+  bond = true
+  bond_interfaces << node['chef-bcs']['ceph']['mon']['bond']['interfaces']
+  bond_name = node['chef-bcs']['mon']['bond']['name']
+  bond_mtu = node['chef-bcs']['mon']['bond']['mtu']
+end
+
+if bond
   template "/etc/sysconfig/network-scripts/ifcfg-bond0" do
     source 'ifcfg-bond.erb'
     variables lazy {
@@ -74,7 +100,7 @@ if (is_adc_node || is_radosgw_node || is_mon_node) && node['chef-bcs']['bond']['
     }
   end
 
-  node['chef-bcs']['bond']['interfaces'].each do | interface |
+  bond_interfaces.each do | interface |
     template "/etc/sysconfig/network-scripts/ifcfg-#{interface}" do
       source 'ifcfg-slave.erb'
       variables lazy {
@@ -88,11 +114,11 @@ if (is_adc_node || is_radosgw_node || is_mon_node) && node['chef-bcs']['bond']['
   service 'network' do
     action [:enable, :restart]
     supports :restart => true, :status => true
-    subscribes :restart, "template[/etc/sysconfig/network-scripts/ifcfg-#{node['chef-bcs']['bond']['name']}]"
+    subscribes :restart, "template[/etc/sysconfig/network-scripts/ifcfg-#{bond_name}]"
   end
 
   execute 'bond-mtu' do
-    command lazy { "ip link set dev #{node['chef-bcs']['bond']['name']} mtu #{node['chef-bcs']['bond']['mtu']}" }
-    not_if "ip link show dev #{node['chef-bcs']['bond']['name']} | grep 'mtu #{node['chef-bcs']['bond']['mtu']}'"
+    command lazy { "ip link set dev #{bond_name} mtu #{bond_mtu}" }
+    not_if "ip link show dev #{bond_name} | grep 'mtu #{bond_mtu}'"
   end
 end
