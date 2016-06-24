@@ -90,7 +90,7 @@ end
 
 if bond
   template "/etc/sysconfig/network-scripts/ifcfg-bond0" do
-    source 'ifcfg-bond.erb'
+    source 'ifcfg-bond0.erb'
     variables lazy {
       {
         :ip_addr => get_bond_ip,
