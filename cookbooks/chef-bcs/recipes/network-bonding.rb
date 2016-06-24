@@ -69,21 +69,21 @@ bond_mtu = 9000
 
 if is_adc_node && node['chef-bcs']['adc']['bond']['enable']
   bond = true
-  bond_interfaces << node['chef-bcs']['adc']['bond']['interfaces']
+  bond_interfaces = node['chef-bcs']['adc']['bond']['interfaces']
   bond_name = node['chef-bcs']['adc']['bond']['name']
   bond_mtu = node['chef-bcs']['adc']['bond']['mtu']
 end
 
 if is_radosgw_node && node['chef-bcs']['ceph']['radosgw']['bond']['enable']
   bond = true
-  bond_interfaces << node['chef-bcs']['ceph']['radosgw']['bond']['interfaces']
+  bond_interfaces = node['chef-bcs']['ceph']['radosgw']['bond']['interfaces']
   bond_name = node['chef-bcs']['radosgw']['bond']['name']
   bond_mtu = node['chef-bcs']['radosgw']['bond']['mtu']
 end
 
 if is_mon_node && node['chef-bcs']['ceph']['mon']['bond']['enable']
   bond = true
-  bond_interfaces << node['chef-bcs']['ceph']['mon']['bond']['interfaces']
+  bond_interfaces = node['chef-bcs']['ceph']['mon']['bond']['interfaces']
   bond_name = node['chef-bcs']['mon']['bond']['name']
   bond_mtu = node['chef-bcs']['mon']['bond']['mtu']
 end
@@ -95,7 +95,10 @@ if bond
       {
         :ip_addr => get_bond_ip,
         :net_mask => get_bond_netmask,
-        :gateway => get_bond_gateway
+        :gateway => get_bond_gateway,
+        :bond_name => bond_name,
+        :bond_options => bond_options,
+        :mtu => bond_mtu
       }
     }
   end
@@ -105,7 +108,8 @@ if bond
       source 'ifcfg-slave.erb'
       variables lazy {
         {
-          :interface => interface
+          :interface => interface,
+          :bond_name => bond_name
         }
       }
     end
