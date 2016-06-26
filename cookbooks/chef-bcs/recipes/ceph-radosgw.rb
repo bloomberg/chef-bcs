@@ -18,16 +18,3 @@
 #
 
 include_recipe 'chef-bcs::ceph-conf'
-
-cookbook_file '/usr/bin/radosgw-admin2' do
-  source 'radosgw-admin2'
-  owner 'root'
-  group 'root'
-  mode 0755
-end
-
-cookbook_file '/usr/bin/rgw_s3_api.py' do
-  source 'rgw_s3_api.py'
-  owner 'root'
-  group 'root'
-end

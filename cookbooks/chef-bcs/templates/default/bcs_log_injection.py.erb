@@ -1,6 +1,4 @@
-#
-# Author:: Chris Jones <cjones303@bloomberg.net>
-# Cookbook Name:: chef-bcs
+#!/usr/bin/env python
 #
 # Copyright 2016, Bloomberg Finance L.P.
 #
@@ -17,23 +15,10 @@
 # limitations under the License.
 #
 
-if node['chef-bcs']['init_style'] != 'upstart'
-  package 'firewalld'
-else
-end
+# 1. Create bucket if does not exist
+# 2. Tar up already compressed logs from the /var/log directory downward. Make sure the name is reflective of the node-datetime etc
+# 3. Put the newly tarred file into ceph
+# 4. Remove tarred files from /var/log directory downward so as to clean up the log directories
+# 5. Write log of transaction to syslog and exit
 
-
-# Set permanent for all actions
-# node.default['firewall']['firewalld']['permanent'] = true
-
-# enable platform default firewall
-# firewall 'default' do
-#   action :install
-#   enabled_zone :public
-# end
-
-# Force the rules etc to be saved
-# firewall 'default' do
-#   action :save
-#   ignore_failure true
-# end
+ # NOTE: Access logs should be by themselves so as to easily extract them when needed.

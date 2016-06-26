@@ -17,23 +17,6 @@
 # limitations under the License.
 #
 
-if node['chef-bcs']['init_style'] != 'upstart'
-  package 'firewalld'
-else
-end
+include_recipe 'chef-bcs::ceph-conf'
 
-
-# Set permanent for all actions
-# node.default['firewall']['firewalld']['permanent'] = true
-
-# enable platform default firewall
-# firewall 'default' do
-#   action :install
-#   enabled_zone :public
-# end
-
-# Force the rules etc to be saved
-# firewall 'default' do
-#   action :save
-#   ignore_failure true
-# end
+include_recipe 'ceph-chef::radosgw_users'

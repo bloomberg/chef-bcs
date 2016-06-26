@@ -19,4 +19,4 @@
 source vagrant_base.sh
 
 # Should ONLY run this once. It's here just in case you want to break it out and use it that way.
-do_on_node ${CEPH_RGW_HOSTS[@]:0:1} "sudo chef-client $CHEF_CLIENT_DEBUG -o 'recipe[ceph-chef::radosgw_users]'"
+do_on_node ${CEPH_RGW_HOSTS[@]:0:1} "sudo chef-client $CHEF_CLIENT_DEBUG -o 'recipe[chef-bcs::ceph-radosgw-users]'"
