@@ -321,6 +321,27 @@
         "radosgw": {
           "port": 8080,
           "default_url": "{{ ceph.radosgw.default_url }}",
+          "users": [
+             {
+              "uid": "radosgw",
+              "name": "Admin",
+              "admin_caps": "users=*;buckets=*;metadata=*;usage=*;zone=*",
+              "buckets": ["fill_test"]
+             },
+             {
+              "uid": "bcs_log_admin",
+              "name": "BCS Log Admin",
+              "admin_caps": "",
+              "buckets": ["bcs_logs"]
+              },
+              {
+              "uid": "tester",
+              "name": "Tester",
+              "max_buckets": 3,
+              "admin_caps": "usage=read; user=read; bucket=*",
+              "buckets": []
+            }
+          ],
           "keystone": {
             "auth": false,
             "admin": {

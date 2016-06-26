@@ -33,7 +33,7 @@ echo "Starting drive attachment..."
 
 for vm in ${CEPH_OSD_HOSTS[@]}; do
   echo $vm
-  for i in $(seq 0 $CEPH_OSD_DRIVES); do
+  for i in $(seq 1 $CEPH_OSD_DRIVES); do
     vbox_delete_hdd $vm "$controller" $dev $((3+$i)) "$vm_dir/$vm/$vm-osd-$i.vdi"
     vbox_create_hdd "$vm_dir/$vm/$vm-osd-$i.vdi" 20480
     vbox_add_hdd $vm "$controller" $dev $((3+$i)) "$vm_dir/$vm/$vm-osd-$i.vdi"

@@ -66,6 +66,7 @@ node.default['ceph']['pools']['erasure_coding'] = node['chef-bcs']['ceph']['pool
 
 # This recipe sets up ceph rgw configuration information needed by the ceph cookbook recipes
 node.default['ceph']['radosgw']['dns_name'] = node['chef-bcs']['domain_name']
+node.default['ceph']['radosgw']['dns_name'] = node['chef-bcs']['domain_name']
 node.default['ceph']['radosgw']['port'] = node['chef-bcs']['ceph']['radosgw']['port']
 node.default['ceph']['radosgw']['keystone']['auth'] = node['chef-bcs']['ceph']['radosgw']['keystone']['auth']
 node.default['ceph']['radosgw']['keystone']['accepted_roles'] = node['chef-bcs']['ceph']['radosgw']['keystone']['accepted_roles']
@@ -77,6 +78,9 @@ node.default['ceph']['radosgw']['keystone']['admin']['port'] = node['chef-bcs'][
 node.default['ceph']['radosgw']['rgw_num_rados_handles'] = node['chef-bcs']['ceph']['radosgw']['rgw_num_rados_handles']
 node.default['ceph']['radosgw']['civetweb_num_threads'] = node['chef-bcs']['ceph']['radosgw']['civetweb_num_threads']
 node.default['ceph']['radosgw']['default_url'] = node['chef-bcs']['ceph']['radosgw']['default_url']
+
+# Add whatever users and buckets you want the cookbook to automatically set up for you in the  node['chef-bcs']['ceph']['radosgw']['users']
+node.default['ceph']['radosgw']['users'] = node['chef-bcs']['ceph']['radosgw']['users']
 
 node.default['ceph']['restapi']['url'] = node['chef-bcs']['ceph']['restapi']['url']
 node.default['ceph']['restapi']['ip'] = node['chef-bcs']['ceph']['restapi']['ip']

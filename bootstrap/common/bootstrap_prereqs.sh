@@ -113,12 +113,10 @@ download_file /python/PyYAML-3.11.tar.gz http://pyyaml.org/download/pyyaml/PyYAM
 mkdir -p $BOOTSTRAP_CACHE_DIR/{cookbooks,gems}
 
 # Most important cookbook
-# Remove it from cache for now since making so many changes to it. Remove this line later once ceph-chef is final.
-rm -f $BOOTSTRAP_CACHE_DIR/cookbooks/ceph-chef-*
 # If set then it will not download but remove from cache and use the development version that should be set in the chef-bcs/cookbooks directory.
 if [[ $CHEF_BCS_DEBUG -eq 0 ]]; then
   echo "Downloading ceph-chef..."
-  download_file cookbooks/ceph-chef-0.9.24.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/ceph-chef/versions/0.9.24/download
+  download_file cookbooks/ceph-chef-0.9.25.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/ceph-chef/versions/0.9.25/download
 else
   # Remove it so it's not used.
   rm -f $BOOTSTRAP_CACHE_DIR/cookbooks/ceph-chef-*
