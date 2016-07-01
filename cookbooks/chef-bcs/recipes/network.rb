@@ -39,5 +39,27 @@ if node['chef-bcs']['network']['cluster']['route']['cidr']
   end
 end
 
+# Set the cluster nic gateway to null (remove it) for routed racks or ARP may have a race condition issue
+if !node['chef-bcs']['network']['cluster']['gateway_enable']
+  template "/etc/sysconfig/network-scripts/ifcfg-#{node['chef-bcs']['network']['cluster']['interface']}" do
+    source 'ifcfg-cluster-nic.erb'
+    variables lazy {
+      {
+        :ip_addr => get_ip("#{node['chef-bcs']['network']['cluster']['interface']}")
+        :netmask => get_netmask("#{node['chef-bcs']['network']['cluster']['interface']}")
+      }
+    }
+  end
+
+  template "/etc/sysconfig/network-scripts/route-#{node['chef-bcs']['network']['cluster']['interface']}" do
+    source 'route-cluster.erb'
+    variables lazy {
+      {
+        :gateway => get_gateway("#{node['chef-bcs']['network']['cluster']['interface']}")
+      }
+    }
+  end
+end
+
 # NOTE: May want to add a recipe that configures the interfaces in non-bonding mode in the event something happens.
 # Cobbler creates the interfaces initially.

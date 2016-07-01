@@ -27,5 +27,5 @@
 set -e
 
 for i in m n; do
-  source cleanup_wipe_out_journals_on_device.sh /dev/sd$i
+  source ceph_cleanup_wipe_out_journals_on_device.sh /dev/sd$i
 done
