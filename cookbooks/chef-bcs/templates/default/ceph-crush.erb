@@ -31,8 +31,8 @@ rule hdd_replicated {
     type replicated
     min_size 1
     max_size 10
-    step set_chooseleaf_tries 10
-    step set_choose_tries 100
+    step set_chooseleaf_tries 20
+    step set_choose_tries 120
     step take hdd
     step choose firstn 3 type rack
     step chooseleaf firstn 0 type host
@@ -46,8 +46,8 @@ rule hdd {
     type erasure
     min_size 1
     max_size 15
-    step set_chooseleaf_tries 10
-    step set_choose_tries 100
+    step set_chooseleaf_tries 20
+    step set_choose_tries 120
     step take hdd
     step choose firstn 3 type rack
     step chooseleaf indep -3 type host
