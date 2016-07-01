@@ -83,13 +83,27 @@ end
 # May want to add interfaces as an array so that any number of nic/mac can be added
 # TODO: Also update for any bonded nics
 node['chef-bcs']['cobbler']['servers'].each do | server |
-  bash 'update-cobbler-macs' do
-    user 'root'
-    code <<-EOH
-      cobbler system edit --name=#{server['name']} --static=true --interface=#{server['network']['public']['interface']} --mac=#{server['network']['public']['mac']} --ip-address=#{server['network']['public']['ip']} --netmask=#{server['network']['cluster']['netmask']} --if-gateway=#{server['network']['public']['gateway']} --mtu=#{server['network']['public']['mtu']}
-      cobbler system edit --name=#{server['name']} --static=true --interface=#{server['network']['cluster']['interface']} --mac=#{server['network']['cluster']['mac']} --ip-address=#{server['network']['cluster']['ip']} --netmask=#{server['network']['cluster']['netmask']} --if-gateway=#{server['network']['cluster']['gateway']} --mtu=#{server['network']['cluster']['mtu']}
-    EOH
-    only_if "cobbler system list | grep #{server['name']}"
+  gateway = server['network']['cluster']['gateway']
+  # NOTE: YES, there is a better way but it works for now...
+  if gateway.to_s.strip.length == 0
+    # This version sets the --if-gateway of the cluster interface to ""
+    bash 'update-cobbler-macs1' do
+      user 'root'
+      code <<-EOH
+        cobbler system edit --name=#{server['name']} --static=true --interface=#{server['network']['public']['interface']} --mac=#{server['network']['public']['mac']} --ip-address=#{server['network']['public']['ip']} --netmask=#{server['network']['cluster']['netmask']} --if-gateway=#{server['network']['public']['gateway']} --mtu=#{server['network']['public']['mtu']}
+        cobbler system edit --name=#{server['name']} --static=true --interface=#{server['network']['cluster']['interface']} --mac=#{server['network']['cluster']['mac']} --ip-address=#{server['network']['cluster']['ip']} --netmask=#{server['network']['cluster']['netmask']} --if-gateway="" --mtu=#{server['network']['cluster']['mtu']}
+      EOH
+      only_if "cobbler system list | grep #{server['name']}"
+    end
+  else
+    bash 'update-cobbler-macs2' do
+      user 'root'
+      code <<-EOH
+        cobbler system edit --name=#{server['name']} --static=true --interface=#{server['network']['public']['interface']} --mac=#{server['network']['public']['mac']} --ip-address=#{server['network']['public']['ip']} --netmask=#{server['network']['cluster']['netmask']} --if-gateway=#{server['network']['public']['gateway']} --mtu=#{server['network']['public']['mtu']}
+        cobbler system edit --name=#{server['name']} --static=true --interface=#{server['network']['cluster']['interface']} --mac=#{server['network']['cluster']['mac']} --ip-address=#{server['network']['cluster']['ip']} --netmask=#{server['network']['cluster']['netmask']} --if-gateway=#{server['network']['cluster']['gateway']} --mtu=#{server['network']['cluster']['mtu']}
+      EOH
+      only_if "cobbler system list | grep #{server['name']}"
+    end
   end
 end
 
