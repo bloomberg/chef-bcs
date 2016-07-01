@@ -45,7 +45,7 @@ if !node['chef-bcs']['network']['cluster']['gateway_enable']
     source 'ifcfg-cluster-nic.erb'
     variables lazy {
       {
-        :ip_addr => get_ip("#{node['chef-bcs']['network']['cluster']['interface']}")
+        :ip_addr => get_ip("#{node['chef-bcs']['network']['cluster']['interface']}"),
         :netmask => get_netmask("#{node['chef-bcs']['network']['cluster']['interface']}")
       }
     }
