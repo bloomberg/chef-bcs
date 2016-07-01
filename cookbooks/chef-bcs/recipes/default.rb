@@ -53,7 +53,7 @@ package 'sysstat'
 package 'vim'
 package 'patch'
 package 'lshw'
-
+package 'sg3_utils'
 package 'sshpass'
 
 if node['chef-bcs']['init_style'] == 'upstart'

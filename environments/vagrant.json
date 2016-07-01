@@ -309,7 +309,7 @@
           {"part": "/", "fstype": "xfs", "size": 10000, "options": "--ondisk=sda"},
           {"part": "/var/lib", "fstype": "xfs", "size": 20000, "options": "--ondisk=sda"},
           {"part": "/opt", "fstype": "xfs", "size": 20000, "options": "--ondisk=sda"},
-          {"part": "swap", "fstype": "swap", "size": 10000, "options": ""}
+          {"part": "swap", "fstype": "swap", "size": 10000, "options": "--ondisk=sda"}
         ],
         "raid_partitions": [
           {"raid": "part raid.01 --size=1024  --ondisk=sde"},
@@ -568,6 +568,7 @@
         },
         "cluster": {
           "interface": "enp0s9",
+          "gateway_enable": true,
           "cidr": [
             "10.121.2.0/24"
           ],

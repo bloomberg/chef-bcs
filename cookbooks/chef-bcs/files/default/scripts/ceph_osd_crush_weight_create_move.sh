@@ -29,19 +29,27 @@
 # If anything fails then the script will exit. You can then run ./remove_osd.sh for the specific OSD one at a time.
 set -e
 
-node=$1
-drives=${2:12}
+# NOTE: MUST be run on the OSD node itself!
 
-if [[ -z $node ]]; then
-  echo 'Must pass in a valid node name.'
+osd=$1
+rack=$2
+data_type=${3:hdd}
+
+if [[ -z $osd ]]; then
+  echo 'Must pass in a valid OSD number.'
   exit 1
 fi
 
-# NO confirmation request so be careful!!!!
+if [[ -z $rack ]]; then
+  echo 'Must pass in a valid rack number.'
+  exit 1
+fi
 
-for i in $(ceph osd tree | grep $node -A$drives | grep down | awk '{print $1}'); do
-  ceph osd out $osd
-  ceph osd crush remove osd.$osd
-  ceph auth del osd.$osd
-  ceph osd rm $osd
-done
+if [[ -z $data_type ]]; then
+  echo 'Must pass in a valid root data type - defaults to hdd.'
+  exit 1
+fi
+
+SIZE=`df -k | grep '/ceph-$osd' | awk '{print $2}'`
+WEIGHT=`echo "scale=4; $SIZE/1000000000.0" | bc -q`
+ceph osd crush create-or-move $osd $WEIGHT root=$data_type rack=rack$rack host=$(hostname)

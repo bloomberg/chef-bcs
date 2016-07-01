@@ -1,0 +1,9 @@
+BOOTPROTO=none
+NAME=<%= node['chef-bcs']['network']['cluster']['interface'] %>
+DEVICE=<%= node['chef-bcs']['network']['cluster']['interface'] %>
+ONBOOT=yes
+USERCTL=no
+IPADDR=<%= @ip_addr %>
+NETMASK=<%= @netmask %>
+DNS1=<%= node['chef-bcs']['dns']['servers'][0] %>
+DNS1=<%= node['chef-bcs']['dns']['servers'][1] %>
