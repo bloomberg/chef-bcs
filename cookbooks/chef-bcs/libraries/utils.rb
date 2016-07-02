@@ -156,6 +156,31 @@ def get_gateway(interface)
   val
 end
 
+def get_mac_address(interface)
+  val = nil
+  if is_bootstrap_node
+    node['chef-bcs']['bootstrap']['interfaces'].each do | intf |
+      if interface == intf
+        val = intf['mac']
+        break
+      end
+    end
+  else
+    servers = node['chef-bcs']['cobbler']['servers']
+    servers.each do | server |
+      if server['name'] == node['hostname']
+        if interface == server['network']['public']['interface']
+          val = server['network']['public']['mac']
+        else
+          val = server['network']['cluster']['mac']
+        end
+        break
+      end
+    end
+  end
+  val
+end
+
 def get_netmask(interface)
   val = nil
   if is_bootstrap_node

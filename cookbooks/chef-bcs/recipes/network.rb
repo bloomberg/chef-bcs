@@ -40,13 +40,14 @@ if node['chef-bcs']['network']['cluster']['route']['cidr']
 end
 
 # Set the cluster nic gateway to null (remove it) for routed racks or ARP may have a race condition issue
-if !node['chef-bcs']['network']['cluster']['gateway_enable']
+if node['chef-bcs']['network']['cluster']['gateway_enable'] == false
   template "/etc/sysconfig/network-scripts/ifcfg-#{node['chef-bcs']['network']['cluster']['interface']}" do
     source 'ifcfg-cluster-nic.erb'
     variables lazy {
       {
         :ip_addr => get_ip("#{node['chef-bcs']['network']['cluster']['interface']}"),
-        :netmask => get_netmask("#{node['chef-bcs']['network']['cluster']['interface']}")
+        :netmask => get_netmask("#{node['chef-bcs']['network']['cluster']['interface']}"),
+        :mac_address => get_mac_address("#{node['chef-bcs']['network']['cluster']['interface']}")
       }
     }
   end
