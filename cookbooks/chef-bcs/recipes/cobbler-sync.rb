@@ -67,11 +67,12 @@ end
 # Also, do cobbler system add for every ceph node with mac, IP, etc OR modify the json data used by cobbler and then restart cobbler
 node['chef-bcs']['cobbler']['servers'].each do | server |
   if !server.roles.include? 'bootstrap'
+    # NOTE: Set cluster gateway to "" - #{server['network']['cluster']['gateway']}
     bash 'add-to-cobbler' do
       user 'root'
       code <<-EOH
         cobbler system add --name=#{server['name']} --profile=#{server['profile']} --static=true --interface=#{server['network']['public']['interface']} --mac=#{server['network']['public']['mac']} --ip-address=#{server['network']['public']['ip']} --netmask=#{server['network']['public']['netmask']} --if-gateway=#{server['network']['public']['gateway']} --hostname=#{server['name']} --mtu=#{server['network']['public']['mtu']}
-        cobbler system edit --name=#{server['name']} --static=true --interface=#{server['network']['cluster']['interface']} --mac=#{server['network']['cluster']['mac']} --ip-address=#{server['network']['cluster']['ip']} --netmask=#{server['network']['cluster']['netmask']} --if-gateway=#{server['network']['cluster']['gateway']} --mtu=#{server['network']['cluster']['mtu']}
+        cobbler system edit --name=#{server['name']} --static=true --interface=#{server['network']['cluster']['interface']} --mac=#{server['network']['cluster']['mac']} --ip-address=#{server['network']['cluster']['ip']} --netmask=#{server['network']['cluster']['netmask']} --if-gateway="" --mtu=#{server['network']['cluster']['mtu']}
       EOH
       not_if "cobbler system list | grep #{server['name']}"
       only_if "test -f /tmp/#{node['chef-bcs']['cobbler']['os']['distro']}"
