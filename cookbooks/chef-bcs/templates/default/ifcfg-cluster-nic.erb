@@ -1,8 +1,10 @@
 BOOTPROTO=none
-NAME=<%= node['chef-bcs']['network']['cluster']['interface'] %>
 DEVICE=<%= node['chef-bcs']['network']['cluster']['interface'] %>
+HWADDR=<%= @mac_address %>
+TYPE=Ethernet
 ONBOOT=yes
 USERCTL=no
+MTU=<%= node['chef-bcs']['network']['cluster']['mtu'] %>
 IPADDR=<%= @ip_addr %>
 NETMASK=<%= @netmask %>
 DNS1=<%= node['chef-bcs']['dns']['servers'][0] %>

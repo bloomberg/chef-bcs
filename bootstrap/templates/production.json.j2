@@ -20,7 +20,7 @@
         "env": "{{ node.env }}",
         "interfaces": [
         {%- for item in interfaces %}
-          {"name": "{{ item.device }}", "ip": "{{ item.ip }}", "netmask": "{{ item.netmask }}", "gateway": "{{ item.gateway }}"}{%- if not loop.last %},{% endif %}
+          {"name": "{{ item.device }}", "ip": "{{ item.ip }}", "netmask": "{{ item.netmask }}", "gateway": "{{ item.gateway }}", "mac": "{{ item.mac }}"}{%- if not loop.last %},{% endif %}
         {%- endfor %}
         ]
       },
