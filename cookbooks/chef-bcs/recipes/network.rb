@@ -21,6 +21,7 @@
 # NOTE: If using VirtualBox then keep the mtu at 1500. There seems to be odd behavior on the cluster adapter if set to 9000.
 # This does not apply to real nics.
 
+# Sets mtu now for each interface but templates below make them perm.
 execute 'network-public' do
   command lazy { "ip link set dev #{node['chef-bcs']['network']['public']['interface']} mtu #{node['chef-bcs']['network']['public']['mtu']}" }
   not_if "ip link show dev #{node['chef-bcs']['network']['public']['interface']} | grep 'mtu #{node['chef-bcs']['network']['public']['mtu']}'"
@@ -31,12 +32,26 @@ execute 'network-cluster' do
   not_if "ip link show dev #{node['chef-bcs']['network']['cluster']['interface']} | grep 'mtu #{node['chef-bcs']['network']['cluster']['mtu']}'"
 end
 
+# Sets the route for the cluster interface but the template below makes it perm.
 if node['chef-bcs']['network']['cluster']['route']['cidr']
   gateway = get_gateway("#{node['chef-bcs']['network']['cluster']['interface']}")
   execute 'network-cluster-route' do
     command lazy { "ip route add #{node['chef-bcs']['network']['cluster']['route']['cidr']} via #{gateway} dev #{node['chef-bcs']['network']['cluster']['interface']}" }
     ignore_failure true
   end
+end
+
+# Set primary interface (public)
+template "/etc/sysconfig/network-scripts/ifcfg-#{node['chef-bcs']['network']['public']['interface']}" do
+  source 'ifcfg-public-nic.erb'
+  variables lazy {
+    {
+      :ip_addr => get_ip("#{node['chef-bcs']['network']['public']['interface']}"),
+      :netmask => get_netmask("#{node['chef-bcs']['network']['public']['interface']}"),
+      :mac_address => get_mac_address("#{node['chef-bcs']['network']['public']['interface']}"),
+      :gateway => get_gateway("#{node['chef-bcs']['network']['public']['interface']}")
+    }
+  }
 end
 
 # Set the cluster nic gateway to null (remove it) for routed racks or ARP may have a race condition issue
