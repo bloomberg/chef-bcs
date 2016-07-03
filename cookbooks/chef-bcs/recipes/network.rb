@@ -38,6 +38,7 @@ if node['chef-bcs']['network']['cluster']['route']['cidr']
   execute 'network-cluster-route' do
     command lazy { "ip route add #{node['chef-bcs']['network']['cluster']['route']['cidr']} via #{gateway} dev #{node['chef-bcs']['network']['cluster']['interface']}" }
     ignore_failure true
+    not_if "ip r s | grep '#{node['chef-bcs']['network']['cluster']['route']['cidr']} via #{gateway} dev #{node['chef-bcs']['network']['cluster']['interface']}'"
   end
 end
 
