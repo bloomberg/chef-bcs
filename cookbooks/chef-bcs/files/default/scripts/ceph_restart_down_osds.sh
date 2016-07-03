@@ -28,5 +28,5 @@
 
 for i in $(ceph osd tree | awk '/down/ {print $1}'); do
   host=$(ceph osd find $i | awk -F\" '$2 ~ /host/ {print $4}')
-  ssh -t -o StrictHostKeyChecking=no operations@$host "sudo service ceph start osd.$i"
+  ssh -t -o StrictHostKeyChecking=no operations@$host "sudo service ceph restart osd.$i"
 done

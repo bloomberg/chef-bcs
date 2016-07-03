@@ -18,8 +18,8 @@
         "name": "ceph-bootstrap",
         "env": "/home/vagrant/chef-bcs/environments",
         "interfaces": [
-          {"name": "enp0s8", "ip": "10.0.100.20", "netmask": "255.255.255.0", "gateway": ""},
-          {"name": "enp0s9", "ip": "10.121.2.2", "netmask": "255.255.255.0", "gateway": ""}
+          {"name": "enp0s8", "ip": "10.0.100.20", "netmask": "255.255.255.0", "gateway": "", "mac": ""},
+          {"name": "enp0s9", "ip": "10.121.2.2", "netmask": "255.255.255.0", "gateway": "", "mac": ""}
         ]
       },
       "adc": {
@@ -374,7 +374,6 @@
             "mon pg warn max per osd": 0,
             "mon osd full ratio": 0.95,
             "mon osd nearfull ratio": 0.85,
-            "mon osd down out interval": 300,
             "mon pg warn max object skew": 10,
             "mon osd min down reporters": 1,
             "mon osd down out interval": 60,
