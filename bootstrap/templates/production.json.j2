@@ -436,8 +436,8 @@
               {"name": ".rgw.control", "data_percent": 0.10, "type": "replicated", "profile": "", "crush_ruleset": 0, "crush_ruleset_name": "hdd_replicated", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
               {"name": ".rgw.gc", "data_percent": 0.10, "type": "replicated", "profile": "", "crush_ruleset": 0, "crush_ruleset_name": "hdd_replicated", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
               {"name": ".rgw.root", "data_percent": 0.10, "type": "replicated", "profile": "", "crush_ruleset": 0, "crush_ruleset_name": "hdd_replicated", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
-              {"name": ".rgw.buckets", "data_percent": 96.90, "type": "erasure", "profile": "bcs", "crush_ruleset": 1, "crush_ruleset_name": "hdd", "actions": [{"action": "create", "pg_num": 128, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
-              {"name": ".rgw.buckets.index", "data_percent": 1, "type": "replicated", "profile": "", "crush_ruleset": 0, "crush_ruleset_name": "hdd_replicated", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
+              {"name": ".rgw.buckets", "data_percent": 95.90, "type": "erasure", "profile": "bcs", "crush_ruleset": 1, "crush_ruleset_name": "hdd", "actions": [{"action": "create", "pg_num": 128, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
+              {"name": ".rgw.buckets.index", "data_percent": 2, "type": "replicated", "profile": "", "crush_ruleset": 0, "crush_ruleset_name": "hdd_replicated", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
               {"name": ".rgw.buckets.extra", "data_percent": 1, "type": "replicated", "profile": "", "crush_ruleset": 0, "crush_ruleset_name": "hdd_replicated", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
               {"name": ".users", "data_percent": 0.10, "type": "replicated", "profile": "", "crush_ruleset": 0, "crush_ruleset_name": "hdd_replicated", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
               {"name": ".users.uid", "data_percent": 0.10, "type": "replicated", "profile": "", "crush_ruleset": 0, "crush_ruleset_name": "hdd_replicated", "actions": [{"action": "create", "pg_num": 32, "type": "erasure", "profile": "bcs"}, {"action": "set", "key": "fast_read", "value": 1}]},
@@ -447,8 +447,8 @@
             ],
             {#- If federated then the settings below apply to the federated pools else the non-federated pools. #}
             "settings": {
-              "pg_num": 128,
-              "pgp_num": 128,
+              "pg_num": 64,
+              "pgp_num": 64,
               "options": "",
               "force": false,
               "calc": true,
@@ -466,11 +466,11 @@
             "calc": {
               "total_osds": 612,
               "target_pgs_per_osd": 200,
-              "min_pgs_per_pool": 128,
+              "min_pgs_per_pool": 64,
               "replicated_size": 3,
               "erasure_size": 11
             },
-            "num": 128
+            "num": 64
           }
         },
         "restapi": {
