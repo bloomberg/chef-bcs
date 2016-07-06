@@ -54,6 +54,7 @@ node.default['ceph']['pools']['radosgw']['settings'] = node['chef-bcs']['ceph'][
 node.default['ceph']['pools']['pgs']['num'] = node['chef-bcs']['ceph']['pools']['pgs']['num']
 
 node.default['ceph']['pools']['radosgw']['federated_enable'] = node['chef-bcs']['ceph']['pools']['radosgw']['federated']['enable']
+node.default['ceph']['pools']['radosgw']['federated_multisite_replication'] = node['chef-bcs']['ceph']['pools']['radosgw']['federated']['multisite_replication']
 node.default['ceph']['pools']['radosgw']['federated_enable_regions_zones'] = node['chef-bcs']['ceph']['pools']['radosgw']['federated']['enable_regions_zones']
 node.default['ceph']['pools']['radosgw']['federated_zone_instances'] = node['chef-bcs']['ceph']['pools']['radosgw']['federated']['zone_instances']
 #node.default['ceph']['pools']['radosgw']['federated_zones'] = node['chef-bcs']['ceph']['pools']['radosgw']['federated']['zones']

@@ -491,6 +491,7 @@
           "radosgw": {
             "federated": {
               "enable": false,
+              "multisite_replication": false,
               "zone_instances": [
                 {"name": "dev", "port": 8080, "region": "dc1", "url": "s3.dc1.dev.rgw.ceph.example.com"},
                 {"name": "prod", "port": 8081, "region": "dc1", "url": "s3.dc1.prod.rgw.ceph.example.com"}
