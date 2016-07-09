@@ -138,7 +138,8 @@
       "system": {
         "sysctl": [
           "kernel.pid_max=4194303",
-          "fs.file-max=26234859"
+          "fs.file-max=26234859",
+          "vm.swappiness=0"
         ]
       },
       "ipmi": {

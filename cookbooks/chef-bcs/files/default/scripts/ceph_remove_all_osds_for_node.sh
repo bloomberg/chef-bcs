@@ -16,6 +16,8 @@
 # limitations under the License.
 #
 
+# NOTE: ONLY IF ALL OSDS ARE DOWN on given node!
+
 # IMPORTANT: This script DOES NOT shut the ceph-osd services down for the given OSDs. It is assumed that they are
 # already down either by you or the node has failed.
 
