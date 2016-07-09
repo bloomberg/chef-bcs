@@ -61,7 +61,7 @@
         {#- backend_port is used in the backend section below for Federated only. #}
         "vips": [
         {%- for item in vip.vips %}
-          {"name": "{{ item.name }}", "ip": "{{ item.ip }}", "cidr": {{ vip.cidr }}, "interface": "{{ item.interface }}", "ssl": {%- if item.ssl == True %} true {% else %} false {%- endif %}, "cert": "{{ item.cert }}", "ssl_files": ["{{ item.ssl_files|join('","') }}"], "url": "{{ item.url }}"}{%- if not loop.last %},{% endif %}
+          {"name": "{{ item.name }}", "ip": "{{ item.ip }}", "cidr": {{ vip.cidr }}, "interface": "{{ item.interface }}", "backend_label": "{{ item.backend_label }}", "ssl": {%- if item.ssl == True %} true {% else %} false {%- endif %}, "cert": "{{ item.cert }}", "ssl_files": ["{{ item.ssl_files|join('","') }}"], "url": "{{ item.url }}"}{%- if not loop.last %},{% endif %}
         {%- endfor %}
         ],
         {#- VIPS are 10.121.16.16/28 range (.17 - .30). Advertised via BGP or Static+BFD Beacon. #}
@@ -88,12 +88,12 @@
           {%- for vip in vip.vips %}
           {%- set rowloop = loop %}
           {%- for item in backend.servers %}
-            {"name": "{{ item.name }}", "instance": "{{ vip.name }}", "weight": "{{ item.weight }}", "port": {{ vip.backend_port }}, "options": "{{ item.options }}"}{%- if not rowloop.last %},{% elif not loop.last %},{% endif %}
+            {"name": "{{ item.name }}", "instance": "{{ vip.name }}", "type": "{{ item.type }}", "weight": "{{ item.weight }}", "port": {{ vip.backend_port }}, "options": "{{ item.options }}"}{%- if not rowloop.last %},{% elif not loop.last %},{% endif %}
           {%- endfor %}
           {%- endfor %}
           {%- else %}
           {%- for item in backend.servers %}
-            {"name": "{{ item.name }}", "instance": "", "weight": "{{ item.weight }}", "port": {{ item.port }}, "options": "{{ item.options }}"}{%- if not loop.last %},{% endif %}
+            {"name": "{{ item.name }}", "instance": "", "type": "{{ item.type }}", "weight": "{{ item.weight }}", "port": {{ item.port }}, "options": "{{ item.options }}"}{%- if not loop.last %},{% endif %}
           {%- endfor %}
           {%- endif %}
           ]

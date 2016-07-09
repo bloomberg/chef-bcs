@@ -42,9 +42,9 @@ frontend radosgw-http-<%="#{vip['name']}"%>
   bind <%="#{vip['ip']}:#{node['chef-bcs']['adc']['vip']['port']['non_ssl']}"%>
   option httplog
   <% if node['chef-bcs']['ceph']['pools']['radosgw']['federated']['enable'] %>
-  default_backend radosgw-http-backend-<%="#{vip['name']}"%>
+  default_backend <%="#{vip['backend_label']}"%>-<%="#{vip['name']}"%>
   <% else %>
-  default_backend radosgw-http-backend
+  default_backend <%="#{vip['backend_label']}"%>
   <% end %>
 
 <% if vip['ssl'] %>
@@ -52,9 +52,9 @@ frontend radosgw-https-<%="#{vip['name']}"%>
   bind <%="#{vip['ip']}:#{node['chef-bcs']['adc']['vip']['port']['ssl']}"%> ssl crt <%="#{node['chef-bcs']['adc']['ssl']['path']}/#{vip['cert']}" %>
   option httplog
   <% if node['chef-bcs']['ceph']['pools']['radosgw']['federated']['enable'] %>
-  default_backend radosgw-http-backend-<%="#{vip['name']}"%>
+  default_backend <%="#{vip['backend_label']}"%>-<%="#{vip['name']}"%>
   <% else %>
-  default_backend radosgw-http-backend
+  default_backend <%="#{vip['backend_label']}"%>
   <% end %>
 <% end %>
 
@@ -65,7 +65,7 @@ frontend radosgw-https-<%="#{vip['name']}"%>
 
 <% if node['chef-bcs']['ceph']['pools']['radosgw']['federated']['enable'] %>
 <% node['chef-bcs']['adc']['vips'].each do | vip | %>
-backend radosgw-http-backend-<%="#{vip['name']}"%>
+backend <%="#{vip['backend_label']}"%>-<%="#{vip['name']}"%>
   balance <%= node['chef-bcs']['adc']['connections']['balance'] %>
   option httpchk GET /
   http-check expect status 200
@@ -77,11 +77,13 @@ backend radosgw-http-backend-<%="#{vip['name']}"%>
 
 <% end %>
 <% else %>
-backend radosgw-http-backend
+<% node['chef-bcs']['adc']['vips'].each do | vip | %>
+backend <%="#{vip['backend_label']}"%>
   balance <%= node['chef-bcs']['adc']['connections']['balance'] %>
   option httpchk GET /
   http-check expect status 200
 <% @backend_nodes.each do | backend_node | -%>
   <%= "server #{backend_node['name']} #{backend_node['ip']}:#{backend_node['port']} weight #{backend_node['weight']} #{backend_node['options']}" %>
+<% end -%>
 <% end -%>
 <% end -%>

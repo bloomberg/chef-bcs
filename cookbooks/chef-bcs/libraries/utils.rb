@@ -350,6 +350,8 @@ def get_adc_backend_nodes
       if server['name'] == rgw['hostname']
         svr = {}
         svr['name'] = server['name']
+        svr['instance'] = nil
+        svr['type'] = get_backend_str_attr(server['name'], 'type')
         svr['ip'] = server['network']['public']['ip']
         svr['port'] = get_backend_int_attr(server['name'], 'port')
         svr['weight'] = get_backend_int_attr(server['name'], 'weight')
@@ -361,6 +363,7 @@ def get_adc_backend_nodes
   results
 end
 
+# NOTE: The 'instance' value is added to the json environment file. 
 def get_adc_backend_federated_nodes
   results = []
   # Get the list of backend servers
@@ -372,6 +375,7 @@ def get_adc_backend_federated_nodes
         svr = {}
         svr['name'] = server['name']
         svr['ip'] = server['network']['public']['ip']
+        svr['type'] = bes['type']
         svr['instance'] = bes['instance']
         svr['port'] = bes['port']
         svr['weight'] = bes['weight']
