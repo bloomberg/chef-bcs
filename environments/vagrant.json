@@ -58,8 +58,8 @@
           }
         },
         "vips": [
-          {"name": "prod", "ip": "10.121.16.17", "cidr": 28, "interface": "enp0s8", "ssl": false, "cert": "s3.vagrant.ceph.example.com.crt", "ssl_files": [], "url": "s3.vagrant.prod.ceph.example.com"},
-          {"name": "dev", "ip": "10.121.16.18", "cidr": 28, "interface": "enp0s8", "ssl": false, "cert": "s3.vagrant.ceph.example.com.crt", "ssl_files": [], "url": "s3.vagrant.dev.ceph.example.com"}
+          {"name": "prod", "ip": "10.121.16.17", "cidr": 28, "interface": "enp0s8", "backend_label": "radosgw-http-backend", "ssl": false, "cert": "s3.vagrant.ceph.example.com.crt", "ssl_files": [], "url": "s3.vagrant.prod.ceph.example.com"},
+          {"name": "dev", "ip": "10.121.16.18", "cidr": 28, "interface": "enp0s8", "backend_label": "radosgw-http-backend", "ssl": false, "cert": "s3.vagrant.ceph.example.com.crt", "ssl_files": [], "url": "s3.vagrant.dev.ceph.example.com"}
         ],
         "NOTE-VIP": "VIPS are 10.121.16.16/28 range (.17 - .30). Advertised via BGP",
         "bgp": {
@@ -76,10 +76,10 @@
         },
         "backend": {
           "servers": [
-            {"name": "ceph-vm1", "instance": "dev", "weight": 6, "port": 8080, "options": "check inter 2s rise 2 fall 3"},
-            {"name": "ceph-vm1", "instance": "prod", "weight": 6, "port": 8081, "options": "check inter 2s rise 2 fall 3"},
-            {"name": "ceph-vm2", "instance": "dev", "weight": 3, "port": 8080, "options": "check inter 2s rise 2 fall 3"},
-            {"name": "ceph-vm2", "instance": "prod", "weight": 3, "port": 8081, "options": "check inter 2s rise 2 fall 3"}
+            {"name": "ceph-vm1", "instance": "dev", "type": "rgw", "weight": 6, "port": 8080, "options": "check inter 2s rise 2 fall 3"},
+            {"name": "ceph-vm1", "instance": "prod", "type": "rgw", "weight": 6, "port": 8081, "options": "check inter 2s rise 2 fall 3"},
+            {"name": "ceph-vm2", "instance": "dev", "type": "rgw", "weight": 3, "port": 8080, "options": "check inter 2s rise 2 fall 3"},
+            {"name": "ceph-vm2", "instance": "prod", "type": "rgw", "weight": 3, "port": 8081, "options": "check inter 2s rise 2 fall 3"}
           ],
           "NOTE-BES": "If not Federated then leave 'instance' empty and have only server name unique in the list instead of the way Federated requires the instance name to match the VIP name."
         }
