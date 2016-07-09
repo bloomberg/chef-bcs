@@ -86,10 +86,12 @@
           "servers": [
           {%- if ceph.radosgw.federated.enable %}
           {%- for vip in vip.vips %}
-          {%- set rowloop = loop %}
-          {%- for item in backend.servers %}
-            {"name": "{{ item.name }}", "instance": "{{ vip.name }}", "type": "{{ item.type }}", "weight": "{{ item.weight }}", "port": {{ vip.backend_port }}, "options": "{{ item.options }}"}{%- if not rowloop.last %},{% elif not loop.last %},{% endif %}
-          {%- endfor %}
+            {%- set rowloop = loop %}
+            {%- if vip.type == "rgw" %}
+              {%- for item in backend.servers %}
+                {"name": "{{ item.name }}", "instance": "{{ vip.name }}", "type": "{{ item.type }}", "weight": "{{ item.weight }}", "port": {{ vip.backend_port }}, "options": "{{ item.options }}"}{%- if not rowloop.last %},{% elif not loop.last %},{% endif %}
+              {%- endfor %}
+            {%- endif %}
           {%- endfor %}
           {%- else %}
           {%- for item in backend.servers %}
@@ -420,7 +422,9 @@
               {#- Instance name MUST match VIPs name and Backend/Server instance variables. IF Federation is not used then Backend/Server instance variable should be empty. #}
               "zone_instances": [
                 {%- for item in vip.vips %}
+                  {%- if item.type == "rgw" %}
                   {"name": "{{ item.name }}", "port": "{{ item.backend_port }}", "region": "{{ item.region }}", "url": "{{ item.url }}"}{%- if not loop.last %},{% endif %}
+                  {%- endif %}
                 {%- endfor %}
               ],
               "regions": ["{{ ceph.radosgw.federated.regions|join('", "') }}"],
