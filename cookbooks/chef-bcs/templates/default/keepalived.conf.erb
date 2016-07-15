@@ -42,10 +42,18 @@ vrrp_instance <%= 100 + index %> {
   # Advert interval
   advert_int 1
 
+  <% if node['chef-bcs']['adc']['bond']['enable'] %>
+  interface <%= node['chef-bcs']['adc']['bond']['name'] %>
+  <% else %>
   interface <%= vip['interface'] %>
+  <% end %>
 
   virtual_ipaddress {
+    <% if node['chef-bcs']['adc']['bond']['enable'] %>
+    <%="#{vip['ip']}/#{vip['cidr']} dev #{node['chef-bcs']['adc']['bond']['name']}"%>
+    <% else %>
     <%="#{vip['ip']}/#{vip['cidr']} dev #{vip['interface']}"%>
+    <% end %>
   }
   track_script {
 <% if node['chef-bcs']['keepalived']['checks'] %>

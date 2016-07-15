@@ -21,6 +21,9 @@ package 'keepalived' do
   action :upgrade
 end
 
+# Installs killall
+package 'psmisc'
+
 # Set the config
 # NOTE: If the virtual_router_id is
 template "/etc/keepalived/keepalived.conf" do
