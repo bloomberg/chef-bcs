@@ -12,7 +12,7 @@ func main() {
 
     // New returns an Amazon S3 compatible client object. API copatibality (v2 or v4) is automatically
     // determined based on the Endpoint value.
-    secure := true // Defaults to HTTPS requests.
+    secure := false // Defaults to HTTPS requests.
     s3Client, err := minio.New("s3.amazonaws.com", "<your access key>", "<your secret key>", secure)
     if err != nil {
         log.Fatalln(err)
