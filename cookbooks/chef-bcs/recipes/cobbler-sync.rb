@@ -75,6 +75,7 @@ node['chef-bcs']['cobbler']['servers'].each do | server |
         cobbler system edit --name=#{server['name']} --static=true --interface=#{server['network']['cluster']['interface']} --mac=#{server['network']['cluster']['mac']} --ip-address=#{server['network']['cluster']['ip']} --netmask=#{server['network']['cluster']['netmask']} --if-gateway="" --mtu=#{server['network']['cluster']['mtu']}
       EOH
       not_if "cobbler system list | grep #{server['name']}"
+      only_if "cobbler profile list | grep #{server['profile']}"
       #only_if "test -f /tmp/#{node['chef-bcs']['cobbler']['os']['distro']}"
     end
   end
