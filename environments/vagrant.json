@@ -339,7 +339,7 @@
           "name": "rhel-7.2",
           "version": "7.2",
           "arch": "x86_64",
-          "distro": "rhel-server-7.2-x86_64-dvd.iso",
+          "distro": "centos-7-x86_64-minimal.iso",
           "breed": "redhat"
         },
         "redhat": {
