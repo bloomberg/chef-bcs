@@ -67,7 +67,9 @@ frontend radosgw-https-<%="#{vip['name']}"%>
 <% node['chef-bcs']['adc']['vips'].each do | vip | %>
 backend <%="#{vip['backend_label']}"%>-<%="#{vip['name']}"%>
   balance <%= node['chef-bcs']['adc']['connections']['balance'] %>
-  option httpchk GET /
+  http-request set-header X-Forwarded-Port %[dst_port]
+  #option httpchk GET /
+  option httpchk HEAD / HTTP/1.1\r\nHost:localhost
   http-check expect status 200
 <% @backend_nodes.each do | backend_node | -%>
   <% if  vip['name'] == backend_node['instance'] %>
@@ -80,7 +82,9 @@ backend <%="#{vip['backend_label']}"%>-<%="#{vip['name']}"%>
 <% node['chef-bcs']['adc']['vips'].each do | vip | %>
 backend <%="#{vip['backend_label']}"%>
   balance <%= node['chef-bcs']['adc']['connections']['balance'] %>
-  option httpchk GET /
+  http-request set-header X-Forwarded-Port %[dst_port]
+  #option httpchk GET /
+  option httpchk HEAD / HTTP/1.1\r\nHost:localhost
   http-check expect status 200
 <% @backend_nodes.each do | backend_node | -%>
   <%= "server #{backend_node['name']} #{backend_node['ip']}:#{backend_node['port']} weight #{backend_node['weight']} #{backend_node['options']}" %>

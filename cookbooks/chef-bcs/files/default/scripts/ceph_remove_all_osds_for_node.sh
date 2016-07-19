@@ -32,7 +32,7 @@
 set -e
 
 node=$1
-drives=${2:12}
+drives=${2:-12}
 
 if [[ -z $node ]]; then
   echo 'Must pass in a valid node name.'
@@ -41,12 +41,22 @@ fi
 
 # NO confirmation request so be careful!!!!
 
-for osd in $(ceph osd tree | grep $node -A$drives | grep down | awk '{print $1}'); do
+# IMPORTANT: You MUST STOP ALL of the OSDs on the given node first!!
+
+first_pass=false
+
+for osd in $(ceph osd tree | grep $node -A$drives | awk '{print $1}'); do
   if [[ $osd -gt 0 ]]; then
+    first_pass=true
     ceph osd out $osd
     ceph osd crush remove osd.$osd
     ceph auth del osd.$osd
     ceph osd rm $osd
+  else
+    # The first pass should be the host itself so the osd value will be < 0. After the first real osd then if another osd is < 0 then break out of loop.
+    if [[ $first_pass == true ]]; then
+      break
+    fi
   fi
 done
 
