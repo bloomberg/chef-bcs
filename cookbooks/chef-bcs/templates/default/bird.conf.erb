@@ -37,22 +37,22 @@ protocol bgp <%= peer['name'] %> {
   multihop;
   next hop self;
   graceful restart;
-  # export where proto = "static_vips";
+  export where proto = "static_vips";
   local as <%= node['chef-bcs']['adc']['bgp']['asn'] %>;
   neighbor <%= peer['ip'] %> as <%= node['chef-bcs']['adc']['bgp']['asn'] %>;
   <% if @is_adc_node_secondary %>
-  export filter {
-    if (net = <%= node['chef-bcs']['adc']['vip']['prefix'] %>/<%= node['chef-bcs']['adc']['vip']['cidr'] %>) then {
-      bgp_path.prepend(<%= node['chef-bcs']['adc']['bgp']['asn'] %>);
-      accept;
-    }
-    else reject;
-  };
+  #export filter {
+  #  if (net = <%= node['chef-bcs']['adc']['vip']['prefix'] %>/<%= node['chef-bcs']['adc']['vip']['cidr'] %>) then {
+  #    bgp_path.prepend(<%= node['chef-bcs']['adc']['bgp']['asn'] %>);
+  #    accept;
+  #  }
+  #  else reject;
+  #};
 
-  # export filter {
-  #   bgp_path.prepend(<%= node['chef-bcs']['adc']['bgp']['asn'] %>);
-  #   accept;
-  # };
+  export filter {
+    bgp_path.prepend(<%= node['chef-bcs']['adc']['bgp']['asn'] %>);
+    accept;
+ };
   <% end %>
 }
 
