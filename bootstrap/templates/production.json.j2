@@ -345,7 +345,7 @@
           "default_url": "{{ ceph.radosgw.default_url }}",
           "users": [
             {%- for user in ceph.radosgw.users %}
-              {"uid": "{{ user.uid }}", "name": "{{ user.name }}", "admin_caps": "{{ user.admin_caps }}", "access_key": "{{ user.access_key }}", "secret_key": {{ user.secret_key }}, "max_buckets": {{ user.max_buckets }}, "buckets": ["{{ user.buckets|join('","') }}"] }{%- if not loop.last %},{% endif %}
+              {"uid": "{{ user.uid }}", "name": "{{ user.name }}", "admin_caps": "{{ user.admin_caps }}", "access_key": "{{ user.access_key }}", "secret_key": "{{ user.secret_key }}", "max_buckets": {{ user.max_buckets }}, "buckets": ["{{ user.buckets|join('","') }}"] }{%- if not loop.last %},{% endif %}
             {%- endfor %}
           ],
           "keystone": {
