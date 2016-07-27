@@ -421,29 +421,68 @@
              {
               "uid": "radosgw",
               "name": "Admin",
+              "email": "",
               "admin_caps": "users=*;buckets=*;metadata=*;usage=*;zone=*",
               "access_key": "",
               "secret_key": "",
+              "status": "enable",
+              "key_type": "s3",
               "max_buckets": 0,
+              "quota": {
+                "user": {
+                  "status": "disable",
+                  "size": -1,
+                  "objects": -1
+                },
+                "buckets": [
+                    {"name": "fill_test", "status": "disable", "size": -1, "objects": -1}
+                ]
+              },
+              "zones": [],
               "buckets": ["fill_test"]
              },
              {
               "uid": "bcs_log_admin",
               "name": "BCS Log Admin",
+              "email": "",
               "admin_caps": "",
               "access_key": "",
               "secret_key": "",
+              "status": "enable",
+              "key_type": "s3",
               "max_buckets": 0,
+              "quota": {
+                "user": {
+                  "status": "disable",
+                  "size": -1,
+                  "objects": -1
+                },
+                "buckets": [
+                    {"name": "bcs_logs", "status": "disable", "size": -1, "objects": -1}
+                ]
+              },
+              "zones": [],
               "buckets": ["bcs_logs"]
               },
               {
               "uid": "tester",
               "name": "Tester",
-              "max_buckets": 3,
+              "email": "",
               "admin_caps": "usage=read; user=read; bucket=*",
               "access_key": "",
               "secret_key": "",
+              "status": "enable",
+              "key_type": "s3",
               "max_buckets": 3,
+              "quota": {
+                "user": {
+                  "status": "enable",
+                  "size": 5,
+                  "objects": 15
+                },
+                "buckets": []
+              },
+              "zones": [],
               "buckets": []
             }
           ],
