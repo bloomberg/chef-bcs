@@ -15,6 +15,26 @@
           {"name": "", "version": "", "pin": true}
         ]
       },
+      "cron": {
+        "logs": {
+          "ceph": {
+            "radosgw": {
+              "uid": "{{ cron.logs.ceph.radosgw.uid }}",
+              "name": "{{ cron.logs.ceph.radosgw.name }}",
+              "access_key": "{{ cron.logs.ceph.radosgw.access_key }}",
+              "secret_key": "{{ cron.logs.ceph.radosgw.secret_key }}",
+              "endpoint": "{{ cron.logs.ceph.radosgw.endpoint }}",
+              "port": {{ cron.logs.ceph.radosgw.port }},
+              "bucket": "{{ cron.logs.ceph.radosgw.bucket }}"
+            }
+          },
+          "patterns": [
+          {%- for item in cron.logs.patterns %}
+            {"directory": "{{ item.directory }}", "pattern": "{{ item.pattern }}", "bucket": {%- if item.bucket %}"{{ item.bucket }}"{% else %}"{{ cron.logs.ceph.radosgw.bucket }}"{%- endif %}}{%- if not loop.last %},{% endif %}
+          {%- endfor %}
+          ]
+        }
+      },
       "bootstrap": {
         "name": "{{ node.name }}",
         "env": "{{ node.env }}",
@@ -324,25 +344,9 @@
           "port": 8080,
           "default_url": "{{ ceph.radosgw.default_url }}",
           "users": [
-             {
-              "uid": "radosgw",
-              "name": "Admin",
-              "admin_caps": "users=*;buckets=*;metadata=*;usage=*;zone=*",
-              "buckets": ["fill_test"]
-             },
-             {
-              "uid": "bcs_log_admin",
-              "name": "BCS Log Admin",
-              "admin_caps": "",
-              "buckets": ["bcs_logs"]
-              },
-              {
-              "uid": "tester",
-              "name": "Tester",
-              "max_buckets": 3,
-              "admin_caps": "usage=read; user=read; bucket=*",
-              "buckets": []
-            }
+            {%- for user in ceph.radosgw.users %}
+              {"uid": "{{ user.uid }}", "name": "{{ user.name }}", "admin_caps": "{{ user.admin_caps }}", "access_key": "{{ user.access_key }}", "secret_key": {{ user.secret_key }}, "max_buckets": {{ user.max_buckets }}, "buckets": ["{{ user.buckets|join('","') }}"] }{%- if not loop.last %},{% endif %}
+            {%- endfor %}
           ],
           "keystone": {
             "auth": false,

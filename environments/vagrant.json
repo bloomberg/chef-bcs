@@ -14,6 +14,22 @@
           {"name": "ceph", "version": "10.2.1-0.el7", "pin": true}
         ]
       },
+      "cron": {
+        "logs": {
+          "ceph": {
+            "radosgw": {
+              "uid": "",
+              "name": "",
+              "access_key": "",
+              "secret_key": "",
+              "bucket": ""
+            }
+          },
+          "patterns": [
+            {"directory": "", "pattern": "", "bucket": ""}
+          ]
+        }
+      },
       "bootstrap": {
         "name": "ceph-bootstrap",
         "env": "/home/vagrant/chef-bcs/environments",
@@ -406,12 +422,18 @@
               "uid": "radosgw",
               "name": "Admin",
               "admin_caps": "users=*;buckets=*;metadata=*;usage=*;zone=*",
+              "access_key": "",
+              "secret_key": "",
+              "max_buckets": 0,
               "buckets": ["fill_test"]
              },
              {
               "uid": "bcs_log_admin",
               "name": "BCS Log Admin",
               "admin_caps": "",
+              "access_key": "",
+              "secret_key": "",
+              "max_buckets": 0,
               "buckets": ["bcs_logs"]
               },
               {
@@ -419,6 +441,9 @@
               "name": "Tester",
               "max_buckets": 3,
               "admin_caps": "usage=read; user=read; bucket=*",
+              "access_key": "",
+              "secret_key": "",
+              "max_buckets": 3,
               "buckets": []
             }
           ],
