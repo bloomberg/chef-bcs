@@ -36,12 +36,3 @@ template '/usr/local/bin/bcs_log_injection.py' do
   owner  'root'
   group  'root'
 end
-
-# Activate crontab
-cron 'log-injection-daily' do
-  home    '/root'
-  user    'root'
-  minute  '0'
-  hour    '3'
-  command "/usr/local/bin/bcs_log_injection.py daily"
-end
