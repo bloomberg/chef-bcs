@@ -18,3 +18,17 @@
 #
 
 include_recipe 'chef-bcs::ceph-conf'
+
+# Set cron up to push logs into the given cluster and then remove them to keep the log partitions clean. The log data
+# can then be pulled down by other log tools if desired since a log user account is created for each federated zone.
+
+# Add the bcs_log_injection.py script to /usr/local/bin and change the mode to +x
+
+
+# Set up cron job to inject logs into the cluster
+cron 'upload-logs' do
+    minute 30
+    hour 4
+    user 'root'
+    command '/usr/local/bin/bcs_log_injection.py'
+end

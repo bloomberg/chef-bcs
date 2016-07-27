@@ -21,4 +21,86 @@
 # 4. Remove tarred files from /var/log directory downward so as to clean up the log directories
 # 5. Write log of transaction to syslog and exit
 
- # NOTE: Access logs should be by themselves so as to easily extract them when needed.
+# NOTE: Access logs should be by themselves so as to easily extract them when needed.
+import sys
+import syslog
+import os
+import glob
+import socket
+import argparse
+import datetime
+import subprocess
+import json
+import boto
+import boto.s3.connection
+from boto.s3.connection import Location
+from boto.s3.bucket import Bucket
+
+# rgw_s3_api.py is a collection of Python functions to do S3 things...
+# This file is put there by ceph-chef in the /usr/local/bin directory where this file should be located.
+import rgw_s3_api
+
+
+log_patterns = [
+   {"directory": "/var/log/ceph", "pattern": "*.log-*.gz", "bucket": "bcs_logs"},
+   {"directory": "/var/log/radosgw", "pattern": "ceph.client.radosgw.*.log-*.gz", "bucket": "bcs_logs"},
+   {"directory": "/var/log/radosgw", "pattern": "civetweb.access.*.log-*.gz", "bucket": "bcs_logs"}
+]
+
+conn = None
+bucket = None
+key = '<%= node['chef-bcs']['cron']['logs']['radosgw']['access_key'] %>'
+secret = '<%= node['chef-bcs']['cron']['logs']['radosgw']['secret_key'] %>'
+endpoint = '<%= node['chef-bcs']['cron']['logs']['radosgw']['endpoint'] %>'
+port = <%= node['chef-bcs']['cron']['logs']['radosgw']['port'] %>
+
+
+def push_logs(pattern={}):
+    retcode = 0
+
+    if not os.path.isdir(pattern['directory']):
+        syslog.syslog(syslog.LOG_ERR, 'Directory does not exists: %s' % pattern['directory'])
+        return 1
+
+    bucket = rgw_s3_api.bucket_handle(conn, pattern['bucket'], create=True)
+    if bucket is None:
+        syslog.syslog(syslog.LOG_ERR, 'Bucket does not exists: %s' % pattern['bucket'])
+        return 1
+
+    for log in glob.glob('%s/%s' % (pattern['directory'], pattern['pattern'])):
+        log_name = socket.gethostname() + log  # os.path.basename(log)
+        if rgw_s3_api.object_create(bucket, log_name, file_name_path=log) is None:
+            syslog.syslog(syslog.LOG_ERR, 'Unable to upload logs: %s' % log)
+            retcode = 1
+        else:
+            try:
+                os.remove(log)
+            except BaseException, e:
+                syslog.syslog(syslog.LOG_ERR, e.message)
+                retcode = 1
+
+    return retcode
+
+
+def user_connect():
+    global conn
+    conn = rgw_s3_api.connect(key, secret, endpoint=endpoint, port=port)  # There are many other options
+    return conn
+
+
+def main():
+    retcode = 0
+
+    if user_connect() is None:
+        syslog.syslog(syslog.LOG_ERR, 'Unable to connect to RGW.')
+        return 1
+
+    for pattern in log_patterns:
+        if push_logs(pattern) > 0:
+            retcode = 1
+
+    return retcode
+
+
+if __name__ == "__main__":
+    sys.exit(main())
