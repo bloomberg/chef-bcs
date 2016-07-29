@@ -43,103 +43,57 @@
 # NOTE: Protocol numbers can be found at http://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml
 # tcp - 6, udp - 17
 
-bash 'set-default-zone' do
-  user 'root'
-  code <<-EOH
-    firewall-cmd --set-default-zone=public
-  EOH
-end
+# If the firewall is enabled
+if node['chef-bcs']['security']['firewall']['enable']
+  include_recipe 'chef-bcs::firewall-start'
 
-node['chef-bcs']['security']['firewall']['interfaces'].each do | interface |
-  # Build port list
-  unique_ports = []
-  ports = []
-  ranges = []
+  # Easiest way to kill all service/rules is to replace the zone file. Make sure to NOT set lockdown
+  # May can later just update the zone file instead of the cli below...
+  template "/etc/firewalld/zones/public.xml" do
+    source 'public.xml.erb'
+  end
 
-  interface['ports'].each do | port |
-    if node.tags.include? port['role']
-      if port['open'].any?
-        ports << port['open']
+  include_recipe 'chef-bcs::firewall-reload'
+
+  bash 'set-default-zone' do
+    user 'root'
+    code <<-EOH
+      firewall-cmd --set-default-zone=#{node['chef-bcs']['security']['firewall']['zone']}
+    EOH
+  end
+
+  # IMPORTANT: Make sure to include SSH rule in the rules...
+  if node['chef-bcs']['security']['firewall']['use'] == 'rules'
+    node['chef-bcs']['security']['firewall']['rules'].each do | rule |
+      allow = false
+      rule['roles'].each do | role |
+        if node.tags.include? role
+          allow = true
+        end
       end
 
-      # Ranges are ALL tcp types
-      port['ranges'].each do | range |
-        if range['start'] > 0
-          ranges << range
-          #start_range = range['start']
-          #end_range = range['end']
-          #ranges << (start_range..end_range)
+      if allow
+        cmd = "firewall-cmd --zone=#{rule['zone']} "
+        if rule['permanent']
+          cmd += "--permanent "
+        end
+        rule['rules'].each do | item_rule |
+          if rule['type'] == 'rich-rule'
+            cmd_tmp = cmd + "--add-rich-rule=#{item_rule}"
+          elsif rule['type'] == 'service'
+            cmd_tmp = cmd + "--add-service='#{item_rule}'"
+          else
+            cmd_tmp = cmd + "#{item_rule}"
+          end
+          cmd_output = shell_out(cmd_tmp)
+          puts cmd_tmp
+          puts cmd_output.stdout
         end
       end
     end
+  else
+    include_recipe 'chef-bcs::firewall-rules-interfaces'
   end
 
-  if ports.any?
-    unique_ports = ports.flatten.uniq
-  end
-
-  unique_ports.each do | uport |
-#    firewall_rule interface['name'] do
-#      interface "#{node['chef-bcs']['network'][interface['name']]['interface']}"
-#      port uport['port']
-#      protocol uport['protocol']
-#      permanent true
-#      command :allow
-#    end
-
-    #protocol = 'tcp'
-    #if uport['protocol'] == 17
-    #  protocol = 'udp'
-    #end
-
-    cmd = shell_out("firewall-cmd --permanent --add-port=#{uport['port']}/#{uport['protocol']}")
-    puts "Port: #{uport['port']}/#{uport['protocol']} " + cmd.stdout
-  end
-
-  ranges.each do | range |
-#    firewall_rule interface['name'] do
-#      interface "#{node['chef-bcs']['network'][interface['name']]['interface']}"
-#      port range
-#      permanent true
-#      command :allow
-#    end
-    #protocol = 'tcp'
-    #if range['protocol'] == 17
-    #  protocol = 'udp'
-    #end
-
-    cmd = shell_out("firewall-cmd --permanent --add-port=#{range['start']}-#{range['end']}/#{range['protocol']}")
-    puts "Range: #{range['start']}-#{range['end']}/#{range['protocol']} " + cmd.stdout
-
-  end
-end
-
-node['chef-bcs']['network']['public']['cidr'].each do | cidr |
-  cmd = shell_out("firewall-cmd --permanent --zone=internal --add-source=#{cidr}")
-  puts "Adding 'internal' source IP range: #{cidr} " + cmd.stdout
-end
-
-node['chef-bcs']['network']['cluster']['cidr'].each do | cidr |
-  cmd = shell_out("firewall-cmd --permanent --zone=internal --add-source=#{cidr}")
-  puts "Adding 'internal' source IP range: #{cidr} " + cmd.stdout
-end
-
-# NOTE: These rules should ALWAYS be present.
-# firewall_rule 'ssh' do
-#   port     22
-#   command  :allow
-# end
-
-# Force the rules etc to be saved
-# firewall 'default' do
-#   action :save
-# end
-
-bash 'ssh-and-reload' do
-  user 'root'
-  code <<-EOH
-    firewall-cmd --permanent --zone=public --add-port=22/tcp
-    firewall-cmd --permanent --zone=internal --add-port=22/tcp
-    firewall-cmd --reload
-  EOH
+  include_recipe 'chef-bcs::firewall-reload'
 end
