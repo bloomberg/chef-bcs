@@ -45,29 +45,20 @@
 
 # If the firewall is enabled
 if node['chef-bcs']['security']['firewall']['enable']
+  include_recipe 'chef-bcs::firewall-start'
+
+  # Easiest way to kill all service/rules is to replace the zone file. Make sure to NOT set lockdown
+  # May can later just update the zone file instead of the cli below...
+  template "/etc/firewalld/zones/public.xml" do
+    source 'public.xml.erb'
+  end
+
+  include_recipe 'chef-bcs::firewall-reload'
+
   bash 'set-default-zone' do
     user 'root'
     code <<-EOH
       firewall-cmd --set-default-zone=#{node['chef-bcs']['security']['firewall']['zone']}
-    EOH
-  end
-
-  # Remove all services and rules. If we add more options then remove them too before adding new ones
-  bash 'remove-firewalld-rules' do
-    user 'root'
-    code <<-EOH
-      for rule in $(firewall-cmd --zone=#{node['chef-bcs']['security']['firewall']['zone']} --list-rich-rules); do
-        firewall-cmd --zone=#{node['chef-bcs']['security']['firewall']['zone']} --remove-rich-rule='$rule'
-      done
-    EOH
-  end
-
-  bash 'remove-firewalld-services' do
-    user 'root'
-    code <<-EOH
-      for service in $(firewall-cmd --zone=#{node['chef-bcs']['security']['firewall']['zone']} --list-services); do
-        firewall-cmd --zone=#{node['chef-bcs']['security']['firewall']['zone']} --remove-service='$service'
-      done
     EOH
   end
 
@@ -86,17 +77,13 @@ if node['chef-bcs']['security']['firewall']['enable']
           cmd_tmp = cmd + "--add-service='#{item_rule}'"
         end
         cmd_output = shell_out(cmd_tmp)
-        puts cmd_tmp + " -- " + cmd_output
+        puts cmd_tmp
+        puts cmd_output.stdout
       end
     end
   else
     include_recipe 'chef-bcs::firewall-rules-interfaces'
   end
 
-  bash 'firewall-reload' do
-    user 'root'
-    code <<-EOH
-      firewall-cmd --reload
-    EOH
-  end
+  include_recipe 'chef-bcs::firewall-reload'
 end
