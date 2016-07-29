@@ -86,7 +86,7 @@
         ],
         {#- VIPS are 10.121.16.16/28 range (.17 - .30). Advertised via BGP or Static+BFD Beacon. #}
         "bgp": {
-          "enable": {%- if adc.bgp.enable == True %} true, {% else %} false, {%- endif %},
+          "enable": {%- if adc.bgp.enable == True %} true, {% else %} false, {%- endif %}
           "asn": {{ adc.bgp.asn }},
           "interface": "{{ adc.bgp.interface }}",
           "roles": [
