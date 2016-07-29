@@ -57,7 +57,7 @@ if node['chef-bcs']['security']['firewall']['enable']
     user 'root'
     code <<-EOH
       for rule in $(firewall-cmd --zone=#{node['chef-bcs']['security']['firewall']['zone']} --list-rich-rules); do
-        firewall-cmd --zone=#{node['chef-bcs']['security']['firewall']['zone']} --remove-rich-rule="$rule"
+        firewall-cmd --zone=#{node['chef-bcs']['security']['firewall']['zone']} --remove-rich-rule='$rule'
       done
     EOH
   end
@@ -66,7 +66,7 @@ if node['chef-bcs']['security']['firewall']['enable']
     user 'root'
     code <<-EOH
       for service in $(firewall-cmd --zone=#{node['chef-bcs']['security']['firewall']['zone']} --list-services); do
-        firewall-cmd --zone=#{node['chef-bcs']['security']['firewall']['zone']} --remove-service="$service"
+        firewall-cmd --zone=#{node['chef-bcs']['security']['firewall']['zone']} --remove-service='$service'
       done
     EOH
   end
