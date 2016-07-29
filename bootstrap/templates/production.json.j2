@@ -148,7 +148,7 @@
           "use": "{{ security.firewall.use }}",
           "rules": [
           {%- for item in security.firewall.rules %}
-            {"name": "{{ item.name }}", "type": "{{ item.type }}", "zone": "{{ item.zone }}", "permanent": {%- if item.permanent == True %}true, {% else %}false, {%- endif %}, "roles": ["{{ item.roles|join('","') }}"], "rules": ["{{ item.rules|join('","') }}"]}{%- if not loop.last %},{% endif %}
+            {"name": "{{ item.name }}", "type": "{{ item.type }}", "zone": "{{ item.zone }}", "permanent": {%- if item.permanent == True %}true{% else %}false{%- endif %}, "roles": ["{{ item.roles|join('","') }}"], "rules": ["{{ item.rules|join('","') }}"]}{%- if not loop.last %},{% endif %}
           {%- endfor %}
           ],
           "interfaces": [
