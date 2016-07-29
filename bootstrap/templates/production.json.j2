@@ -86,7 +86,7 @@
         ],
         {#- VIPS are 10.121.16.16/28 range (.17 - .30). Advertised via BGP or Static+BFD Beacon. #}
         "bgp": {
-          "enable": true,
+          "enable": {%- if adc.bgp.enable == True %} true, {% else %} false, {%- endif %},
           "asn": {{ adc.bgp.asn }},
           "interface": "{{ adc.bgp.interface }}",
           "roles": [
@@ -143,6 +143,14 @@
           "banner": "/etc/banner"
         },
         "firewall": {
+          "enable": {%- if security.firewall.enable == True %} true, {% else %} false, {%- endif %},
+          "zone": "{{ security.firewall.zone }}",
+          "use": "{{ security.firewall.use }}",
+          "rules": [
+          {%- for item in security.firewall.rules %}
+            {"name": "{{ item.name }}", "type": "{{ item.type }}", "zone": "{{ item.zone }}", "permanent": {%- if item.permanent == True %}true, {% else %}false, {%- endif %}, "roles": ["{{ item.roles|join('","') }}"], "rules": ["{{ item.rules|join('","') }}"]}{%- if not loop.last %},{% endif %}
+          {%- endfor %}
+          ],
           "interfaces": [
             {
               "name": "public",

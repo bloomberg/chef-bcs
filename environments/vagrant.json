@@ -122,6 +122,13 @@
           "banner": "/etc/banner"
         },
         "firewall": {
+          "enable": false,
+          "use": "rules",
+          "zone": "public",
+          "NOTE1": "Rules below is an example of how to use them. For testing you should disable.",
+          "rules": [
+            {"name": "all", "type": "rich-rule", "zone": "public", "permanent": true, "roles": ["ceph-mon", "ceph-osd", "ceph-rgw", "ceph-mds", "ceph-rbd", "ceph-admin", "ceph-restapi"], "rules": ["rule family='ipv4' source address='10.0.100.0/24' accept", "rule family='ipv4' source address='10.0.100.0/24' service name='ssh' accept"]}
+          ],
           "interfaces": [
             {
               "name": "public",
