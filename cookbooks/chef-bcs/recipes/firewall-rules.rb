@@ -91,6 +91,8 @@ if node['chef-bcs']['security']['firewall']['enable']
               puts cmd_tmp
               puts cmd_output.stdout
             end
+            # Force it
+            shell_out("sudo firewall-cmd --reload")
           end
         end
       else
@@ -98,5 +100,6 @@ if node['chef-bcs']['security']['firewall']['enable']
       end
     end
   end
+
   include_recipe 'chef-bcs::firewall-reload'
 end
