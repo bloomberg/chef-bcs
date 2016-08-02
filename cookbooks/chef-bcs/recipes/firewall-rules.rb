@@ -63,37 +63,40 @@ if node['chef-bcs']['security']['firewall']['enable']
   end
 
   # IMPORTANT: Make sure to include SSH rule in the rules...
-  if node['chef-bcs']['security']['firewall']['use'] == 'rules'
-    node['chef-bcs']['security']['firewall']['rules'].each do | rule |
-      allow = false
-      rule['roles'].each do | role |
-        if node.tags.include? role
-          allow = true
-        end
-      end
-
-      if allow
-        cmd = "firewall-cmd --zone=#{rule['zone']} "
-        if rule['permanent']
-          cmd += "--permanent "
-        end
-        rule['rules'].each do | item_rule |
-          if rule['type'] == 'rich-rule'
-            cmd_tmp = cmd + "--add-rich-rule=\"#{item_rule}\""
-          elsif rule['type'] == 'service'
-            cmd_tmp = cmd + "--add-service='#{item_rule}'"
-          else
-            cmd_tmp = cmd + "#{item_rule}"
+  ruby_block 'force later execution' do
+    block do
+      if node['chef-bcs']['security']['firewall']['use'] == 'rules'
+        node['chef-bcs']['security']['firewall']['rules'].each do | rule |
+          allow = false
+          rule['roles'].each do | role |
+            if node.tags.include? role
+              allow = true
+            end
           end
-          cmd_output = shell_out(cmd_tmp)
-          puts cmd_tmp
-          puts cmd_output.stdout
+
+          if allow
+            cmd = "firewall-cmd --zone=#{rule['zone']} "
+            if rule['permanent']
+              cmd += "--permanent "
+            end
+            rule['rules'].each do | item_rule |
+              if rule['type'] == 'rich-rule'
+                cmd_tmp = cmd + "--add-rich-rule=\"#{item_rule}\""
+              elsif rule['type'] == 'service'
+                cmd_tmp = cmd + "--add-service='#{item_rule}'"
+              else
+                cmd_tmp = cmd + "#{item_rule}"
+              end
+              cmd_output = shell_out(cmd_tmp)
+              puts cmd_tmp
+              puts cmd_output.stdout
+            end
+          end
         end
+      else
+        include_recipe 'chef-bcs::firewall-rules-interfaces'
       end
     end
-  else
-    include_recipe 'chef-bcs::firewall-rules-interfaces'
   end
-
   include_recipe 'chef-bcs::firewall-reload'
 end
