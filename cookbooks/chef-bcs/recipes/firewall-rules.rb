@@ -79,7 +79,7 @@ if node['chef-bcs']['security']['firewall']['enable']
         end
         rule['rules'].each do | item_rule |
           if rule['type'] == 'rich-rule'
-            cmd_tmp = cmd + "--add-rich-rule=#{item_rule}"
+            cmd_tmp = cmd + "--add-rich-rule=\"#{item_rule}\""
           elsif rule['type'] == 'service'
             cmd_tmp = cmd + "--add-service='#{item_rule}'"
           else
