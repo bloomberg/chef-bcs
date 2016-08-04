@@ -1,0 +1,1 @@
+Just sample txt file for use with s3-example-boto3.py.
