@@ -6,6 +6,8 @@ https://access.redhat.com/documentation/en/red-hat-ceph-storage/1.3/paged/object
 Ceph documentation link:
 http://docs.ceph.com/docs/master/radosgw/s3
 
+http://docs.ceph.com/docs/hammer/dev/radosgw/s3_compliance/
+
 Ceph's documenting is really lacking. So, we went through and tested each Python Boto3 API (see sample code link below).
 
 Ceph Object Gateway supports a RESTful API that is compatible with the basic data access model of the Amazon S3 API. Certain features of AWS are not available for RGW (see below).
@@ -16,7 +18,7 @@ http://boto3.readthedocs.io/en/latest/reference/services/s3.html
 
 sudo -E -H pip install boto3
 
-(note: if installing on Mac OSX you may run into an issue with the 'six' package. If this occurs then add '--ignore-installed six' after boto3 above)
+>(note: if installing on Mac OSX you may run into an issue with the 'six' package. If this occurs then add '--ignore-installed six' after boto3 above)
 
 ###### Sample Python boto3 code:
 https://github.com/bloomberg/chef-bcs/blob/master/cookbooks/chef-bcs/files/default/s3-example-boto3.py
