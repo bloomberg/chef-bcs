@@ -21,7 +21,7 @@
 # environment. For eample, you can have a small YAML data file for configuring the kickstart/ISO process and then
 # maybe one for building out the missing USER and/or SYSTEM data used in the CHEF Environment files. A sample
 # environment file ships with the project for vagrant called vagrant.json. However, a production.json should
-# really be a jinja2 template like production.json.j2 with as much default data and with template {{ }} placeholders
+# really be a jinja2 template like base_environment.json.j2 with as much default data and with template {{ }} placeholders
 # for the actual data. The output of this process should be the TRUE production.json file. Also, it's a good idea
 # to name your production.json file more descriptive of the environment it actually belongs to. For example,
 # prod-dc101.json or something like it.

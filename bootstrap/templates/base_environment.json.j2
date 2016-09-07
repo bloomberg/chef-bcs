@@ -1,14 +1,14 @@
 {
   {#- NOTE: This template goes through a multi-phase process where the first pass pulls from one data file and  #}
   {#- and the second from another data file. The yaml data is found in /bootstrap/seed_data #}
-  "name": "production",
+  "name": "{{ node.environment_short }}",
   "json_class": "Chef::Environment",
   "description": "Data to build out {{ node.data_center }} Ceph Cluster",
   "cookbook_versions": {},
   "chef_type": "environment",
   "override_attributes": {
     "chef-bcs": {
-      "environment": "production",
+      "environment": "{{ node.environment_short }}",
       "repo": {
         {#- Pins the current version of ceph or any other packaged in the array at the moment of install. #}
         "packages": [
