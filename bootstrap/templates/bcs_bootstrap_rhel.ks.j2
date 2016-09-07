@@ -132,6 +132,7 @@ find /mnt/sysimage/tmp -name TRANS.TBL -exec rm -f {} \;
 
 mkdir /mnt/sysimage/ceph-files
 mkdir /mnt/sysimage/ceph-host
+mkdir /mnt/sysimage/chef-files
 mkdir -p /mnt/sysimage/tmp/build/iso
 
 rsync -av /run/install/repo/ /mnt/sysimage/tmp/build/iso/
@@ -154,9 +155,12 @@ useradd {{ user.name }} -g {{ user.name }} -G wheel
 # Note: The postinstall directory remains but can be removed if desired.
 cp -R /tmp/postinstall/ceph-files/* /ceph-files/.
 cp -R /tmp/postinstall/ceph-host/* /ceph-host/.
+mv /ceph-files/rpms/* /chef-files/.
+rm -rf /ceph-files/rpms
 
 chown -R {{ user.name }}:{{ user.name }} /ceph-files
 chown -R {{ user.name }}:{{ user.name }} /ceph-host
+chown -R {{ user.name }}:{{ user.name }} /chef-files
 
 cat /ceph-host/bootstrap/data/environment/{{ node.environment }}/hosts >> /etc/hosts
 
