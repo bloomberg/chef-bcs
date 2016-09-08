@@ -62,6 +62,15 @@ node['chef-bcs']['cobbler']['servers'].each do | server |
       if server['name'].include? 'r3n'
         ceph_chef_osd_rack03_hosts_content += (server['name'] + "\n")
       end
+      if server['name'].include? 'r1a'
+        ceph_chef_osd_rack01_hosts_content += (server['name'] + "\n")
+      end
+      if server['name'].include? 'r1b'
+        ceph_chef_osd_rack02_hosts_content += (server['name'] + "\n")
+      end
+      if server['name'].include? 'r1c'
+        ceph_chef_osd_rack03_hosts_content += (server['name'] + "\n")
+      end
     when 'rgw'
       ceph_chef_rgw_hosts_content += (server['name'] + "\n")
     end
