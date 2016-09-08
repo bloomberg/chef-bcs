@@ -35,6 +35,7 @@ ceph_chef_hosts_content = 'export CEPH_CHEF_HOSTS=( '
 ceph_chef_bootstrap_content = 'export CEPH_CHEF_BOOTSTRAP='
 
 # Server list
+# r1n - prod, r1a r1b r1c - stage
 node['chef-bcs']['cobbler']['servers'].each do | server |
   server['roles'].each do | role |
     case role
@@ -48,13 +49,13 @@ node['chef-bcs']['cobbler']['servers'].each do | server |
       ceph_chef_mon_hosts_content += (server['name'] + ' ')
     when 'osd'
       ceph_chef_osd_hosts_content += (server['name'] + ' ')
-      if server['name'].include? 'r1n'
+      if server['name'].include? 'r1n' || server['name'].include? 'r1a'
         ceph_chef_osd_rack01_hosts_content += (server['name'] + ' ')
       end
-      if server['name'].include? 'r2n'
+      if server['name'].include? 'r2n' || server['name'].include? 'r1b'
         ceph_chef_osd_rack02_hosts_content += (server['name'] + ' ')
       end
-      if server['name'].include? 'r3n'
+      if server['name'].include? 'r3n' || server['name'].include? 'r1c'
         ceph_chef_osd_rack03_hosts_content += (server['name'] + ' ')
       end
     when 'rgw'
