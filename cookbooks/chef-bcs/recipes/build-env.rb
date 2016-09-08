@@ -48,13 +48,13 @@ node['chef-bcs']['cobbler']['servers'].each do | server |
       ceph_chef_mon_hosts_content += (server['name'] + ' ')
     when 'osd'
       ceph_chef_osd_hosts_content += (server['name'] + ' ')
-      if server['name'].include? 'r1n'
+      if server['name'].include? 'r1'
         ceph_chef_osd_rack01_hosts_content += (server['name'] + ' ')
       end
-      if server['name'].include? 'r2n'
+      if server['name'].include? 'r2'
         ceph_chef_osd_rack02_hosts_content += (server['name'] + ' ')
       end
-      if server['name'].include? 'r3n'
+      if server['name'].include? 'r3'
         ceph_chef_osd_rack03_hosts_content += (server['name'] + ' ')
       end
     when 'rgw'
