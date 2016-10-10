@@ -603,7 +603,8 @@
               "crush_ruleset": 1,
               "chooseleaf": "host",
               "chooseleaf_type": 1,
-              "type": "erasure"
+              "type": "erasure",
+              "nodes_per_rack": 1
             },
             "remove": {
               "names": []
