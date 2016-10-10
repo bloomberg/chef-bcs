@@ -49,8 +49,12 @@ rule hdd {
     step set_chooseleaf_tries 20
     step set_choose_tries 120
     step take hdd
+    <% if node['chef-bcs']['ceph']['pools']['radosgw']['settings']['nodes_per_rack'] > 6 %>
     step choose firstn 3 type rack
     step chooseleaf indep -3 type host
+    <% else %>
+    step chooseleaf indep 0 type host
+    <% end %>
     step emit
 }
 <% end %>
