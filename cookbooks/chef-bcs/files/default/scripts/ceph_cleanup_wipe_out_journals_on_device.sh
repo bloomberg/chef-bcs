@@ -31,6 +31,7 @@ if [[ -z $dev ]]; then
   exit 1
 fi
 
-for i in $(parted $dev print | grep ceph); do
+for i in $(parted $dev print | grep ceph | awk '{print $1}'); do
   echo "Deleting partition: $i"
+  parted $dev rm $i > /dev/null 2>&1
 done

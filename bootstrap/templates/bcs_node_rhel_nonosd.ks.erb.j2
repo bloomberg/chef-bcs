@@ -213,7 +213,7 @@ cp /ceph-host/bootstrap/data/environment/{{ node.environment }}/*.crt /tmp
 cp /ceph-host/bootstrap/data/environment/{{ node.environment }}/*.key /tmp
 cp /ceph-host/bootstrap/data/environment/{{ node.environment }}/*.pem /tmp
 
-rpm -Uvh /ceph-files/{{ chef.rpms.client }}
+rpm -Uvh /ceph-files/rpms/{{ chef.rpms.client }}
 
 # Set up the node for chef-client
 mkdir -p /etc/chef
@@ -229,7 +229,7 @@ chef-client
 cat <<EOM >/tmp/chef-enroll.sh
 yum update -y
 
-rpm -Uvh /ceph-files/{{ chef.rpms.client }}
+rpm -Uvh /ceph-files/rpms/{{ chef.rpms.client }}
 
 # Set up the node for chef-client
 mkdir -p /etc/chef

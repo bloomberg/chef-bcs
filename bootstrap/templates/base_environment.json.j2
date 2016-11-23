@@ -319,7 +319,7 @@
         "config": {
           {#- "NOTE": "This section is pure key/value. Meaning, the key and value are added to the given location in ceph.conf.", #}
           "global": {
-            "rgw override bucket index max shards": 25
+            "rgw override bucket index max shards": {{ ceph.radosgw.bucket_shards }}
           },
           "mon": {
             {#- 'mon allow pool delete' = false *AFTER* the cluster is stable. Keeps someone from deleting pools :) #}
@@ -367,8 +367,8 @@
             "token_cache_size": 1000,
             "revocation_interval": 1200
           },
-          "rgw_num_rados_handles": 5,
-          "civetweb_num_threads": 100,
+          "rgw_num_rados_handles": {{ ceph.radosgw.rados_handles }},
+          "civetweb_num_threads": {{ ceph.radosgw.civetweb_threads }},
           "bond": {
             "enable": {%- if bond.enable == True %} true, {% else %} false, {%- endif %}
             "name": "{{ bond.name }}",
@@ -419,11 +419,11 @@
         "pools": {
           "active": ["radosgw"],
           "crush": {
-            "rule": 1
+            "rule": {{ ceph.pools.crush_rule }}
           },
           "erasure_coding": {
             "profiles": [
-              {"profile": "bcs", "directory": "/usr/lib64/ceph/erasure-code", "plugin": "jerasure", "force": true, "technique": "reed_sol_van", "ruleset_root": "hdd", "ruleset_failure_domain": "host", "key_value": {"k": 8, "m": 3}}
+              {"profile": "{{ ceph.ec.profile }}", "directory": "{{ ceph.ec.directory }}", "plugin": "{{ ceph.ec.plugin }}", "force": true, "technique": "{{ ceph.ec.technique }}", "ruleset_root": "{{ ceph.ec.ruleset_root }}", "ruleset_failure_domain": "{{ ceph.ec.ruleset_failure_domain }}", "key_value": {"k": {{ ceph.ec.k }}, "m": {{ ceph.ec.m }}}}
             ]
           },
           "radosgw": {
@@ -464,16 +464,17 @@
             ],
             {#- If federated then the settings below apply to the federated pools else the non-federated pools. #}
             "settings": {
-              "pg_num": 64,
-              "pgp_num": 64,
+              "pg_num": {{ ceph.radosgw.settings.pg_num }},
+              "pgp_num": {{ ceph.radosgw.settings.pgp_num }},
               "options": "",
               "force": false,
               "calc": true,
-              "size": 3,
-              "crush_rule_set": 1,
-              "chooseleaf": "host",
-              "chooseleaf_type": 1,
-              "type": "erasure"
+              "size": {{ ceph.radosgw.settings.size }},
+              "crush_ruleset": {{ ceph.radosgw.settings.crush_ruleset }},
+              "chooseleaf": "{{ ceph.radosgw.settings.chooseleaf }}",
+              "chooseleaf_type": {{ ceph.radosgw.settings.chooseleaf_type }},
+              "type": "{{ ceph.radosgw.settings.type }}",
+              "nodes_per_rack": {{ ceph.radosgw.settings.nodes_per_rack }}
             },
             "remove": {
               "names": []
@@ -481,13 +482,13 @@
           },
           "pgs": {
             "calc": {
-              "total_osds": 612,
-              "target_pgs_per_osd": 200,
-              "min_pgs_per_pool": 64,
-              "replicated_size": 3,
-              "erasure_size": 11
+              "total_osds": {{ ceph.pgs.calc.total_osds }},
+              "target_pgs_per_osd": {{ ceph.pgs.calc.target_pgs_per_osd }},
+              "min_pgs_per_pool": {{ ceph.pgs.calc.min_pgs_per_pool }},
+              "replicated_size": {{ ceph.pgs.calc.replicated_size }},
+              "erasure_size": {{ ceph.pgs.calc.erasure_size }}
             },
-            "num": 64
+            "num": {{ ceph.pgs.num }}
           }
         },
         "restapi": {
