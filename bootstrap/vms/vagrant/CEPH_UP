@@ -41,6 +41,11 @@ while getopts cbsvd:p:o:t: opt; do
             CHEF_CLIENT_DEBUG="-l debug"
             ;;
         d)
+            # NB: Use this option if you need to test/debug ceph-chef. It will skip downloading the current
+            # version of ceph-chef so the local version will be used. The best way to do this is to copy over
+            # your modified version of ceph-chef to the cookbook directory in this project before running
+            # this script.
+            
             # BOOTSTRAP_VAGRANT_DEBUG=1
             # CEPH_DEV_MODE == 1 then install ceph github source along with development tools. You can also install your favorite IDE if you want.
             CEPH_DEV_MODE=$OPTARG
