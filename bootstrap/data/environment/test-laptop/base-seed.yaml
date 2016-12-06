@@ -1,0 +1,205 @@
+---
+# Test-Laptop (Development Workspace)
+# Base seed data file for the OB Data Center
+# base-seed.yaml
+# This file is mainly for the bootstrap node *BUT* it's also other used for filling in the base information for all of the nodes.
+# NOTE: The default passwords below are *ALL* 'operations' but the encrypted version (without the '' of course)
+device1_1U: &device1_1U enp0s8
+device2_1U: &device2_1U enp0s9
+device1_2U: &device1_2U enp0s8
+device2_2U: &device2_2U enp0s9
+distro: &distro rhel-server-7.2-x86_64.iso
+node:
+  name: tlp-r1n20
+  environment: test-laptop
+  environment_short: test-laptop
+  env: /home/vagrant/chef-bcs/environments
+  role:
+    - bootstrap
+    - adc
+  data_center: Test-Laptop
+  ks: bcs_bootstrap_rhel.ks
+  domain: ceph.example.com
+  root_pwd: $6$Salt$3xxLPT099nzTbWkOS3CPNcar/zSLQ8BEgZdJk/AOkOb4V80sPepbraWcvrJvEEu6PswpKUw1WodWeiqRo1bw2/
+user:
+  name: operations
+  group: wheel
+  comment: "Operations user"
+  passwd: $6$Salt$3xxLPT099nzTbWkOS3CPNcar/zSLQ8BEgZdJk/AOkOb4V80sPepbraWcvrJvEEu6PswpKUw1WodWeiqRo1bw2/
+  key: "<whatever your key is>"
+  private_key: ""
+  sudo: true
+# Bootstrap
+# 1U Interfaces
+interfaces:
+  - device: *device1_1U
+    ip: 10.121.17.2
+    mtu: 1500
+    netmask: 255.255.255.224
+    gateway: 10.121.17.1
+  - device: *device2_1U
+    ip: 10.121.18.2
+    mtu: 9000
+    netmask: 255.255.255.224
+    gateway: 10.121.18.1
+network:
+  public:
+    interface: *device1_2U
+    cidr:
+      - 10.121.17.0/27
+      - 10.121.17.32/27
+      - 10.121.17.64/27
+    mtu: 9000
+  cluster:
+    interface: *device2_2U
+    cidr:
+      - 10.121.18.0/27
+      - 10.121.18.32/27
+      - 10.121.18.64/27
+    mtu: 9000
+nameservers:
+  - 10.10.10.10
+  - 10.10.10.11
+ntp:
+  - 10.10.10.10
+  - 10.10.10.11
+chef:
+  owner: operations
+  group: wheel
+  server: http://10.121.17.2:4000
+ipmi:
+  user: user
+  passwd: password
+vips:
+  prefix: 10.121.16.16
+  netmask: 255.255.255.240
+  cidr: 28
+  - name: dev
+    ip: 10.121.16.17
+    interface: *device1_1U
+  - name: prod
+    ip: 10.121.16.18
+    interface: *device1_2U
+# Backend Servers are RGW nodes
+backend:
+  servers:
+    - name: tlp-r1n19
+      weight: 6
+      port: 8080
+      options: "check inter 2s rise 2 fall 3"
+    - name: tlp-r2n19
+      weight: 6
+      port: 8080
+      options: "check inter 2s rise 2 fall 3"
+    - name: tlp-r3n19
+      weight: 6
+      port: 8080
+      options: "check inter 2s rise 2 fall 3"
+adc:
+  enable: true
+  interface: *device1_1U
+  haproxy:
+    port: 1936
+    user: haproxy
+    passwd: haproxy
+    balance: roundrobin
+    max_connections: 2000
+  # Keepalived nodes should have at least two but maybe one per rack
+  keepalived:
+    passwd: keepalived
+    servers:
+      - name: tlp-r3n20
+        weight: 6
+        interface: *device1_1U
+        priority: 100
+        ip:
+      - name: tlp-r2n20
+        weight: 6
+        interface: *device1_1U
+        priority: 110
+        ip:
+      # This last one is also the bootstrap node! It has a low priority and low weight. It should not be used much but is there in case it's needed.
+      - name: tlp-r1n20
+        weight: 2
+        interface: *device1_1U
+        priority: 90
+        ip:
+  bgp:
+    asn: 99999999
+    interface: *device1_1U
+    peers:
+      - name: Peer1
+        label: bgp_peer1
+        ip: 10.121.16.1
+      - name: Peer2
+        label: bgp_peer2
+        ip: 10.121.16.2
+bond:
+  name: bond0
+  enable: true
+  mtu: 9000
+  options: "mode=4 miimon=100 xmit_hash_policy=layer2+3"
+  interfaces:
+    - *device1_1U
+    - *device1_2U
+ceph:
+  repo:
+    create: true
+ISO:
+  volume_id: "RHEL-7.2 Server.x86_64"
+  packer: Bloomberg
+cobbler:
+  interface: *device1_1U
+  server: 10.121.17.2
+  kickstart:
+    root:
+      passwd: $6$Salt$3xxLPT099nzTbWkOS3CPNcar/zSLQ8BEgZdJk/AOkOb4V80sPepbraWcvrJvEEu6PswpKUw1WodWeiqRo1bw2/
+      key: operations.pub
+    # NOTE: Any empty value *MUST* be "" or python will put "None"
+    bootloader:
+      passwd: ""
+      passwd_type: ""
+    dhcp:
+      single:
+        netmask: 255.255.255.27
+        gateway: 10.121.17.2
+      # Subnets represent having more than one network subnet as in the single one above
+      subnets:
+        - subnet: 10.121.17.0
+          tag: rack01
+          dhcp_range:
+            - 10.121.17.3
+            - 10.121.17.30
+          netmask: 255.255.255.224
+          router: 10.121.17.1
+        - subnet: 10.121.17.32
+          tag: rack02
+          dhcp_range:
+            - 10.121.17.34
+            - 10.121.17.62
+          netmask: 255.255.255.224
+          router: 10.121.17.33
+        - subnet: 10.121.17.64
+          tag: rack03
+          dhcp_range:
+            - 10.121.17.66
+            - 10.121.17.94
+          netmask: 255.255.255.224
+          router: 10.121.17.65
+    os:
+      name: rhel-7.2
+      version: 7.2
+      arch: x86_64
+      distro: *distro
+      breed: redhat
+    repo_mirror: false
+    # Redhat section is up to you to implement since it's different in every environment. By default it's off
+    redhat:
+      management:
+        type: off
+        server: ""
+        key: ""
+        commands:
+          C1: ""
+          C2: ""
+          C3: ""
