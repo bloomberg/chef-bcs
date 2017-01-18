@@ -23,3 +23,9 @@ template '/etc/ceph/scripts/restart_down_osds.sh' do
     source 'restart_down_osds.sh.erb'
     mode 00755
 end
+
+%W( if_leader health_filter ).each do |script|
+    link "/usr/local/bin/ceph_#{script}.sh" do
+        to "/etc/ceph/scripts/ceph_#{script}.sh"
+    end
+end
