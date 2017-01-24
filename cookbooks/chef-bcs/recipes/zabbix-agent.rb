@@ -49,7 +49,7 @@ template '/etc/zabbix/zabbix_agentd.conf' do
   notifies :restart, 'service[zabbix-agent]', :delayed
 end
 
-%w{ ceph radosgw haproxy }.each do |component|
+%w{ ceph radosgw haproxy raid }.each do |component|
   template "/etc/zabbix/zabbix_agentd.d/userparameter_#{component}.conf" do
     source "zabbix-userparameter-#{component}.conf.erb"
     owner 'zabbix'
@@ -65,6 +65,13 @@ execute 'systemd-reload' do
 end
 
 directory '/etc/systemd/system/zabbix-agent.service.d' do
+  owner 'root'
+  group 'root'
+  mode 00755
+end
+
+cookbook_file '/usr/local/bin/raid_status.sh' do
+  source 'zabbix_scripts/raid_status.sh'
   owner 'root'
   group 'root'
   mode 00755
