@@ -565,7 +565,7 @@
               "enable": false,
               "multisite_replication": false,
               "zone_instances": [
-                {"name": "dev", "port": 8080, "region": "dc1", "url": "s3.dc1.dev.rgw.ceph.example.com"},
+                {"name": "dev", "port": 8080, "region": "dc1", "url": "s3.dc1.dev.rgw.ceph.example.com", "handles": 5, "threads": 100},
                 {"name": "prod", "port": 8081, "region": "dc1", "url": "s3.dc1.prod.rgw.ceph.example.com"}
               ],
               "regions": ["dc1"],

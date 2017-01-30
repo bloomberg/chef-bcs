@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright 2016, Bloomberg Finance L.P.
+# Copyright 2017, Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -45,9 +45,10 @@ while getopts cbsvd:p:o:t: opt; do
             # version of ceph-chef so the local version will be used. The best way to do this is to copy over
             # your modified version of ceph-chef to the cookbook directory in this project before running
             # this script.
-            
+
             # BOOTSTRAP_VAGRANT_DEBUG=1
             # CEPH_DEV_MODE == 1 then install ceph github source along with development tools. You can also install your favorite IDE if you want.
+            # If nothing is passed in with -d option the CEPH_DEV_MODE is empty and debug ceph-chef is used.
             CEPH_DEV_MODE=$OPTARG
             CHEF_BCS_DEBUG=1
             ;;
