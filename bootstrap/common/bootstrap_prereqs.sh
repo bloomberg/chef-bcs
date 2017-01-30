@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright 2016, Bloomberg Finance L.P.
+# Copyright 2017, Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -97,12 +97,17 @@ if [[ ! -z $COBBLER_BOOTSTRAP_ISO ]]; then
 fi
 
 # Obtain Chef client and server RPMs.
-export CHEF_CLIENT_RPM=chef-12.11.18-1.el7.x86_64.rpm
-export CHEF_SERVER_RPM=chef-server-core-12.6.0-1.el7.x86_64.rpm
+# export CHEF_CLIENT_RPM=chef-12.11.18-1.el7.x86_64.rpm
+# export CHEF_SERVER_RPM=chef-server-core-12.6.0-1.el7.x86_64.rpm
+export CHEF_CLIENT_RPM=chef-12.18.31-1.el7.x86_64.rpm
+export CHEF_CLIENT_RPM_SEMVER=12.18.31
+export CHEF_SERVER_RPM=chef-server-core-12.11.1-1.el7.x86_64.rpm
+export CHEF_SERVER_RPM_SEMVER=12.11.1
 echo "Downloading Chef..."
-download_file /rpms/$CHEF_CLIENT_RPM https://packages.chef.io/stable/el/7/$CHEF_CLIENT_RPM
-download_file /rpms/$CHEF_SERVER_RPM https://packages.chef.io/stable/el/7/$CHEF_SERVER_RPM
-
+# download_file /rpms/$CHEF_CLIENT_RPM https://packages.chef.io/stable/el/7/$CHEF_CLIENT_RPM
+# download_file /rpms/$CHEF_SERVER_RPM https://packages.chef.io/stable/el/7/$CHEF_SERVER_RPM
+download_file /rpms/$CHEF_CLIENT_RPM https://packages.chef.io/files/stable/chef/$CHEF_CLIENT_RPM_SEMVER/el/7/$CHEF_CLIENT_RPM
+download_file /rpms/$CHEF_SERVER_RPM https://packages.chef.io/files/stable/chef-server/$CHEF_SERVER_RPM_SEMVER/el/7/$CHEF_SERVER_RPM
 # BIRD is a little different :)
 #ftp_file /rpms/bird-1.5.0-1.x86_64.rpm ftp://bird.network.cz/pub/bird/redhat/bird-1.5.0-1.x86_64.rpm
 
@@ -114,13 +119,13 @@ mkdir -p $BOOTSTRAP_CACHE_DIR/{cookbooks,gems}
 
 # Most important cookbook
 # If set then it will not download but remove from cache and use the development version that should be set in the chef-bcs/cookbooks directory.
-if [[ $CHEF_BCS_DEBUG -eq 0 ]]; then
-  echo "Downloading ceph-chef..."
-  download_file cookbooks/ceph-chef-1.0.14.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/ceph-chef/versions/1.0.14/download
-else
+# if [[ $CHEF_BCS_DEBUG -eq 0 ]]; then
+#   echo "Downloading ceph-chef..."
+#   download_file cookbooks/ceph-chef-1.0.14.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/ceph-chef/versions/1.0.14/download
+# else
   # Remove it so it's not used.
   rm -f $BOOTSTRAP_CACHE_DIR/cookbooks/ceph-chef-*
-fi
+# fi
 
 if [[ $CEPH_DEV_MODE -ne 0 ]]; then
   echo "Cloning Ceph..."
@@ -139,7 +144,7 @@ download_file cookbooks/apt-1.10.0.tar.gz http://cookbooks.opscode.com/api/v1/co
 download_file cookbooks/apache2-3.1.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/apache2/versions/3.1.0/download
 download_file cookbooks/chef_handler-1.3.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/chef_handler/versions/1.3.0/download
 download_file cookbooks/firewall-2.4.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/firewall/versions/2.4.0/download
-download_file cookbooks/chef-sugar-3.3.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/chef-sugar/versions/3.3.0/download
+download_file cookbooks/chef-sugar-3.4.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/chef-sugar/versions/3.4.0/download
 download_file cookbooks/sudo-2.9.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/sudo/versions/2.9.0/download
 download_file cookbooks/collectd-2.2.2.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/collectd/versions/2.2.2/download
 download_file cookbooks/collectd_plugins-2.1.1.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/collectd_plugins/versions/2.1.1/download
