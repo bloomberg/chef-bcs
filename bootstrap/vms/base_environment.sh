@@ -31,7 +31,9 @@ export BOOTSTRAP_OS=${BOOTSTRAP_OS:-"centos-7"}
 # IMPORTANT: The name of the cobbler distro that must match node['chef-bcs']['cobbler']['os']['distro']
 
 export COBBLER_BOOTSTRAP_ISO=${COBBLER_BOOTSTRAP_ISO:-"centos-7-x86_64-minimal.iso"}
-export COBBLER_REMOTE_URL_ISO=${COBBLER_REMOTE_URL_ISO:-"http://mirror.umd.edu/centos/7.2.1511/isos/x86_64/CentOS-7-x86_64-Minimal-1511.iso"}
+# export COBBLER_REMOTE_URL_ISO=${COBBLER_REMOTE_URL_ISO:-"http://mirror.umd.edu/centos/7.2.1511/isos/x86_64/CentOS-7-x86_64-Minimal-1511.iso"}
+# Test new version of CentOS 7.3
+export COBBLER_REMOTE_URL_ISO=${COBBLER_REMOTE_URL_ISO:-"http://mirror.umd.edu/centos/7.3.1611/isos/x86_64/CentOS-7-x86_64-Minimal-1611.iso"}
 export COBBLER_DOWNLOAD_ISO=1
 
 # Source the bootstrap configuration file if present.

@@ -29,5 +29,10 @@ end
 
 default['chef-bcs']['enabled']['encrypt_data_bag'] = false
 
+# NB: Set this to true if you would like to build-in a development environment (use for dev/test)
+default['chef-bcs']['development']['enabled'] = false
+# Just to have somewhere to put things. Only applies if the enabled is set to true
+default['chef-bcs']['development']['user'] = 'operations'
+
 # Don't remove unless you set it somewhere else since this controls the firewalld cookbook
 default['firewall']['allow_ssh'] = true

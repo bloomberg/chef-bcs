@@ -14,6 +14,7 @@ depends "ceph-chef", ">= 0.9.3"
 depends "sudo", ">= 2.7.2"
 depends "collectd", ">= 2.2.2"
 depends "collectd_plugins", ">= 2.1.1"
+depends "yumgroup", ">= 0.5.0"
 
 supports 'redhat', '>= 7.2'
 supports 'centos', '>= 7.2'

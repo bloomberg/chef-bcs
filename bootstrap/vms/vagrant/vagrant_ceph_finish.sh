@@ -23,4 +23,9 @@ source vagrant_base.sh
 
 for vm in ${ceph_vms[@]}; do
   do_on_node $vm "sudo chef-client $CHEF_CLIENT_DEBUG -o 'recipe[ceph-chef::finish]'"
+
+  # NB: The command is used for any possible development where librados needs to be linked into projects.
+  # No real need to call this in a production environment since any custom built Ceph related apps will have
+  # already been built (maybe :))
+  do_on_node $vm "sudo chef-client $CHEF_CLIENT_DEBUG -o 'recipe[chef-bcs::ceph-finish]'"
 done
