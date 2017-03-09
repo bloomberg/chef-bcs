@@ -41,9 +41,12 @@ sudo systemctl stop collectd
 # with this process until you hit a final 0.0 reweight.
 
 # Step 2 (on the node where the OSD resides)
+# If a drive has failed, Ceph will have already marked the OSD out and the service may already be down so `set +e` for those two commands
+set +e
 ceph osd out $osd
 # NOTE: Can change the next line to ssh into the host to shut it down or just run this on the node itself.
 sudo service ceph stop osd.$osd
+set -e
 ceph osd crush remove osd.$osd
 ceph auth del osd.$osd
 ceph osd rm $osd

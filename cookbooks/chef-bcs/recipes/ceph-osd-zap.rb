@@ -49,7 +49,8 @@ if node['ceph']['osd']['devices']
     action :run
   end
 
-  include_recipe 'chef-bcs::ceph-journal-zap'
+  # Becareful here. This removes ALL journals on a device when you may only want to remove 1 journal.
+  # include_recipe 'chef-bcs::ceph-journal-zap'
 else
   Log.info("node['ceph']['osd']['devices'] empty")
 end

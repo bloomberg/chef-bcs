@@ -39,6 +39,7 @@ for i in $(parted --machine -- $dev print); do
 
   # Destroy partition if it matches - DANGER!
   if [[ $partition -eq 0 || $partition -eq $part ]]; then
-      echo "Nothing yet..."
+      echo "Nothing yet... WIP"
+      # Need to find which journal is associated with the given OSD and then what partition number it is. Then delete the given partition
   fi
 done

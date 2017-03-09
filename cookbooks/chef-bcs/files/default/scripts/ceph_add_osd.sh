@@ -25,53 +25,34 @@ set -e
 
 data=$1
 journal=$2
-cluster=${3:ceph}
-fs=${4:xfs}
+cluster=${3:-ceph}
+fs=${4:-xfs}
 
 if [[ -z $data ]]; then
-  echo 'Must pass in a valid data device name.'
+  echo 'Must pass in a valid data device name (i.e., /dev/sdl).'
   exit 1
 fi
 
 if [[ -z $journal ]]; then
-  echo 'Must pass in a valid journal device name.'
+  echo 'Must pass in a valid journal device name (i.e., /dev/sdn11 - if you want to use the same journal OR /dev/sdn and a new partition on the device will be created).'
   exit 1
 fi
 
 if [[ -z $cluster ]]; then
-  echo 'Must pass in a valid cluster name.'
+  echo 'Must pass in a valid cluster name (defaults to `ceph`).'
   exit 1
 fi
 
 if [[ -z $fs ]]; then
-  echo 'Must pass in a valid fs-type name.'
+  echo 'Must pass in a valid fs-type name (defaults to `xfs`).'
   exit 1
 fi
 
-found=$(parted --script $data print | egrep -sq '^ 1.*ceph')
+# NOTE: If this scripts bails here then just run the two commands below with the correct parameters! This is for safety!!
+found=$(parted --script $data print 2>/dev/null | egrep -c 'ceph')
 if [[ $found -eq 0 ]]; then
-  # Remove the device if needed first so that you can rescan
-  # echo 1 > /sys/block/sdX/device/delete
-  is_device=$(echo '$data' | egrep '/dev/(([a-z]{3,4}[0-9]$)|(cciss/c[0-9]{1}d[0-9]{1}p[0-9]$))')
   ceph-disk -v prepare --cluster $cluster --fs-type $fs $data $journal
-  if [[ ! -z $is_device ]]; then
-    ceph-disk -v activate $data1
-  else
-    ceph-disk -v activate $data
-  fi
-
-  # Redhat/CentOS
-  sysvinit=$(find /var/lib/ceph/osd -name sysvinit)
-  if [[ ! -z $sysvinit ]]; then
-    sudo service ceph start osd
-  else
-    upstart=$(find /var/lib/ceph/osd -name upstart)
-    if [[ ! -z $upstart ]]; then
-      sudo service ceph start osd
-    else
-      sudo systemctl start ceph osd
-    fi
-  fi
+  ceph-disk -v activate $data
 else
   echo 'Device: $data is already allocated!'
   exit 1
