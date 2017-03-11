@@ -31,9 +31,13 @@ set -e
 
 # NOTE: MUST be run on the OSD node itself!
 
+# osd is the osd number like 100 or 233 or something and not like 'osd.83'
 osd=$1
+# rack number is in the format of 1, 2, 3...
 rack=$2
-data_type=${3:hdd}
+# check `ceph osd tree` to get weight value
+WEIGHT=$3
+data_type=${4:-hdd}
 
 if [[ -z $osd ]]; then
   echo 'Must pass in a valid OSD number.'
@@ -45,11 +49,18 @@ if [[ -z $rack ]]; then
   exit 1
 fi
 
+if [[ -z $WEIGHT ]]; then
+  echo 'Must pass in a valid WEIGHT (see `ceph osd tree for valid weight` - assuming same size drive).'
+  exit 1
+fi
+
 if [[ -z $data_type ]]; then
   echo 'Must pass in a valid root data type - defaults to hdd.'
   exit 1
 fi
 
-SIZE=`df -k | grep '/ceph-$osd' | awk '{print $2}'`
-WEIGHT=`echo "scale=4; $SIZE/1000000000.0" | bc -q`
+# SIZE=`df -k | grep '/ceph-$osd' | awk '{print $2}'`
+# WEIGHT=`echo "scale=4; $SIZE/1000000000.0" | bc -q`
+# We already know the weight based on `ceph osd tree`
+
 ceph osd crush create-or-move $osd $WEIGHT root=$data_type rack=rack$rack host=$(hostname)
