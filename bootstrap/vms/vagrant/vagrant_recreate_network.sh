@@ -25,9 +25,11 @@ export BOOTSTRAP_CHEF_ENV={$BOOSTRAP_CHEF_ENV:-"vagrant"}
 source vagrant_base.sh
 
 function reset_network_interfaces {
+  set +e
   for vm in ${CEPH_CHEF_HOSTS[@]}; do
       node_reset_network_interfaces $vm
   done
+  set -e
 }
 
 # This function cleans the network interfaces and then resets them. If you clone the VMs and then refresh the
@@ -36,7 +38,9 @@ function reset_network_interfaces {
 # This function calls a function called node_update_network_interfaces on the given node to update the interfaces
 function node_reset_network_interfaces {
     local node=$1
+    echo "Calling vagrant ssh $node -c . network.sh && node_update_network_interfaces"
     vagrant ssh $node -c ". network.sh && node_update_network_interfaces"
+    echo "Calling vagrant ssh $node -c . network.sh && . network_setup.sh && node_update_network_ips"
     vagrant ssh $node -c ". network.sh && . network_setup.sh && node_update_network_ips"
 }
 
@@ -61,7 +65,7 @@ function recreate_network_interfaces {
 
   # Force a pause to allow for spin up
   echo "Updating IPs on network interfaces..."
-  sleep 10
+  sleep 20
   reset_network_interfaces
 
   echo "Completed IP assignments..."

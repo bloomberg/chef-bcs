@@ -6,6 +6,7 @@
   "run_list": [
     "role[common]",
     "recipe[chef-bcs::ceph-conf]",
+    "recipe[ceph-chef]",
     "recipe[chef-bcs::repo]",
     "recipe[ceph-chef::repo]",
     "recipe[chef-bcs::ceph-mon]",

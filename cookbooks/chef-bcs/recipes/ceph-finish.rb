@@ -17,9 +17,10 @@
 # limitations under the License.
 #
 
-# This is called from 'ceph-conf'
+# So some Ceph tools will find librados if the tool needs to be built.
+# sudo ln -s /usr/lib64/librados.so.2.0.0 /usr/lib64/librados.so
 
-node.default['ceph']['version'] = node['chef-bcs']['ceph']['repo']['version']['name']
-node.default['ceph']['branch'] = node['chef-bcs']['ceph']['repo']['version']['branch']
-
-node.default['ceph']['repo']['create'] = node['chef-bcs']['ceph']['repo']['create']
+execute 'symlink-librados' do
+  command 'ln -s /usr/lib64/librados.so.2.0.0 /usr/lib64/librados.so'
+  ignore_failure true
+end

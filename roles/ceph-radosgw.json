@@ -6,6 +6,7 @@
     "role[common]",
     "recipe[chef-bcs::ceph-conf]",
     "recipe[chef-bcs::repo]",
+    "recipe[ceph-chef]",
     "recipe[ceph-chef::repo]",
     "recipe[chef-bcs::ceph-radosgw]",
     "recipe[ceph-chef::radosgw]",

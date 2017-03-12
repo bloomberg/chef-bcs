@@ -36,6 +36,8 @@ function reset_network_interfaces {
 # This function calls a function called node_update_network_interfaces on the given node to update the interfaces
 function node_reset_network_interfaces {
     local node=$1
+    echo "$node"
+
     ssh $node ". network.sh && node_update_network_interfaces"
     ssh $node ". network.sh && . network_setup.sh && node_update_network_ips"
 }

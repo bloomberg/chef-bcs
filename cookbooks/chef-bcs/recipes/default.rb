@@ -110,3 +110,24 @@ end
 
 # Set ntp servers
 node.default['ntp']['servers'] = node['chef-bcs']['ntp']['servers']
+
+# If you want a dev/test environment then make sure this is set to `true` in attributes/default
+# NOTE: By default, if you set true in the environment json file it will override the default of false.
+# This will also install the development environment on all ceph nodes in the cluster.
+# If you only want it on mon nodes the move this code block to the ceph-mon.rb recipe file (just an example).
+# I would not recommend doing this production unless you absolutely need to (keep the default of false).
+if node['chef-bcs']['development']['enabled']
+    include_recipe 'yumgroup::default'
+    package 'git'
+    package 'cmake'
+    package 'openssl'
+    # libssl in Ubuntu
+    package 'openssl-devel'
+    yumgroup 'Development Tools' do
+      action :install
+    end
+    # NB: At the end of the ceph install, librados libraries will have been installed. Symlink them:
+    # sudo ln -s /usr/lib64/librados.so.2.0.0 /usr/lib64/librados.so
+    # This will allow some Ceph tools to find it easier.
+    # There is a recipe called ceph-finish.rb that does this. In the Vagrant dev environment, it's done automatically.
+end

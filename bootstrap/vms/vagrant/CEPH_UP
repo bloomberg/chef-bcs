@@ -26,7 +26,13 @@ set -eu
 
 clear
 
-echo "Chef-BCS Vagrant Bootstrap"
+echo "   __     "
+echo "   \ \    "
+echo "    > \   "
+echo "   / ^ \  "
+echo "  /_/ \_\ "
+echo
+echo "Ceph Vagrant Build"
 echo "--------------------------------------------"
 echo "Bootstrapping local CEPH environment using Vagrant..."
 echo
