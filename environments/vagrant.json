@@ -16,7 +16,7 @@
       "repo": {
         "NOTE": "Pins the current version of ceph or any other packaged in the array at the moment of install.",
         "packages": [
-          {"name": "ceph", "version": "10.2.1-0.el7", "pin": true}
+          {"name": "ceph", "version": "10.2.6-0.el7", "pin": true}
         ]
       },
       "cron": {
@@ -383,6 +383,7 @@
         "cluster": "ceph",
         "repo": {
           "create": true,
+          "NOTE": "name: hammer, branch: stable, revision: 0.el7, number: 0.94.7. arch: x86_64",
           "version": {
             "name": "hammer",
             "branch": "stable",

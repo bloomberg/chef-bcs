@@ -17,11 +17,7 @@
 # limitations under the License.
 #
 
-# Comment out the two lines below to go back to the latest hammer point release
-# node.default['ceph']['branch'] = 'testing'
-# node.default['ceph']['version'] = 'infernalis'
-
-include_recipe 'chef-bcs::ceph-conf'
+# This is called from 'ceph-conf'
 
 node.default['ceph']['version'] = node['chef-bcs']['ceph']['repo']['version']['name']
 node.default['ceph']['branch'] = node['chef-bcs']['ceph']['repo']['version']['branch']

@@ -244,7 +244,8 @@ Vagrant.configure("2") do |config|
         # Fun Ceph ascii art of a squid :)
         # If this gets in the way any tools you have created then move it to machine.vm.provider :virtualbox
         puts "-" * (machine.vm.hostname.length + 14)
-        puts "<コ:彡 " + machine.vm.hostname + " <コ:彡"
+        # puts "<コ:彡 " + machine.vm.hostname + " <コ:彡"
+        puts "λ - " + machine.vm.hostname + " - λ"
         puts "-" * (machine.vm.hostname.length + 14)
 
         # copy custom certs to host

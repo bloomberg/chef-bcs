@@ -97,22 +97,22 @@ if [[ ! -z $COBBLER_BOOTSTRAP_ISO ]]; then
 fi
 
 # Obtain Chef client and server RPMs.
-# export CHEF_CLIENT_RPM=chef-12.11.18-1.el7.x86_64.rpm
-# export CHEF_SERVER_RPM=chef-server-core-12.6.0-1.el7.x86_64.rpm
-export CHEF_CLIENT_RPM=chef-12.18.31-1.el7.x86_64.rpm
-export CHEF_CLIENT_RPM_SEMVER=12.18.31
-export CHEF_SERVER_RPM=chef-server-core-12.11.1-1.el7.x86_64.rpm
-export CHEF_SERVER_RPM_SEMVER=12.11.1
+# export CHEF_CLIENT_RPM=chef-12.18.31-1.el7.x86_64.rpm
+# export CHEF_CLIENT_RPM_SEMVER=12.18.31
+# export CHEF_SERVER_RPM=chef-server-core-12.11.1-1.el7.x86_64.rpm
+# export CHEF_SERVER_RPM_SEMVER=12.11.1
+export CHEF_CLIENT_RPM=chef-12.19.36-1.el7.x86_64.rpm
+export CHEF_CLIENT_RPM_SEMVER=12.19.36
+export CHEF_SERVER_RPM=chef-server-core-12.13.0-1.el7.x86_64.rpm
+export CHEF_SERVER_RPM_SEMVER=12.13.0
 echo "Downloading Chef..."
-# download_file /rpms/$CHEF_CLIENT_RPM https://packages.chef.io/stable/el/7/$CHEF_CLIENT_RPM
-# download_file /rpms/$CHEF_SERVER_RPM https://packages.chef.io/stable/el/7/$CHEF_SERVER_RPM
 download_file /rpms/$CHEF_CLIENT_RPM https://packages.chef.io/files/stable/chef/$CHEF_CLIENT_RPM_SEMVER/el/7/$CHEF_CLIENT_RPM
 download_file /rpms/$CHEF_SERVER_RPM https://packages.chef.io/files/stable/chef-server/$CHEF_SERVER_RPM_SEMVER/el/7/$CHEF_SERVER_RPM
 # BIRD is a little different :)
 #ftp_file /rpms/bird-1.5.0-1.x86_64.rpm ftp://bird.network.cz/pub/bird/redhat/bird-1.5.0-1.x86_64.rpm
 
-# Python pyyaml
-download_file /python/PyYAML-3.11.tar.gz http://pyyaml.org/download/pyyaml/PyYAML-3.11.tar.gz
+# Python pyyaml - previous 3.11
+download_file /python/PyYAML-3.12.tar.gz http://pyyaml.org/download/pyyaml/PyYAML-3.12.tar.gz
 
 # Pull needed *cookbooks* from the Chef Supermarket.
 mkdir -p $BOOTSTRAP_CACHE_DIR/{cookbooks,gems}
@@ -132,35 +132,59 @@ if [[ $CEPH_DEV_MODE -ne 0 ]]; then
   git_clone_or_update github/ceph https://github.com/ceph/ceph.git
 fi
 
-download_file cookbooks/poise-2.6.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/poise/versions/2.6.0/download
-download_file cookbooks/chef-client-4.3.3.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/chef-client/versions/4.3.3/download
-download_file cookbooks/windows-1.39.1.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/windows/versions/1.39.1/download
-download_file cookbooks/cron-1.7.6.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/cron/versions/1.7.6/download
-download_file cookbooks/logrotate-1.9.2.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/logrotate/versions/1.9.2/download
-download_file cookbooks/ntp-1.10.1.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/ntp/versions/1.10.1/download
-download_file cookbooks/yum-3.10.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/yum/versions/3.10.0/download
-download_file cookbooks/yum-epel.0.6.5.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/yum-epel/versions/0.6.5/download
-download_file cookbooks/apt-1.10.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/apt/versions/1.10.0/download
-download_file cookbooks/apache2-3.1.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/apache2/versions/3.1.0/download
-download_file cookbooks/chef_handler-1.3.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/chef_handler/versions/1.3.0/download
-download_file cookbooks/firewall-2.4.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/firewall/versions/2.4.0/download
+# previous poise-2.6.0
+download_file cookbooks/poise-2.7.2.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/poise/versions/2.7.2/download
+# previous chef-client-4.3.3
+download_file cookbooks/chef-client-7.2.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/chef-client/versions/7.2.0/download
+# previous windows-1.39.1
+download_file cookbooks/windows-2.1.1.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/windows/versions/2.1.1/download
+# previous ohai-5.0.0 (dependency of windows)
+download_file cookbooks/ohai-5.0.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/ohai/versions/5.0.0/download
+# previous cron-1.7.6
+download_file cookbooks/cron-4.0.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/cron/versions/4.0.0/download
+# previous logrotate-1.9.2
+download_file cookbooks/logrotate-2.1.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/logrotate/versions/2.1.0/download
+# previous compat_resource-12.16.3 (dependency for logrotate)
+download_file cookbooks/compat_resource-12.16.3.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/compat_resource/versions/12.16.3/download
+# previous ntp-1.10.1
+download_file cookbooks/ntp-3.3.1.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/ntp/versions/3.3.1/download
+# previous yum-3.10.0
+download_file cookbooks/yum-5.0.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/yum/versions/5.0.0/download
+# previous yum-epel.0.6.5
+download_file cookbooks/yum-epel.2.1.1.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/yum-epel/versions/2.1.1/download
+# previous apt-1.10.0
+download_file cookbooks/apt-6.0.1.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/apt/versions/6.0.1/download
+# previous apache2-3.1.0
+download_file cookbooks/apache2-3.2.2.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/apache2/versions/3.2.2/download
+# previous chef_handler-1.3.0
+download_file cookbooks/chef_handler-2.1.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/chef_handler/versions/2.1.0/download
+# previous firewall-2.4.0
+download_file cookbooks/firewall-2.5.4.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/firewall/versions/2.5.4/download
+# previous chef-sugar-3.4.0
 download_file cookbooks/chef-sugar-3.4.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/chef-sugar/versions/3.4.0/download
-download_file cookbooks/sudo-2.9.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/sudo/versions/2.9.0/download
-download_file cookbooks/collectd-2.2.2.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/collectd/versions/2.2.2/download
-download_file cookbooks/collectd_plugins-2.1.1.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/collectd_plugins/versions/2.1.1/download
-download_file cookbooks/poise-service-1.0.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/poise-service/versions/1.0.0/download
+# previous sudo-2.9.0
+download_file cookbooks/sudo-3.3.1.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/sudo/versions/3.3.1/download
+# previous collectd-2.2.2
+download_file cookbooks/collectd-2.2.4.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/collectd/versions/2.2.4/download
+# previous collectd_plugins-2.1.1
+download_file cookbooks/collectd_plugins-2.1.3.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/collectd_plugins/versions/2.1.3/download
+# previous poise-service-1.0.0
+download_file cookbooks/poise-service-1.4.2.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/poise-service/versions/1.4.2/download
 
 # For yum groupinstalls. Used to help install dev/test environment
+# previous yumgroup-0.5.0
 download_file cookbooks/yumgroup-0.5.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/yumgroup/versions/0.5.0/download
 
 # Could download development packages if desired and needed behind firewalls. It would ge here...
 
 # Gems
 # REQUIRED for ceph-chef cookbook - must be installed before doing 'sudo chef-client' on any node
+# previous netaddr-1.5.1
 download_file gems/netaddr-1.5.1.gem https://rubygems.org/downloads/netaddr-1.5.1.gem
 
 # Pull knife-acl gem. This is ONLY needed if using data bags where the data bag is created with a recipe!
 # 0.0.12
+# previous knife-acl-0.0.12
 download_file gems/knife-acl-0.0.12.gem https://rubygems.global.ssl.fastly.net/gems/knife-acl-0.0.12.gem
 
 # Pull needed gems for fpm

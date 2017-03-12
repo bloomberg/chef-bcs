@@ -4,6 +4,7 @@
 # NOTE: The values below are Vagrant only. A production like version would only have values reflective of that
 # environment which may or may not contain some of the information below (i.e., http_proxy etc).
 vagrant:
+    # bento/centos-7.2+ has an ssh issue
     box: bento/centos-7.1  # centos/7
     lsb_name: centos
     storage_controller: SATA Controller
@@ -25,5 +26,5 @@ vagrant:
     # Important: CA cert directory *must* reside in the root of the project. Put cert(s) in that directory.
     # Also, you may not use an intermediate CA cert. If so, then leave it blank.
     # Example: certs/my_firm_cert.pem and certs/my_firm_intermediate_cert.pem
-    ssl_ca_file_path: 
+    ssl_ca_file_path:
     ssl_ca_intermediate_file_path:

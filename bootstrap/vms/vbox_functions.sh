@@ -263,8 +263,8 @@ function config_networks {
     start_vms
 
     # Force a pause to allow for spin up
-    echo "Updating IPs on network interfaces..."
-    sleep 10
+    echo "Updating IPs on network interfaces (vbox_functions)..."
+    sleep 20
     update_network_interfaces
 
     echo "Completed IP assignments..."
