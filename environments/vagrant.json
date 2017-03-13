@@ -385,10 +385,10 @@
           "create": true,
           "NOTE": "name: hammer, branch: stable, revision: 0.el7, number: 0.94.7. arch: x86_64",
           "version": {
-            "name": "hammer",
+            "name": "jewel",
             "branch": "stable",
             "revision": "0.el7",
-            "number": "0.94.7",
+            "number": "10.2.6",
             "arch": "x86_64"
           }
         },

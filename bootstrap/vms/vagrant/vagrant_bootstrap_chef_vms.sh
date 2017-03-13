@@ -41,6 +41,11 @@ for vm in ${ceph_vms[@]}; do
   do_on_node $vm "sudo cp /ceph-files/gems/netaddr-1.5.1.gem /tmp/."
   do_on_node $vm "sudo chown vagrant:vagrant /tmp/netaddr-1.5.1.gem"
   do_on_node $vm "sudo /opt/chef/embedded/bin/gem install --force --local /tmp/netaddr-1.5.1.gem"
+
+  # REQUIRED gems: chef-sugar-3.4.0 for ceph-chef Cookbook
+  do_on_node $vm "sudo cp /ceph-files/gems/chef-sugar-3.4.0.gem /tmp/."
+  do_on_node $vm "sudo chown vagrant:vagrant /tmp/chef-sugar-3.4.0.gem"
+  do_on_node $vm "sudo /opt/chef/embedded/bin/gem install --force --local /tmp/chef-sugar-3.4.0.gem"
 done
 
 # augment the previously configured nodes with our newly uploaded environments and roles

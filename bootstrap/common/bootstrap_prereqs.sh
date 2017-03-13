@@ -181,6 +181,8 @@ download_file cookbooks/yumgroup-0.5.0.tar.gz http://cookbooks.opscode.com/api/v
 # REQUIRED for ceph-chef cookbook - must be installed before doing 'sudo chef-client' on any node
 # previous netaddr-1.5.1
 download_file gems/netaddr-1.5.1.gem https://rubygems.org/downloads/netaddr-1.5.1.gem
+# previous chef-sugar-3.4.0
+download_file gems/chef-sugar-3.4.0.gem https://rubygems.org/downloads/chef-sugar-3.4.0.gem
 
 # Pull knife-acl gem. This is ONLY needed if using data bags where the data bag is created with a recipe!
 # 0.0.12
