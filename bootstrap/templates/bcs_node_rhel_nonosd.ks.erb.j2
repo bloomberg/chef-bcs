@@ -175,6 +175,8 @@ chown -R {{ user.name }}:{{ user.name }} /ceph-host
 cat /ceph-host/bootstrap/data/environment/{{ node.environment }}/hosts >> /etc/hosts
 cp /ceph-files/gems/netaddr-1.5.1.gem /tmp/.
 chown {{ user.name }}:{{ user.name }} /tmp/netaddr-1.5.1.gem
+cp /ceph-files/gems/chef-sugar-3.4.0.gem /tmp/.
+chown {{ user.name }}:{{ user.name }} /tmp/chef-sugar-3.4.0.gem
 
 # Allow root login to begin with. Chef recipe will disable later in process.
 sed -i "s/#PermitRootLogin yes/PermitRootLogin yes/" /etc/ssh/sshd_config
@@ -225,6 +227,7 @@ chmod 0644 /etc/chef/client.rb
 knife ssl fetch -c /etc/chef/client.rb
 chef-client
 /opt/chef/embedded/bin/gem install --force --local /tmp/netaddr-1.5.1.gem
+/opt/chef/embedded/bin/gem install --force --local /tmp/chef-sugar-3.4.0.gem
 
 cat <<EOM >/tmp/chef-enroll.sh
 yum update -y
@@ -241,6 +244,7 @@ chmod 0644 /etc/chef/client.rb
 knife ssl fetch -c /etc/chef/client.rb
 chef-client
 /opt/chef/embedded/bin/gem install --force --local /tmp/netaddr-1.5.1.gem
+/opt/chef/embedded/bin/gem install --force --local /tmp/chef-sugar-3.4.0.gem
 EOM
 
 chmod +x /tmp/chef-enroll.sh

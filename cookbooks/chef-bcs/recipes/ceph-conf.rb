@@ -21,12 +21,25 @@
 # Some values are part of 'ceph''config''global' which will create a k,v pair as is.
 # Some values are specific variables that need to be set instead.
 
+# NB: ceph-chef::default recipe included at bottom
+
 include_recipe 'chef-bcs::repo'
 
 # NOTE: This file also updates the data in the ceph-chef cookbook
 node.default['ceph']['cluster'] = node['chef-bcs']['ceph']['cluster']
 node.default['ceph']['version'] = node['chef-bcs']['ceph']['repo']['version']['name']
 node.default['ceph']['branch'] = node['chef-bcs']['ceph']['repo']['version']['branch']
+
+# NOTE: If the version is 'hammer' then change owner and group to 'root'
+if node['chef-bcs']['ceph']['repo']['version']['name'] == 'hammer'
+    node.default['ceph']['owner'] = 'root'
+    node.default['ceph']['group'] = 'root'
+    node.default['ceph']['mode'] = 0o0755
+else
+    node.default['ceph']['owner'] = 'ceph'
+    node.default['ceph']['group'] = 'ceph'
+    node.default['ceph']['mode'] = 0o0750
+end
 
 node.default['ceph']['repo']['create'] = node['chef-bcs']['ceph']['repo']['create']
 
@@ -92,3 +105,6 @@ node.default['ceph']['radosgw']['users'] = node['chef-bcs']['ceph']['radosgw']['
 node.default['ceph']['restapi']['url'] = node['chef-bcs']['ceph']['restapi']['url']
 node.default['ceph']['restapi']['ip'] = node['chef-bcs']['ceph']['restapi']['ip']
 node.default['ceph']['restapi']['port'] = node['chef-bcs']['ceph']['restapi']['port']
+
+include_recipe 'ceph-chef::default'
+include_recipe 'ceph-chef::repo'
