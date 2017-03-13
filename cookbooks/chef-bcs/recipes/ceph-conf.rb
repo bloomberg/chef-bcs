@@ -105,6 +105,3 @@ node.default['ceph']['radosgw']['users'] = node['chef-bcs']['ceph']['radosgw']['
 node.default['ceph']['restapi']['url'] = node['chef-bcs']['ceph']['restapi']['url']
 node.default['ceph']['restapi']['ip'] = node['chef-bcs']['ceph']['restapi']['ip']
 node.default['ceph']['restapi']['port'] = node['chef-bcs']['ceph']['restapi']['port']
-
-include_recipe 'ceph-chef::default'
-include_recipe 'ceph-chef::repo'
