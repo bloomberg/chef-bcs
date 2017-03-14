@@ -435,7 +435,7 @@
               "zone_instances": [
                 {%- for item in vip.vips %}
                   {%- if item.type == "rgw" %}
-                  {"name": "{{ item.name }}", "port": "{{ item.backend_port }}", "region": "{{ item.region }}", "url": "{{ item.url }}"}{%- if not loop.last %},{% endif %}
+                  {"name": "{{ item.name }}", "port": "{{ item.backend_port }}", "region": "{{ item.region }}", "url": "{{ item.url }}", "rgw_thread_pool": {{ item.rgw_thread_pool }}, "handles": {{ item.handles }}, "threads": {{ item.threads }}}{%- if not loop.last %},{% endif %}
                   {%- endif %}
                 {%- endfor %}
               ],
