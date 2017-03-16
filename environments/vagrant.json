@@ -430,6 +430,10 @@
         "radosgw": {
           "port": 8080,
           "default_url": "ceph-vm1.ceph.example.com",
+          "logs": {
+            "ops": true,
+            "usage": true,
+          },
           "users": [
              {
               "uid": "radosgw",

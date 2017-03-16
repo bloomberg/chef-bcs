@@ -351,6 +351,10 @@
         "radosgw": {
           "port": 8080,
           "default_url": "{{ ceph.radosgw.default_url }}",
+          "logs": {
+            "ops": {%- if ceph.radosgw.logs.ops.enable == True %} true, {% else %} false, {%- endif %}
+            "usage": {%- if ceph.radosgw.logs.usage.enable == True %} true {% else %} false {%- endif %}
+          },
           "users": [
             {%- for user in ceph.radosgw.users %}
               {"uid": "{{ user.uid }}", "name": "{{ user.name }}", "email": "{{ user.email }}", "admin_caps": "{{ user.admin_caps }}", "access_key": "{{ user.access_key }}", "secret_key": "{{ user.secret_key }}", "max_buckets": {{ user.max_buckets }}, "status": "{{ user.status }}", "key_type": "{{ user.key_type }}", "quota": {"user": { "status": "{{ user.quota.user.status }}", "size": {{ user.quota.user.size }}, "objects": {{ user.quota.user.objects }} }, "buckets": [{%- for bucket in user.quota.buckets %}{"name": "{{ bucket.name }}", "status": "{{ bucket.status }}", "size": {{ bucket.size }}, "objects": {{ bucket.objects }}}{%- if not loop.last %},{% endif %}{%- endfor %}]}, "zones": ["{{ user.zones|join('","') }}"], "buckets": ["{{ user.buckets|join('","') }}"] }{%- if not loop.last %},{% endif %}
