@@ -41,6 +41,9 @@ package 'fping'
 # Used to help find sensor issues on nodes if BMC doesn't show much
 package 'lm_sensors'
 
+# Helps with checking OSD performance 
+package 'perf'
+
 # I/O troubleshooting tools
 package 'fio'
 package 'bc'
