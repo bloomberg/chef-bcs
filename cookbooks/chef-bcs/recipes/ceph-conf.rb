@@ -102,6 +102,8 @@ node.default['ceph']['radosgw']['default_url'] = node['chef-bcs']['ceph']['rados
 # NOTE: Need to double test why the node['chef-bcs']['ceph']['radosgw']['logs']['ops']['enable'] did not show the data.
 node.default['ceph']['radosgw']['logs']['ops']['enable'] = true #node['chef-bcs']['ceph']['radosgw']['logs']['ops']['enable']
 node.default['ceph']['radosgw']['logs']['usage']['enable'] = true #node['chef-bcs']['ceph']['radosgw']['logs']['usage']['enable']
+node.default['ceph']['radosgw']['debug']['logs']['enable'] = node['chef-bcs']['ceph']['radosgw']['debug']['logs']['enable']
+node.default['ceph']['radosgw']['debug']['logs']['level'] = node['chef-bcs']['ceph']['radosgw']['debug']['logs']['level']
 
 # Add whatever users and buckets you want the cookbook to automatically set up for you in the  node['chef-bcs']['ceph']['radosgw']['users']
 node.default['ceph']['radosgw']['users'] = node['chef-bcs']['ceph']['radosgw']['users']
