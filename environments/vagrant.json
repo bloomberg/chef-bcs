@@ -433,12 +433,12 @@
           "debug": {
             "logs": {
               "level": 20,
-              "enable": true,
+              "enable": true
             }
           },
           "logs": {
             "ops": true,
-            "usage": true,
+            "usage": true
           },
           "users": [
              {
