@@ -32,3 +32,12 @@
 # }
 
 include_recipe 'chef-bcs::ceph-conf'
+
+if node['chef-bcs']['ceph']['tcmalloc']['enable']
+  cookbook_file "/etc/sysconfig/ceph" do
+    source "ceph"
+    owner 'root'
+    group 'root'
+    mode 00644
+  end
+end

@@ -36,3 +36,8 @@ default['chef-bcs']['development']['user'] = 'operations'
 
 # Don't remove unless you set it somewhere else since this controls the firewalld cookbook
 default['firewall']['allow_ssh'] = true
+
+default['chef-bcs']['ceph']['tcmalloc']['enable'] = true
+
+default['chef-bcs']['ceph']['radosgw']['debug']['logs']['enable'] = false
+default['chef-bcs']['ceph']['radosgw']['debug']['logs']['level'] = 20

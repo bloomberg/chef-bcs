@@ -351,6 +351,12 @@
         "radosgw": {
           "port": 8080,
           "default_url": "{{ ceph.radosgw.default_url }}",
+          "debug": {
+            "logs": {
+              "level": {{ ceph.radosgw.debug.logs.level }},
+              "enable": {%- if ceph.radosgw.debug.logs.enable == True %} true {% else %} false {%- endif %}
+            }
+          },
           "logs": {
             "ops": {%- if ceph.radosgw.logs.ops.enable == True %} true, {% else %} false, {%- endif %}
             "usage": {%- if ceph.radosgw.logs.usage.enable == True %} true {% else %} false {%- endif %}
