@@ -119,13 +119,13 @@ mkdir -p $BOOTSTRAP_CACHE_DIR/{cookbooks,gems}
 
 # Most important cookbook
 # If set then it will not download but remove from cache and use the development version that should be set in the chef-bcs/cookbooks directory.
-# if [[ $CHEF_BCS_DEBUG -eq 0 ]]; then
-#   echo "Downloading ceph-chef..."
-#   download_file cookbooks/ceph-chef-1.0.14.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/ceph-chef/versions/1.0.14/download
-# else
+if [[ $CHEF_BCS_DEBUG -eq 0 ]]; then
+  echo "Downloading ceph-chef..."
+  download_file cookbooks/ceph-chef-1.1.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/ceph-chef/versions/1.1.0/download
+else
   # Remove it so it's not used.
   rm -f $BOOTSTRAP_CACHE_DIR/cookbooks/ceph-chef-*
-# fi
+fi
 
 if [[ $CEPH_DEV_MODE -ne 0 ]]; then
   echo "Cloning Ceph..."
