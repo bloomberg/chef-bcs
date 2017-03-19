@@ -50,4 +50,6 @@ source vagrant_ceph_finish.sh
 
 source vagrant_ceph_adc.sh
 
+source vagrant_ceph_mgr.sh
+
 echo "Completed Chef configuration!!"
