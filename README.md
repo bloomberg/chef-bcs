@@ -1,4 +1,4 @@
-# Chef-BCS
+## Chef-BCS
 
 [![Join the chat at https://gitter.im/bloomberg/chef-bcs](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/bloomberg/chef-bcs?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
@@ -15,13 +15,31 @@ The current version is focused on installing and configuring Ceph for CentOS and
 
 ## Instructions
 1. Fork/clone repo
-2. Navigate to [whatever path]/ceph-bcs/bootstrap/vms/vagrant directory
+2. Navigate to `[whatever path]/ceph-bcs/bootstrap/vms/vagrant` directory
 3. Launch Vagrant version to see how it works and to do development and testing by issuing **./CEPH_UP** command (in /bootstrap/vms/vagrant directory)
 
 ## Process (Vagrant)
-After launching **./CEPH_UP** the process will do the following:
+Assuming you're in the path mentioned in #2 above.
 
-1. Download CentOS 7.1 box version from Chef Bento upstream
+To start a normal build simply do the following (no proxy):
+
+>./CEPH_UP
+
+NB: If you want to test the upstream `ceph-chef` cookbook then clone that repo, make your changes, copy your cloned repo into the `cookbooks` section of the is cloned repo and then run the following command to start the build and test:
+
+>./CEPH_UP -d 0   <-- Run in debug mode
+
+NB: Behind firewall:
+
+>./CEPH_UP -p [whatever your http(s) proxy url]
+
+>OR
+
+>./CEPH_UP -d 0 -p [whatever your http(s) proxy url]  <-- Run in debug mode
+
+### What happens...
+
+1. Download CentOS 7.1 box version from Chef Bento upstream (7.2 and 7.3 versions of the bento/centos have sshd issues)
 2. Download required cookbooks including ceph-chef which is the most important
 3. Issue vagrant up that creates 4 VMs (dynamic and part of yaml file in /bootstrap/vms directory)
 4. Spins down VMs and adds network adapters and interfaces, sets up folder sharing and start VMs again
@@ -88,15 +106,15 @@ If there are **[issues](https://github.com/bloomberg/chef-bcs/issues)** then ple
 
 ### Chef
 
-\>= 12.5+
+\>= 12.8+
 
 ### Platform
 
 Tested as working:
 
-* Ubuntu Trusty (14.04) [Still verifying updates work]
-* CentOS (7.1)
-* RHEL (7.1)
+* Ubuntu Trusty (16.04) [Still verifying updates work]
+* CentOS (7.3)
+* RHEL (7.3)
 
 ### Cookbooks
 
@@ -117,15 +135,32 @@ https://supermarket.chef.io/
 * [chef-handler](https://supermarket.chef.io/cookbooks/chef-handler)
 * [chef-sugar](https://supermarket.chef.io/cookbooks/chef-sugar)
 * [collectd](https://supermarket.chef.io/cookbooks/collectd)
+* [collectd_plugins](https://supermarket.chef.io/cookbooks/collectd_plugins)
 * [cron](https://supermarket.chef.io/cookbooks/cron)
 * [firewall](https://supermarket.chef.io/cookbooks/firewall)
 * [logrotate](https://supermarket.chef.io/cookbooks/logrotate)
 * [ntp](https://supermarket.chef.io/cookbooks/ntp)
 * [sudo](https://supermarket.chef.io/cookbooks/sudo)
 * [windows](https://supermarket.chef.io/cookbooks/windows)
+* [ohai](https://supermarket.chef.io/cookbooks/ohai)
 * [yum-epel](https://supermarket.chef.io/cookbooks/yum-epel)
+* [compat_resource](https://supermarket.chef.io/cookbooks/compat_resource)
+
+## GEMS
+The following two GEMS will need to be pulled down and loaded onto the production nodes for envrionments that can't reach the outside. The `bootstrap_prereqs.sh` does this automatically.
+
+* netaddr-1.5.1
+* chef-sugar-3.4.0
 
 ## TEMPLATES
+The following templates are Jinja2 based templates. The `jinja_render.py` found in `bootstrap/templates` reads the production yaml data files and runs through these files and builds the `production.json`, kickstart, linux grub and operations key files. The `erb` are Chef templates but the `jinja_render` script builds and puts those erb files in the `template/default` area of the cookbook as part of the preprocess.
+
+* base_environment.json.j2
+* bcs_bootstrap_rhel.ks.j2
+* bcs_node_rhel_nonosd.ks.erb.j2
+* bcs_node_rhel_osd.ks.erb.j2
+* linux.cfg.j2
+* operations.pub.j2
 
 ## USAGE
 

@@ -72,35 +72,11 @@ node['chef-bcs']['security']['firewall']['interfaces'].each do | interface |
   end
 
   unique_ports.each do | uport |
-#    firewall_rule interface['name'] do
-#      interface "#{node['chef-bcs']['network'][interface['name']]['interface']}"
-#      port uport['port']
-#      protocol uport['protocol']
-#      permanent true
-#      command :allow
-#    end
-
-    #protocol = 'tcp'
-    #if uport['protocol'] == 17
-    #  protocol = 'udp'
-    #end
-
     cmd = shell_out("firewall-cmd --permanent --add-port=#{uport['port']}/#{uport['protocol']}")
     puts "Port: #{uport['port']}/#{uport['protocol']} " + cmd.stdout
   end
 
   ranges.each do | range |
-#    firewall_rule interface['name'] do
-#      interface "#{node['chef-bcs']['network'][interface['name']]['interface']}"
-#      port range
-#      permanent true
-#      command :allow
-#    end
-    #protocol = 'tcp'
-    #if range['protocol'] == 17
-    #  protocol = 'udp'
-    #end
-
     cmd = shell_out("firewall-cmd --permanent --add-port=#{range['start']}-#{range['end']}/#{range['protocol']}")
     puts "Range: #{range['start']}-#{range['end']}/#{range['protocol']} " + cmd.stdout
 

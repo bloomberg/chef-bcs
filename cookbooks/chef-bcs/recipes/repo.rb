@@ -21,5 +21,4 @@
 
 node.default['ceph']['version'] = node['chef-bcs']['ceph']['repo']['version']['name']
 node.default['ceph']['branch'] = node['chef-bcs']['ceph']['repo']['version']['branch']
-
 node.default['ceph']['repo']['create'] = node['chef-bcs']['ceph']['repo']['create']
