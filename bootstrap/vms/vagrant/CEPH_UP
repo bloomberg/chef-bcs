@@ -26,11 +26,6 @@ set -eu
 
 clear
 
-echo "   __     "
-echo "   \ \    "
-echo "    > \   "
-echo "   / ^ \  "
-echo "  /_/ \_\ "
 echo
 echo "Ceph Vagrant Build"
 echo "--------------------------------------------"
