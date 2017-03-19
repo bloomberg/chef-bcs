@@ -316,6 +316,9 @@
             "arch": "x86_64"
           }
         },
+        "mgr": {
+          "enable": {%- if ceph.mgr.enable == True %} true {% else %} false {%- endif %}
+        },
         "config": {
           {#- "NOTE": "This section is pure key/value. Meaning, the key and value are added to the given location in ceph.conf.", #}
           "global": {

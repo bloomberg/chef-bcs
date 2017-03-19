@@ -1,0 +1,13 @@
+{
+  "name": "ceph-mgr",
+  "json_class": "Chef::Role",
+  "description": "Ceph Manager",
+  "run_list": [
+      "role[common]",
+      "recipe[chef-bcs::ceph-conf]",
+      "recipe[chef-bcs::repo]",
+      "recipe[ceph-chef]",
+      "recipe[ceph-chef::repo]",
+      "recipe[ceph-chef::mgr]"
+  ]
+}

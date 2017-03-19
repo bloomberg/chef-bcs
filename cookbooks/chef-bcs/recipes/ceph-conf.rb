@@ -21,14 +21,13 @@
 # Some values are part of 'ceph''config''global' which will create a k,v pair as is.
 # Some values are specific variables that need to be set instead.
 
-# NB: ceph-chef::default recipe included at bottom
-
-include_recipe 'chef-bcs::repo'
-
 # NOTE: This file also updates the data in the ceph-chef cookbook
 node.default['ceph']['cluster'] = node['chef-bcs']['ceph']['cluster']
 node.default['ceph']['version'] = node['chef-bcs']['ceph']['repo']['version']['name']
 node.default['ceph']['branch'] = node['chef-bcs']['ceph']['repo']['version']['branch']
+node.default['ceph']['repo']['create'] = node['chef-bcs']['ceph']['repo']['create']
+
+node.default['ceph']['mgr']['enable'] = node['chef-bcs']['ceph']['mgr']['enable']
 
 # NOTE: If the version is 'hammer' then change owner and group to 'root'
 if node['chef-bcs']['ceph']['repo']['version']['name'] == 'hammer'
