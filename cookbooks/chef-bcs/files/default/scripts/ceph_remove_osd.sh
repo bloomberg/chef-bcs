@@ -56,5 +56,8 @@ set +e
 sudo umount /var/lib/ceph/osd/ceph-$osd
 sudo rm -rf /var/lib/ceph/osd/ceph-$osd
 
+# Modify this line if needed
+sudo rm /var/run/ceph/ceph-osd.$osd.asok
+
 # IMPORTANT: It's worth repeating - DO NOT just reweight to 0.0 in one call unless there
 # is just a small of amount of data on the OSD!
