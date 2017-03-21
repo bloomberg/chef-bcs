@@ -689,7 +689,11 @@
       "zabbix": {
         "repository": "http://repo.zabbix.com/zabbix/2.4/rhel/7/x86_64/",
         "repository_key": "file:///etc/pki/rpm-gpg/RPM-GPG-KEY-ZABBIX",
-        "server": "10.0.100.6"
+        "server": "10.0.100.6",
+        "ceph": {
+         "blocked_op": 0,
+         "slow_osd": 0
+        }
       }
     },
     "chef_client": {
