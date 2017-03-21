@@ -550,7 +550,11 @@
       "zabbix": {
         "repository": "http://repo.zabbix.com/zabbix/2.4/rhel/7/x86_64/",
         "repository_key": "file:///etc/pki/rpm-gpg/RPM-GPG-KEY-ZABBIX",
-        "server": "{{ monitoring.zabbix.server }}"
+        "server": "{{ monitoring.zabbix.server }}",
+        "ceph": {
+         "blocked_op": {{ monitoring.zabbix.ceph.blocked_op }},
+         "slow_osd": {{ monitoring.zabbix.ceph.slow_osd }}
+        }
       }
     },
     "chef_client": {
