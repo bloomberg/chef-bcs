@@ -19,3 +19,14 @@
 include_recipe 'chef-bcs::ceph-conf'
 
 include_recipe 'ceph-chef::system'
+
+
+# Tuning tests...
+# sysctl -w net.core.rmem_max=67108864 net.core.wmem_max=67108864 net.core.rmem_default=33554432 net.core.wmem_default=33554432 net.ipv4.tcp_rmem="16777216 33554432 67108864" net.ipv4.tcp_wmem="16777216 33554432 67108864"  net.core.optmem_max=33554432
+
+# Original
+# sysctl -w net.core.rmem_max=212992 net.core.wmem_max=212992 net.core.rmem_default=212992 net.core.wmem_default=212992 net.ipv4.tcp_rmem="4096 87380 6291456" net.ipv4.tcp_wmem="4096 16384 4194304" net.core.optmem_max=20480
+
+# Perf record to test tc_malloc impact and tcp buffer change above
+# sudo perf record -F 99 -ag -- sleep 60
+# sudo perf report    <-- Do this after the above command completes
