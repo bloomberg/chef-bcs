@@ -41,3 +41,10 @@ default['chef-bcs']['ceph']['tcmalloc']['enable'] = true
 
 default['chef-bcs']['ceph']['radosgw']['debug']['logs']['enable'] = false
 default['chef-bcs']['ceph']['radosgw']['debug']['logs']['level'] = 20
+
+default['chef-bcs']['system']['scheduler']['device']['enable'] = false
+default['chef-bcs']['system']['sysctl']['enable'] = true
+
+# Only valide CFQ Scheduler
+default['chef-bcs']['ceph']['system']['scheduler']['device']['ceph']['class'] = 'idle'
+default['chef-bcs']['ceph']['system']['scheduler']['device']['ceph']['priority'] = 7

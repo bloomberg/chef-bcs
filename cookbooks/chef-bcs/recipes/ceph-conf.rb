@@ -29,6 +29,10 @@ node.default['ceph']['repo']['create'] = node['chef-bcs']['ceph']['repo']['creat
 
 node.default['ceph']['mgr']['enable'] = node['chef-bcs']['ceph']['mgr']['enable']
 
+node.default['ceph']['system']['scheduler']['device']['type'] = node['chef-bcs']['ceph']['system']['scheduler']['device']['type']
+node.default['ceph']['system']['scheduler']['device']['ceph']['class'] = node['chef-bcs']['ceph']['system']['scheduler']['device']['ceph']['class']
+node.default['ceph']['system']['scheduler']['device']['ceph']['priority'] = node['chef-bcs']['ceph']['system']['scheduler']['device']['ceph']['priority']
+
 # NOTE: If the version is 'hammer' then change owner and group to 'root'
 if node['chef-bcs']['ceph']['repo']['version']['name'] == 'hammer'
     node.default['ceph']['owner'] = 'root'
@@ -43,7 +47,9 @@ end
 node.default['ceph']['repo']['create'] = node['chef-bcs']['ceph']['repo']['create']
 
 # System tunes
-node.default['ceph']['system']['sysctl'] = node['chef-bcs']['system']['sysctl']
+if node['chef-bcs']['system']['sysctl']['enable']
+    node.default['ceph']['system']['sysctls'] = node['chef-bcs']['system']['sysctl']['sysctls']
+end
 
 node.default['ceph']['network']['public']['cidr'] = node['chef-bcs']['network']['public']['cidr']
 node.default['ceph']['network']['cluster']['cidr'] = node['chef-bcs']['network']['cluster']['cidr']

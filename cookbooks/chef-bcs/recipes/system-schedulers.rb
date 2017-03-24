@@ -18,7 +18,15 @@
 #
 include_recipe 'chef-bcs::ceph-conf'
 
-include_recipe 'ceph-chef::system'
+# Add the scheduler options
+if node['chef-bcs']['system']['scheduler']['device']['enable']
+    node['chef-bcs']['system']['scheduler']['device']['devices'].each_with_index do |dev, _index|
+      execute 'scheduler-updates-#{index}' do
+        command "echo #{node['chef-bcs']['system']['scheduler']['device']['type']} > /sys/block/#{dev}/queue/scheduler"
+        not_if "cat /sys/block/#{dev}/queue/scheduler | grep '\[#{node['chef-bcs']['system']['scheduler']['device']['type']}\]'"
+      end
+    end
+end
 
 # Substitute the OSD number for 0 below to check to check for 'non-besteffort' scheduler
 # sudo iotop --batch --iter 1 | grep 'ceph-osd -i 0' | grep -v be/4

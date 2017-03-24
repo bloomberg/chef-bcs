@@ -181,11 +181,44 @@
         {#- "NOTE4": "NOTE: If you run multiple instances of RGW then keep the port count in mind." #}
       },
       "system": {
-        "sysctl": [
-          "kernel.pid_max=4194303",
-          "fs.file-max=26234859",
-          "vm.swappiness=0"
-        ]
+        "scheduler": {
+            "device": {
+                "enable": true
+                "type": "cfq",
+                "ceph": {
+                    "class": "idle",
+                    "priority": 7
+                },
+                "devices": [
+                    "sda",
+                    "sdb",
+                    "sdc",
+                    "sdd",
+                    "sde",
+                    "sdf",
+                    "sdg",
+                    "sdh",
+                    "sdi",
+                    "sdj",
+                    "sdk",
+                    "sdl"
+                ]
+            }
+        },
+        "sysctl": {
+            "enable": true,
+            "sysctls": [
+              "kernel.pid_max=4194303",
+              "fs.file-max=26234859",
+              "net.core.rmem_max=67108864",
+              "net.core.wmem_max=67108864",
+              "net.core.rmem_default=33554432",
+              "net.core.wmem_default=33554432",
+              "net.ipv4.tcp_rmem=\"16777216 33554432 67108864\"",
+              "net.ipv4.tcp_wmem=\"16777216 33554432 67108864\"",
+              "net.core.optmem_max=33554432"
+            ]
+        }
       },
       "ipmi": {
         "user": "{{ ipmi.user }}",
