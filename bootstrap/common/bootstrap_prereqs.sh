@@ -140,8 +140,8 @@ download_file cookbooks/chef-client-7.2.0.tar.gz http://cookbooks.opscode.com/ap
 download_file cookbooks/windows-2.1.1.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/windows/versions/2.1.1/download
 # previous ohai-5.0.0 (dependency of windows)
 download_file cookbooks/ohai-5.0.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/ohai/versions/5.0.0/download
-# previous cron-1.7.6
-download_file cookbooks/cron-4.0.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/cron/versions/4.0.0/download
+# previous cron-4.0.0
+download_file cookbooks/cron-4.1.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/cron/versions/4.1.0/download
 # previous logrotate-1.9.2
 download_file cookbooks/logrotate-2.1.0.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/logrotate/versions/2.1.0/download
 # previous compat_resource-12.16.3 (dependency for logrotate)
