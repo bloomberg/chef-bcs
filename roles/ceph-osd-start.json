@@ -3,6 +3,7 @@
   "json_class": "Chef::Role",
   "description": "Ceph Start osd Role",
   "run_list": [
+    "recipe[chef-bcs::ceph-conf]",
     "recipe[ceph-chef::osd_start_all]"
   ]
 }

@@ -41,3 +41,5 @@ if node['chef-bcs']['ceph']['tcmalloc']['enable']
     mode 00644
   end
 end
+
+include_recipe 'chef-bcs::system-schedulers'
