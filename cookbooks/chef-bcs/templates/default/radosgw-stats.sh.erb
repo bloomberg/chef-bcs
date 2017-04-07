@@ -1,0 +1,32 @@
+#!/bin/bash
+#
+# Author: Chris Jones <cjones303@bloomberg.net>
+# Copyright 2017, Bloomberg Finance L.P.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# Let the whole thing run even if an error due to region/zone info
+set +e
+
+# If you need region/zone then you may need to do it in your private repo which would
+# layer over this file and replace it with your data center specific version.
+
+# This one is for a default (non region/zone) version
+radosgw-admin2 -a user-stats-sync 2>/dev/null
+
+# Radosgw-admin2 will generate the json file of the user stats. Radosgw-stats.sh will read that json
+# file and send the stats to graphite for the given user (uid in radosgw). This will show trend lines
+# and stats for users and their usage of radosgw.
+
+radosgw-stats.py
