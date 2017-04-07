@@ -17,7 +17,6 @@
       },
       "cron": {
         "logs": {
-          "ceph": {
             "radosgw": {
               "uid": "{{ cron.logs.ceph.radosgw.uid }}",
               "name": "{{ cron.logs.ceph.radosgw.name }}",
@@ -26,13 +25,19 @@
               "endpoint": "{{ cron.logs.ceph.radosgw.endpoint }}",
               "port": {{ cron.logs.ceph.radosgw.port }},
               "bucket": "{{ cron.logs.ceph.radosgw.bucket }}"
+            },
+            "patterns": [
+            {%- for item in cron.logs.patterns %}
+              {"directory": "{{ item.directory }}", "pattern": "{{ item.pattern }}", "bucket": {%- if item.bucket %}"{{ item.bucket }}"{% else %}"{{ cron.logs.ceph.radosgw.bucket }}"{%- endif %}}{%- if not loop.last %},{% endif %}
+            {%- endfor %}
+            ]
+        },
+        "radosgw": {
+            "stats": {
+                "user": "operations",
+                "minute": "/30",
+                "command": "/usr/local/bin/radosgw-stats.sh"
             }
-          },
-          "patterns": [
-          {%- for item in cron.logs.patterns %}
-            {"directory": "{{ item.directory }}", "pattern": "{{ item.pattern }}", "bucket": {%- if item.bucket %}"{{ item.bucket }}"{% else %}"{{ cron.logs.ceph.radosgw.bucket }}"{%- endif %}}{%- if not loop.last %},{% endif %}
-          {%- endfor %}
-          ]
         }
       },
       "bootstrap": {
@@ -396,6 +401,12 @@
           "logs": {
             "ops": {%- if ceph.radosgw.logs.ops.enable == True %} true, {% else %} false, {%- endif %}
             "usage": {%- if ceph.radosgw.logs.usage.enable == True %} true {% else %} false {%- endif %}
+          },
+          "gc": {
+            "max_objects": {{ ceph.radosgw.gc.max_objects }},
+            "obj_min_wait": {{ ceph.radosgw.gc.obj_min_wait }},
+            "processor_max_time": {{ ceph.radosgw.gc.processor_max_time }},
+            "processor_period": {{ ceph.radosgw.gc.processor_period }}
           },
           "users": [
             {%- for user in ceph.radosgw.users %}

@@ -21,18 +21,23 @@
       },
       "cron": {
         "logs": {
-          "ceph": {
             "radosgw": {
               "uid": "",
               "name": "",
               "access_key": "",
               "secret_key": "",
               "bucket": ""
+            },
+            "patterns": [
+              {"directory": "", "pattern": "", "bucket": ""}
+            ]
+        },
+        "radosgw": {
+            "stats": {
+                "user": "operations",
+                "minute": "/30",
+                "command": "/usr/local/bin/radosgw-stats.sh"
             }
-          },
-          "patterns": [
-            {"directory": "", "pattern": "", "bucket": ""}
-          ]
         }
       },
       "bootstrap": {
@@ -472,6 +477,12 @@
           "logs": {
             "ops": true,
             "usage": true
+          },
+          "gc": {
+            "max_objects": 64,
+            "obj_min_wait": 3600,
+            "processor_max_time": 1800,
+            "processor_period": 1800
           },
           "users": [
              {

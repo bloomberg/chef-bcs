@@ -42,9 +42,9 @@ import rgw_s3_api
 
 
 log_patterns = [
-   {"directory": "/var/log/ceph", "pattern": "*.log-*.gz", "bucket": "bcs_logs"},
-   {"directory": "/var/log/radosgw", "pattern": "ceph.client.radosgw.*.log-*.gz", "bucket": "bcs_logs"},
-   {"directory": "/var/log/radosgw", "pattern": "civetweb.access.*.log-*.gz", "bucket": "bcs_logs"}
+   {"directory": "/var/log/ceph", "pattern": "*.log-*.gz", "bucket": "<%= node['chef-bcs']['cron']['logs']['radosgw']['bucket'] %>"},
+   {"directory": "/var/log/radosgw", "pattern": "ceph.client.radosgw.*.log-*.gz", "bucket": "<%= node['chef-bcs']['cron']['logs']['radosgw']['bucket'] %>"},
+   {"directory": "/var/log/radosgw", "pattern": "civetweb.access.*.log-*.gz", "bucket": "<%= node['chef-bcs']['cron']['logs']['radosgw']['bucket'] %>"}
 ]
 
 conn = None

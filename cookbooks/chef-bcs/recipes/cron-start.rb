@@ -31,3 +31,17 @@ cron 'log-injection-daily' do
   hour    '4'
   command "/usr/local/bin/bcs_log_injection.py daily"
 end
+
+cron 'radosgw-stats' do
+  user    "#{node['chef-bcs']['cron']['radosgw']['stats']['user']}"
+  minute  "#{node['chef-bcs']['cron']['radosgw']['stats']['minute']}"
+  command "#{node['chef-bcs']['cron']['radosgw']['stats']['command']}"
+end
+
+# This is a generic script that calls radosgw-admin2 with specifics for the environment
+template '/usr/local/bin/radosgw-stats.sh' do
+  source 'radosgw-stats.sh.erb'
+  mode   00755
+  owner  "#{node['chef-bcs']['cron']['radosgw']['stats']['user']}"
+  group  "#{node['chef-bcs']['cron']['radosgw']['stats']['user']}"
+end

@@ -110,6 +110,11 @@ node.default['ceph']['radosgw']['logs']['usage']['enable'] = true #node['chef-bc
 node.default['ceph']['radosgw']['debug']['logs']['enable'] = node['chef-bcs']['ceph']['radosgw']['debug']['logs']['enable']
 node.default['ceph']['radosgw']['debug']['logs']['level'] = node['chef-bcs']['ceph']['radosgw']['debug']['logs']['level']
 
+node.default['ceph']['radosgw']['gc']['max_objects'] = node['chef-bcs']['ceph']['radosgw']['gc']['max_objects']
+node.default['ceph']['radosgw']['gc']['obj_min_wait'] = node['chef-bcs']['ceph']['radosgw']['gc']['obj_min_wait']
+node.default['ceph']['radosgw']['gc']['processor_max_time'] = node['chef-bcs']['ceph']['radosgw']['gc']['processor_max_time']
+node.default['ceph']['radosgw']['gc']['processor_period'] = node['chef-bcs']['ceph']['radosgw']['gc']['processor_period']
+
 # Add whatever users and buckets you want the cookbook to automatically set up for you in the  node['chef-bcs']['ceph']['radosgw']['users']
 node.default['ceph']['radosgw']['users'] = node['chef-bcs']['ceph']['radosgw']['users']
 
