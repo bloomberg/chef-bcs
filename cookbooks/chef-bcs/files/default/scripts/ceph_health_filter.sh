@@ -34,6 +34,10 @@ BLOCKED_OP="`echo "$BLOCKED_OP_TXT" | awk '{print $1}'`"
 SLOW_OSD_TXT="`echo \"$STDIN\" | egrep -m 1 -o \"$SLOW_OSD_RE\"`"
 SLOW_OSD="`echo "$SLOW_OSD_TXT" | awk '{print $1}'`"
 
+# Set default values for comparison if ceph does not report them
+test -z "$SLOW_OSD" && SLOW_OSD=-1
+test -z "$BLOCKED_OP" && BLOCKED_OP=-1
+
 # If blocked ops/slow OSDs do not hit threshold, treat state as HEALTH_OK
 if [ $BLOCKED_OP -ge $BLOCKED_OP_MIN ] || [ $SLOW_OSD -ge $SLOW_OSD_MIN ]; then
   echo "$STDIN" | sed 's/^HEALTH_WARN/HEALTH_WARN_blocked/'
