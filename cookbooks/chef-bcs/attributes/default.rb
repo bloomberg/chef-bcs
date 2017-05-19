@@ -41,6 +41,7 @@ default['chef-bcs']['ceph']['tcmalloc']['enable'] = true
 
 default['chef-bcs']['ceph']['radosgw']['debug']['logs']['enable'] = false
 default['chef-bcs']['ceph']['radosgw']['debug']['logs']['level'] = 20
+default['chef-bcs']['ceph']['radosgw']['rgw_webservice']['user'] = 'radosgw'
 
 default['chef-bcs']['system']['scheduler']['device']['enable'] = false
 default['chef-bcs']['system']['sysctl']['enable'] = true

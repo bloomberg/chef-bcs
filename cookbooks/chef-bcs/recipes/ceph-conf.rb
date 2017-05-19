@@ -117,6 +117,7 @@ node.default['ceph']['radosgw']['gc']['processor_period'] = node['chef-bcs']['ce
 
 # Add whatever users and buckets you want the cookbook to automatically set up for you in the  node['chef-bcs']['ceph']['radosgw']['users']
 node.default['ceph']['radosgw']['users'] = node['chef-bcs']['ceph']['radosgw']['users']
+node.default['ceph']['radosgw']['rgw_webservice']['user'] = node['chef-bcs']['ceph']['radosgw']['rgw_webservice']['user']
 
 node.default['ceph']['restapi']['url'] = node['chef-bcs']['ceph']['restapi']['url']
 node.default['ceph']['restapi']['ip'] = node['chef-bcs']['ceph']['restapi']['ip']

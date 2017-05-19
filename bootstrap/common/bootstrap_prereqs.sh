@@ -101,10 +101,14 @@ fi
 # export CHEF_CLIENT_RPM_SEMVER=12.18.31
 # export CHEF_SERVER_RPM=chef-server-core-12.11.1-1.el7.x86_64.rpm
 # export CHEF_SERVER_RPM_SEMVER=12.11.1
-export CHEF_CLIENT_RPM=chef-12.19.36-1.el7.x86_64.rpm
-export CHEF_CLIENT_RPM_SEMVER=12.19.36
-export CHEF_SERVER_RPM=chef-server-core-12.13.0-1.el7.x86_64.rpm
-export CHEF_SERVER_RPM_SEMVER=12.13.0
+# export CHEF_CLIENT_RPM=chef-12.19.36-1.el7.x86_64.rpm
+# export CHEF_CLIENT_RPM_SEMVER=12.19.36
+# export CHEF_SERVER_RPM=chef-server-core-12.13.0-1.el7.x86_64.rpm
+# export CHEF_SERVER_RPM_SEMVER=12.13.0
+export CHEF_CLIENT_RPM=chef-13.0.118-1.el7.x86_64.rpm
+export CHEF_CLIENT_RPM_SEMVER=13.0.118
+export CHEF_SERVER_RPM=chef-server-core-12.14.0-1.el7.x86_64.rpm
+export CHEF_SERVER_RPM_SEMVER=12.14.0
 echo "Downloading Chef..."
 download_file /rpms/$CHEF_CLIENT_RPM https://packages.chef.io/files/stable/chef/$CHEF_CLIENT_RPM_SEMVER/el/7/$CHEF_CLIENT_RPM
 download_file /rpms/$CHEF_SERVER_RPM https://packages.chef.io/files/stable/chef-server/$CHEF_SERVER_RPM_SEMVER/el/7/$CHEF_SERVER_RPM
@@ -121,7 +125,7 @@ mkdir -p $BOOTSTRAP_CACHE_DIR/{cookbooks,gems}
 # If set then it will not download but remove from cache and use the development version that should be set in the chef-bcs/cookbooks directory.
 if [[ $CHEF_BCS_DEBUG -eq 0 ]]; then
   echo "Downloading ceph-chef..."
-  download_file cookbooks/ceph-chef-1.1.13.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/ceph-chef/versions/1.1.13/download
+  download_file cookbooks/ceph-chef-1.1.21.tar.gz http://cookbooks.opscode.com/api/v1/cookbooks/ceph-chef/versions/1.1.21/download
 else
   # Remove it so it's not used.
   rm -f $BOOTSTRAP_CACHE_DIR/cookbooks/ceph-chef-*

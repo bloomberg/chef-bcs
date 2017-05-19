@@ -12,6 +12,9 @@
     "recipe[ceph-chef::radosgw]",
     "recipe[ceph-chef::radosgw_start]",
     "recipe[chef-bcs::ceph-scripts]",
+    "recipe[chef-bcs::ceph-radosgw-webservice-install]",
+    "recipe[chef-bcs::ceph-radosgw-webservice-enable]",
+    "recipe[chef-bcs::ceph-radosgw-webservice-start]",
     "role[monitoring]"
   ]
 }
