@@ -3,6 +3,18 @@ include_recipe 'chef-bcs::ceph-conf'
 
 # This recipe installs everything needed for the RGW Admin Web Service...
 
+# Add user/group 'radosgw'
+user node['chef-bcs']['ceph']['radosgw']['rgw_webservice']['user'] do
+    group 'wheel'
+    system true
+    ignore_failure true
+end
+
+group node['chef-bcs']['ceph']['radosgw']['rgw_webservice']['user'] do
+    members node['chef-bcs']['ceph']['radosgw']['rgw_webservice']['user']
+    ignore_failure true
+end
+
 package 'nginx' do
     action :upgrade
 end
