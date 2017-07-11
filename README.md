@@ -1,7 +1,5 @@
 ## Chef-BCS
 
-[![Join the chat at https://gitter.im/bloomberg/chef-bcs](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/bloomberg/chef-bcs?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
 ## DESCRIPTION
 
 Installs and configures Ceph, a distributed network storage and filesystem designed to provide excellent performance, reliability, and scalability.
