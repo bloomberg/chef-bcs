@@ -346,8 +346,6 @@ This cookbook uses Test Kitchen to verify functionality. A Pull Request can't be
 6. `bundle exec kitchen test aio-ubuntu-1404`
 
 ## LICENSE
-* Author: Chris Jones <cjones303@bloomberg.net>
-
 * Copyright 2017, Bloomberg Finance L.P.
 
 Licensed under the Apache License, Version 2.0 (the "License");
